@@ -1,0 +1,26 @@
+# Java / Maven
+target/
+*.jar
+*.war
+*.ear
+
+# Node.js / React
+node_modules/
+build/
+.npm
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store

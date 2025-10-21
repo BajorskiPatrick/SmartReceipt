@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: smart-receipt-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: smart_receipt
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: smart-receipt-backend
+    depends_on:
+      - database
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/smart_receipt
+      - AI_MODULE_URL=http://ai-module:8000
+
+  ai-module:
+    build: ./ai-module
+    container_name: smart-receipt-ai
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: smart-receipt-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
