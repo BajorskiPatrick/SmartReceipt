@@ -2,7 +2,7 @@
 
 Witamy w repozytorium projektu "Inteligentny Asystent Zarządzania Wydatkami".
 
-## 🚀 Uruchamianie projektu
+## 🚀 Uruchamianie projektuuuu
 
 Projekt jest w pełni skonteneryzowany. Aby uruchomić wszystkie usługi (backend, frontend, moduł AI, baza danych), upewnij się, że masz zainstalowany Docker i Docker Compose.
 
