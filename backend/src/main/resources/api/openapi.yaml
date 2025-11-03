@@ -127,49 +127,118 @@ paths:
 
   /expenses:
     get:
-      operationId: getExpenses
+      operationId: getExpensesList
       tags:
         - "1. Core API - Frontend -> Backend"
-      summary: "Pobranie historii wydatków użytkownika"
-      description: "Zwraca listę wszystkich wydatków zalogowanego użytkownika. Umożliwia filtrowanie, np. po dacie."
+      summary: "Pobranie historii wydatków (dla Widżetu 3)"
+      description: "Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację."
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2025
+          description: "Rok, dla którego pobierane są wydatki"
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 11
+          description: "Miesiąc (1-12), dla którego pobierane są wydatki"
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: "Opcjonalne ID kategorii do filtrowania listy (gdy użytkownik kliknie na Widżet 1)"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            description: "Numer strony (dla paginacji)"
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            description: "Liczba elementów na stronie"
       responses:
         '200':
-          description: "Lista wydatków"
+          description: "Spaginowana lista wydatków"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Expense'
+                $ref: '#/components/schemas/ExpenseSummaryPage'
+
+  /expenses/{expenseId}:
+    get:
+      operationId: getExpenseDetails
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Pobranie pełnych szczegółów wydatku (z itemami)"
+      description: "Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika 'Details' na liście."
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          description: "ID wydatku, którego szczegóły chcemy pobrać"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Szczegóły wydatku"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense' # <-- Zwraca PEŁNY obiekt Expense
+        '404':
+          description: "Nie znaleziono wydatku"
                   
   # ---------------------------------------------------------------
-  # Core API: Dashboard
+  # Core API: Dashboard (ZMODYFIKOWANE)
   # ---------------------------------------------------------------
-  /dashboard/summary:
+  /dashboard: # Zastąpiono /dashboard/summary
     get:
-      operationId: getDashboardSummary
+      operationId: getDashboardData
       tags:
         - "1. Core API - Frontend -> Backend"
       summary: "Pobranie zagregowanych danych do dashboardu"
-      description: "Zwraca dane potrzebne do wizualizacji na dashboardzie, np. wydatki w podziale na kategorie w danym okresie."
+      description: "Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend)."
       security:
         - bearerAuth: []
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2025
+          description: "Rok do analizy"
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 11
+          description: "Miesiąc do analizy (1-12). Trend 6-miesięczny będzie obliczony wstecz od tej daty."
       responses:
         '200':
-          description: "Dane do dashboardu"
+          description: "Zagregowane dane do dashboardu"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  spendingByCategory:
-                    type: object
-                    additionalProperties:
-                      type: number
-                  totalSpending:
-                    type: number
+                $ref: '#/components/schemas/DashboardData'
   
   # ---------------------------------------------------------------
   # Core API: Listy Zakupowe
@@ -232,6 +301,48 @@ paths:
                   type: string
 
   # ---------------------------------------------------------------
+  # Core API: Zarządzanie Kategoriami (NOWA SEKCJA)
+  # ---------------------------------------------------------------
+  /categories:
+    get:
+      operationId: getCategories
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Pobranie wszystkich kategorii użytkownika"
+      description: "Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu)."
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: "Lista kategorii"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+    post:
+      operationId: createCategory
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Tworzenie nowej kategorii wydatków"
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        '201':
+          description: "Kategoria utworzona"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+  # ---------------------------------------------------------------
   # AI API: OCR
   # ---------------------------------------------------------------
   /ai/ocr/process:
@@ -260,40 +371,6 @@ paths:
                 $ref: '#/components/schemas/OcrResult'
         '400':
           description: "Nie udało się przetworzyć obrazu"
-
-  # ---------------------------------------------------------------
-  # AI API: Kategoryzacja
-  # ---------------------------------------------------------------
-  /ai/categorize:
-    post:
-      operationId: categorizeExpenseItems
-      tags:
-        - "2. AI API - Backend -> Moduł AI"
-      summary: "Automatyczna kategoryzacja pozycji z paragonu"
-      description: "Endpoint modułu AI, który przyjmuje listę produktów i przypisuje je do predefiniowanych kategorii przy użyciu modeli opartych na transformerach."
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                items:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ExpenseItemBase'
-      responses:
-        '200':
-          description: "Produkty skategoryzowane pomyślnie"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  categorizedItems:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/CategorizedItem'
 
 # ===============================================================
 # Components - Schematy Danych i Bezpieczeństwo
@@ -341,30 +418,74 @@ components:
           description: "Token JWT"
 
     # --- Wydatki ---
-    Expense:
+    Expense: # TEN SCHEMAT JUŻ MASZ, on jest "Widokiem Pełnym"
       type: object
       properties:
         id:
           type: string
           format: uuid
-        storeName:
+        description:
           type: string
-          example: "Biedronka"
         transactionDate:
           type: string
           format: date-time
         totalAmount:
           type: number
           format: float
-        items:
+        items: # <-- Kluczowa różnica: ten obiekt MA itemy
           type: array
           items:
             $ref: '#/components/schemas/ExpenseItem'
 
+    # (Schematy NewExpense, ExpenseItemBase, ExpenseItem, NewExpenseItem zostają bez zmian)
+
+    # --- NOWY SCHEMAT "WIDOKU SKRÓCONEGO" ---
+    ExpenseSummary:
+      type: object
+      description: "Skrócony obiekt wydatku na potrzeby listy (bez itemów)"
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        transactionDate:
+          type: string
+          format: date-time
+        totalAmount:
+          type: number
+          format: float
+        itemCount: # <-- Dobra praktyka: informuje UI ile jest itemów
+          type: integer
+          description: "Liczba pozycji na paragonie (np. '7 itemów')"
+          example: 7
+
+    # --- MODYFIKACJA SCHEMATU PAGINACJI ---
+    ExpenseSummaryPage: # <-- Zmieniamy nazwę z 'ExpensePage'
+      type: object
+      description: "Standardowy obiekt odpowiedzi dla paginacji (używany przez GET /expenses)"
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpenseSummary' # <-- KLUCZOWA ZMIANA
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 5
+        totalElements:
+          type: integer
+          example: 98
+
     NewExpense:
       type: object
       properties:
-        storeName:
+        description:
           type: string
         transactionDate:
           type: string
@@ -386,6 +507,11 @@ components:
         price:
           type: number
           format: float
+        categoryId: # <-- KLUCZOWA ZMIANA, była: "category: string"
+          type: string
+          format: uuid
+          description: "ID kategorii z endpointu /categories"
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
           
     ExpenseItem:
       allOf:
@@ -395,18 +521,124 @@ components:
             id:
               type: string
               format: uuid
-            category:
+            # Dodajemy categoryName dla wygody frontendu
+            categoryName:
               type: string
-              example: "Spożywcze"
+              example: "Jedzenie"
 
     NewExpenseItem:
       allOf:
         - $ref: '#/components/schemas/ExpenseItemBase'
-        - type: object
-          properties:
-            category:
-              type: string
-              example: "Spożywcze"
+
+    # --- NOWE Schematy Dashboardu ---
+    DashboardData:
+      type: object
+      description: "Kompletny obiekt danych potrzebny do renderowania dashboardu."
+      properties:
+        kpi:
+          $ref: '#/components/schemas/DashboardKpi'
+        categorySummary:
+          type: array
+          description: "Dane dla Widżetu 1 (wykres pączkowy)"
+          items:
+            $ref: '#/components/schemas/DashboardCategorySummaryItem'
+        trendSummary:
+          type: array
+          description: "Dane dla Widżetu 2 (wykres słupkowy 6-miesięczny)"
+          items:
+            $ref: '#/components/schemas/DashboardTrendItem'
+
+    DashboardKpi:
+      type: object
+      description: "Kluczowe wskaźniki (Szybkie statystyki) na górze dashboardu."
+      properties:
+        totalSpendingMonth:
+          type: number
+          format: float
+          example: 3250.75
+        budget:
+          type: number
+          format: float
+          example: 4000
+        remaining:
+          type: number
+          format: float
+          example: 749.25
+
+    DashboardCategorySummaryItem:
+      type: object
+      description: "Jeden element na wykresie kategorii (Widżet 1)"
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        categoryName:
+          type: string
+          example: "Jedzenie"
+        totalAmount:
+          type: number
+          format: float
+          example: 1200.50
+
+    DashboardTrendItem:
+      type: object
+      description: "Jeden słupek na wykresie trendu (Widżet 2)"
+      properties:
+        month:
+          type: string
+          description: "Miesiąc w formacie RRRR-MM"
+          example: "2025-10"
+        totalAmount:
+          type: number
+          format: float
+          example: 2950.00
+
+    # --- NOWE Schematy Paginacji (dla Widżetu 3) ---
+    ExpensePage:
+      type: object
+      description: "Standardowy obiekt odpowiedzi dla paginacji (używany przez GET /expenses)"
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Expense'
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 5
+        totalElements:
+          type: integer
+          example: 98
+
+    # --- NOWE Schematy Kategorii ---
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Jedzenie"
+        icon:
+          type: string
+          description: "Nazwa ikony (np. z biblioteki 'FontAwesome' lub 'Material Icons')"
+          example: "shopping-cart"
+
+    NewCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Jedzenie"
+        icon:
+          type: string
+          example: "shopping-cart"
 
     # --- Listy Zakupowe ---
     ShoppingList:
@@ -445,6 +677,12 @@ components:
         productName:
           type: string
           example: "Chleb"
+        quantity:
+          type: number
+          default: 1
+        unit:
+          type: string
+          example: "szt."
         isPurchased:
           type: boolean
           default: false
@@ -460,21 +698,7 @@ components:
       type: object
       description: "Ustrukturyzowane dane zwrócone przez moduł OCR."
       properties:
-        storeName:
-          type: string
-        transactionDate:
-          type: string
-          format: date
-        items:
+        expenses:
           type: array
           items:
-            $ref: '#/components/schemas/ExpenseItemBase'
-
-    CategorizedItem:
-      type: object
-      properties:
-        productName:
-          type: string
-        category:
-          type: string
-          example: "Spożywcze"
+            $ref: '#/components/schemas/NewExpenseItem'
