@@ -1,13 +1,6 @@
 openapi: 3.0.3
 info:
-  title: "Inteligentny Asystent Zarządzania Wydatkami (Smart Receipt) API"
-  description: |
-    Specyfikacja API dla projektu "Inteligentny Asystent Zarządzania Wydatkami". 
-    Dokumentacja opisuje interakcję pomiędzy frontendem (React), backendem (Spring Boot) oraz modułami AI (FastAPI).
-    Główne cele to:
-    - Automatyczna identyfikacja i kategoryzacja wydatków z paragonów.
-    - Wizualizacja danych na interaktywnym dashboardzie.
-    - Ręczne zarządzanie danymi finansowymi.
+  title: "ISmart Receipt API"
   version: "1.0.0"
 
 servers:
