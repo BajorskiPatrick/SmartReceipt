@@ -28,4 +28,4 @@ jobs:
         working-directory: ./backend
         run: ./gradlew build
         env:
-          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+          SMART_RECEIPT_DB_PASSWORD: ${{ secrets.SMART_RECEIPT_DB_PASSWORD }}
