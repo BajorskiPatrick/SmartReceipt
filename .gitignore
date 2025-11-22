@@ -24,3 +24,14 @@ env/
 .vscode/
 *.iml
 .DS_Store
+
+
+# AI module
+ai_module/checkpoints/
+ai_module/runs/
+ai-module/yolo11n.pt
+ai-module/yolov8n-obb.pt
+ai-module/yolov8n.pt
+ai-module/data/
+ai-module/src/nlp/models
+ai-module/src/ocr/models
