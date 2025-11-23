@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -71,8 +72,10 @@ public class AuthService {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0); // Usuń ciasteczko
+        refreshTokenCookie.setMaxAge(0);
         response.addCookie(refreshTokenCookie);
+
+        SecurityContextHolder.clearContext();
     }
 
     public RefreshedToken getRefreshedToken(Cookie[] cookies) {
