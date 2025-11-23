@@ -4,9 +4,9 @@ info:
   version: "1.0.0"
 
 servers:
-  - url: "http://localhost:8080/api/v1"
+  - url: "http://localhost:8080/api/v1.0"
     description: "Główny serwer backendowy (Spring Boot)"
-  - url: "http://localhost:8000/api/v1"
+  - url: "http://localhost:8000/api/v1.0"
     description: "Serwer modułu AI/ML (FastAPI)"
 
 tags:
@@ -35,6 +35,10 @@ paths:
       responses:
         '201':
           description: "Użytkownik pomyślnie zarejestrowany"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
         '400':
           description: "Błędne dane wejściowe"
   
@@ -60,6 +64,31 @@ paths:
         '401':
           description: "Nieprawidłowe dane logowania"
 
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Wylogowanie użytkownika"
+      responses:
+        '200':
+          description: "Pomyślnie wylogowano"
+
+  /auth/refresh:
+    post:
+      operationId: userTokenRefresh
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Odświeżenie tokenu użytkownika"
+      responses:
+        '200':
+          description: "Pomyślnie odświeżono token"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshedToken'
+        '401':
+          description: "Brak tokenu lub token niepoprawny"
 
   /expenses/upload:
     post:
@@ -67,7 +96,7 @@ paths:
       tags:
         - "1. Core API - Frontend -> Backend"
       summary: "Przesłanie zdjęcia paragonu do przetworzenia"
-      description: "Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zapisuje przetworzony wydatek w bazie danych."
+      description: "Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek."
       security:
         - bearerAuth: []
       requestBody:
@@ -81,13 +110,16 @@ paths:
                   type: string
                   format: binary
                   description: "Plik obrazu paragonu"
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewOcrExpense'
       responses:
         '201':
-          description: "Paragon przetworzony, wydatek utworzony"
+          description: "Paragon przetworzony, wydatek gotowy do zatwierdzenia"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Expense'
+                $ref: '#/components/schemas/OcrExpense'
         '500':
           description: "Błąd podczas przetwarzania obrazu"
           
@@ -111,7 +143,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Expense'
+                $ref: '#/components/schemas/ExpenseDetails'
 
   /expenses:
     get:
@@ -137,13 +169,6 @@ paths:
             type: integer
             example: 11
           description: "Miesiąc (1-12), dla którego pobierane są wydatki"
-        - name: categoryId
-          in: query
-          required: false
-          schema:
-            type: string
-            format: uuid
-          description: "Opcjonalne ID kategorii do filtrowania listy (gdy użytkownik kliknie na Widżet 1)"
         - name: page
           in: query
           required: false
@@ -189,10 +214,133 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Expense' # <-- Zwraca PEŁNY obiekt Expense
+                $ref: '#/components/schemas/ExpenseDetails'
         '404':
           description: "Nie znaleziono wydatku"
-                  
+    put:
+      operationId: updateExpense
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Aktualizacja całego wydatku"
+      description: "Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą."
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          description: "ID wydatku do aktualizacji"
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewExpense'
+      responses:
+        '200':
+          description: "Wydatek zaktualizowany pomyślnie"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseDetails'
+        '404':
+          description: "Nie znaleziono wydatku"
+        '400':
+          description: "Błędne dane wejściowe"
+    delete:
+      operationId: deleteExpense
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Usunięcie wydatku"
+      description: "Usuwa wydatek wraz ze wszystkimi jego pozycjami (items)."
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          description: "ID wydatku do usunięcia"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: "Wydatek usunięty pomyślnie"
+        '404':
+          description: "Nie znaleziono wydatku"
+
+  /expenses/{expenseId}/items/{itemId}:
+    put:
+      operationId: updateExpenseItem
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Aktualizacja konkretnej pozycji wydatku"
+      description: "Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię)."
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          description: "ID wydatku"
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          description: "ID pozycji (itemu) do aktualizacji"
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewExpenseItem'
+      responses:
+        '200':
+          description: "Pozycja zaktualizowana pomyślnie"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseItem'
+        '404':
+          description: "Nie znaleziono wydatku lub pozycji"
+        '400':
+          description: "Błędne dane wejściowe"
+    delete:
+      operationId: deleteExpenseItem
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Usunięcie konkretnej pozycji wydatku"
+      description: "Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane."
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          description: "ID wydatku"
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          description: "ID pozycji (itemu) do usunięcia"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: "Pozycja usunięta pomyślnie"
+        '404':
+          description: "Nie znaleziono wydatku lub pozycji"
 
   /dashboard:
     get:
@@ -323,26 +471,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ShoppingListItem'
 
-  /shopping-lists/suggestions:
-    get:
-      operationId: getShoppingListSuggestions
-      tags:
-        - "1. Core API - Frontend -> Backend"
-      summary: "Pobranie sugestii produktów do listy zakupowej"
-      description: "Opcjonalne rozszerzenie. System sugeruje produkty na podstawie historii zakupów."
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: "Lista sugerowanych produktów"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-
-
   /categories:
     get:
       operationId: getCategories
@@ -422,9 +550,6 @@ components:
     UserRegistration:
       type: object
       properties:
-        username:
-          type: string
-          example: "jan_kowalski"
         email:
           type: string
           format: email
@@ -456,12 +581,9 @@ components:
         role:
           $ref: "#/components/schemas/Role"
 
-    Expense:
+    ExpenseBase:
       type: object
       properties:
-        expenseId:
-          type: string
-          format: uuid
         description:
           type: string
         transactionDate:
@@ -470,12 +592,43 @@ components:
         totalAmount:
           type: number
           format: float
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExpenseItem'
         itemCount:
           type: integer
+
+    ExpenseDetails:
+      allOf:
+        - $ref: "#/components/schemas/ExpenseBase"
+        - type: object
+          properties:
+            expenseId:
+              type: string
+              format: uuid
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExpenseItem'
+
+    ExpenseSummary:
+      allOf:
+        - $ref: "#/components/schemas/ExpenseBase"
+        - type: object
+          properties:
+            expenseId:
+              type: string
+              format: uuid
+              description: "ID podsumowywanego wydatku"
+              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+
+    OcrExpense:
+      allOf:
+        - $ref: '#/components/schemas/ExpenseBase'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OcrExpenseItem'
+
 
     ExpenseSummaryPage:
       type: object
@@ -484,7 +637,7 @@ components:
         content:
           type: array
           items:
-            $ref: '#/components/schemas/Expense'
+            $ref: '#/components/schemas/ExpenseSummary'
         page:
           type: integer
           example: 0
@@ -511,6 +664,15 @@ components:
           items:
             $ref: '#/components/schemas/NewExpenseItem'
 
+    NewOcrExpense:
+      type: object
+      properties:
+        description:
+          type: string
+        transactionDate:
+          type: string
+          format: date-time
+
     ExpenseItemBase:
       type: object
       properties:
@@ -518,7 +680,7 @@ components:
           type: string
           example: "Mleko 2%"
         quantity:
-          type: number
+          type: integer
           default: 1
         price:
           type: number
@@ -543,6 +705,10 @@ components:
               example: "Jedzenie"
 
     NewExpenseItem:
+      allOf:
+        - $ref: '#/components/schemas/ExpenseItemBase'
+
+    OcrExpenseItem:
       allOf:
         - $ref: '#/components/schemas/ExpenseItemBase'
 
@@ -608,27 +774,6 @@ components:
           format: float
           example: 2950.00
 
-    ExpensePage:
-      type: object
-      description: "Standardowy obiekt odpowiedzi dla paginacji (używany przez GET /expenses)"
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Expense'
-        page:
-          type: integer
-          example: 0
-        size:
-          type: integer
-          example: 20
-        totalPages:
-          type: integer
-          example: 5
-        totalElements:
-          type: integer
-          example: 98
-
     Category:
       type: object
       properties:
@@ -692,7 +837,7 @@ components:
           type: string
           example: "Chleb"
         quantity:
-          type: number
+          type: integer
           default: 1
         unit:
           type: string
@@ -721,11 +866,18 @@ components:
         expenses:
           type: array
           items:
-            $ref: '#/components/schemas/NewExpenseItem'
+            $ref: '#/components/schemas/OcrExpenseItem'
 
     Role:
       type: string
       enum:
-        - USER
-        - ADMIN
+        - ROLE_USER
+        - ROLE_ADMIN
       description: "Możliwe role użytkownika"
+
+    RefreshedToken:
+      type: object
+      description: "New refreshed token"
+      properties:
+        token:
+          type: string

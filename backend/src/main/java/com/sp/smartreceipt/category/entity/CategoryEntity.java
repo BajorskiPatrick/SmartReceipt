@@ -1,13 +1,13 @@
-package com.sp.smartreceipt.entity;
+package com.sp.smartreceipt.category.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 import java.util.UUID;
+
+import com.sp.smartreceipt.user.entity.UserEntity;
 
 @Entity
 @Table(name = "categories")
