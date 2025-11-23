@@ -2,6 +2,7 @@ package com.sp.smartreceipt.config;
 
 import com.sp.smartreceipt.config.filter.JwtRequestFilter;
 import com.sp.smartreceipt.model.Role;
+import com.sp.smartreceipt.user.service.AppUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-//    private final AppUserDetailsService userDetailsService;
+    private final AppUserDetailsService userDetailsService;
 
     private final JwtRequestFilter jwtRequestFilter;
 
@@ -38,19 +39,27 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/login", "/refresh", "/logout").permitAll()
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/auth/**"
                         ).permitAll()
-                        .requestMatchers("/payments/stripe-webhook").permitAll()
-                        .requestMatchers("/categories/**", "/items/**", "/orders/**", "/payments/**").hasAnyRole(Role.USER.getValue(), Role.ADMIN.getValue())
-                        .requestMatchers("/admin/**").hasRole(Role.ADMIN.getValue())
-                        .anyRequest().authenticated());
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                        .requestMatchers(
+                                "/dashboard",
+                                "/expenses/**",
+                                "/shopping-lists/**",
+                                "/categories"
+                        ).hasAuthority(Role.USER.getValue())
+                        .requestMatchers(
+                                "/ai/**"
+                        ).denyAll()
+                        .anyRequest()
+                        .authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -59,13 +68,13 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    public AuthenticationManager authenticationManager() {
-//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-//        authProvider.setUserDetailsService(userDetailsService);
-//        authProvider.setPasswordEncoder(passwordEncoder());
-//        return new ProviderManager(authProvider);
-//    }
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(authProvider);
+    }
 
     @Bean
     public CorsFilter corsFilter() {

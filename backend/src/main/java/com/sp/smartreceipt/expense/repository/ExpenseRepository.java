@@ -1,0 +1,18 @@
+package com.sp.smartreceipt.expense.repository;
+
+import com.sp.smartreceipt.expense.entity.ExpenseEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID>, JpaSpecificationExecutor<ExpenseEntity> {
+
+    Optional<ExpenseEntity> findByExpenseId(UUID id);
+
+    @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items WHERE e.expenseId = :expenseId")
+    Optional<ExpenseEntity> findByExpenseIdWithItems(@Param("id") UUID expenseId);
+}

@@ -1,4 +1,4 @@
-package com.sp.smartreceipt.entity;
+package com.sp.smartreceipt.shoppingList.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,8 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.sp.smartreceipt.user.entity.UserEntity;
+
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity

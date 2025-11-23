@@ -1,13 +1,12 @@
-package com.sp.smartreceipt.entity;
+package com.sp.smartreceipt.expense.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+
+import com.sp.smartreceipt.category.entity.CategoryEntity;
 
 @Entity
 @Table(name = "expense_items")
@@ -25,12 +24,14 @@ public class ExpenseItemEntity {
 
     private String productName;
 
-    private BigDecimal quantity;
+    private Integer quantity;
 
     private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_id")
+    @ToString.Exclude                // Unikamy pętli
+    @EqualsAndHashCode.Exclude
     private ExpenseEntity expense;
 
     @ManyToOne(fetch = FetchType.LAZY)

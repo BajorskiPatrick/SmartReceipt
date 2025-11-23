@@ -1,6 +1,7 @@
 package com.sp.smartreceipt.config.filter;
 
 import com.sp.smartreceipt.config.util.JwtUtil;
+import com.sp.smartreceipt.user.service.AppUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +21,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-//    private final AppUserDetailsService userDetailsService;
+    private final AppUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
     @Override
@@ -41,19 +42,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
 
-//        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-//            try {
-//                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-//                if (jwtUtil.validateToken(jwt, userDetails)) {
-//                    UsernamePasswordAuthenticationToken authenticationToken =
-//                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-//                }
-//            } catch (Exception e) {
-//                logger.error("Cannot set user authentication: " + e.getMessage());
-//            }
-//        }
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                if (jwtUtil.validateToken(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
+            } catch (Exception e) {
+                logger.error("Cannot set user authentication: " + e.getMessage());
+            }
+        }
 
         filterChain.doFilter(request, response);
     }
