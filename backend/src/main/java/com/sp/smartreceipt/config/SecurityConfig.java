@@ -57,9 +57,6 @@ public class SecurityConfig {
                                 "/shopping-lists/**",
                                 "/categories"
                         ).hasAuthority(Role.USER.getValue())
-                        .requestMatchers(
-                                "/ai/**"
-                        ).denyAll()
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
