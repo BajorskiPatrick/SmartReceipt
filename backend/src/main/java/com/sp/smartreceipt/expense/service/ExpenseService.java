@@ -67,12 +67,16 @@ public class ExpenseService {
         }
 
         @Transactional(readOnly = true)
-        public ExpenseDetails searchExpenseDetails(UUID expenseId) {
+        public ExpenseDetails searchExpenseDetails(UUID expenseId, UUID categoryId) {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 String userEmail = authentication.getName();
                 log.debug("Searching details for expense ID: {}", expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                ExpenseEntity expense = categoryId == null ?
+                        expenseRepository.findByExpenseIdWithItems(expenseId)
+                                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail))
+                        :
+                        expenseRepository.findByExpenseIdWithItemsByCategoryId(expenseId, categoryId)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 if (!expense.getUser().getEmail().equals(userEmail)) {
@@ -96,7 +100,8 @@ public class ExpenseService {
 
                 Specification<ExpenseEntity> spec = Specification
                                 .where(ExpenseSpecifications.hasUser(userEmail))
-                                .and(ExpenseSpecifications.inMonth(parameters.getYear(), parameters.getMonth()));
+                                .and(ExpenseSpecifications.inMonth(parameters.getYear(), parameters.getMonth()))
+                                .and(ExpenseSpecifications.inCategory(parameters.getCategoryId()));
 
                 Page<ExpenseEntity> pageResult = expenseRepository.findAll(spec, pageable);
 
@@ -206,6 +211,7 @@ public class ExpenseService {
                 return ExpenseSummary.builder()
                                 .expenseId(expense.getExpenseId())
                                 .totalAmount(expense.getTotalAmount())
+                                .description(expense.getDescription())
                                 .transactionDate(expense.getTransactionDate())
                                 .itemCount(expense.getItemCount())
                                 .build();

@@ -6,11 +6,28 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 public class ExpenseSpecifications {
 
     public static Specification<ExpenseEntity> hasUser(String userEmail) {
         return (root, query, cb) -> cb.equal(root.get("user").get("email"), userEmail);
+    }
+
+    public static Specification<ExpenseEntity> inCategory(UUID categoryId) {
+        return (root, query, cb) -> {
+            if (categoryId == null) {
+                return null;
+            }
+
+            var itemsJoin = root.join("items");
+
+            var categoryJoin = itemsJoin.join("category");
+
+            query.distinct(true);
+
+            return cb.equal(categoryJoin.get("categoryId"), categoryId);
+        };
     }
 
     public static Specification<ExpenseEntity> inMonth(Integer year, Integer month) {

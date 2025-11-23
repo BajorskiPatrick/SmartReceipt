@@ -26,7 +26,10 @@ public class CategoryEntity {
     @Column(unique = true)
     private String name;
 
-    private String icon;
+    private String description;
+
+    @Builder.Default
+    private boolean deleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
