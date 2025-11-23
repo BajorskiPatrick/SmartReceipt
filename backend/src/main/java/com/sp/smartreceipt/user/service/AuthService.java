@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -44,6 +43,7 @@ public class AuthService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
 
+    @Transactional
     public AuthResponse registerUser(UserRegistration userRegistration, HttpServletResponse response) {
         log.info("Registering new user: {}", userRegistration.getEmail());
         String rawPassword = userRegistration.getPassword();
@@ -52,6 +52,7 @@ public class AuthService {
         return loginUser(translateToUserLogin(user), response);
     }
 
+    @Transactional(readOnly = true)
     public AuthResponse loginUser(UserLogin userLogin, HttpServletResponse response) {
         log.info("Generating tokens for user: {}", userLogin.getEmail());
         final UserDetails userDetails = userDetailsService.loadUserByUsername(userLogin.getEmail());
@@ -85,6 +86,7 @@ public class AuthService {
         SecurityContextHolder.clearContext();
     }
 
+    @Transactional(readOnly = true)
     public RefreshedToken getRefreshedToken(Cookie[] cookies) {
         String refreshToken = null;
         if (cookies != null) {

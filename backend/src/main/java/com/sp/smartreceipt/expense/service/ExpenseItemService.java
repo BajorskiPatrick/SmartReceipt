@@ -62,7 +62,7 @@ public class ExpenseItemService {
                 return mapToExpenseItemDto(itemEntity);
         }
 
-        @Transactional(readOnly = true)
+        @Transactional
         public void deleteItem(UUID expenseId, UUID itemId) {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 String userEmail = authentication.getName();

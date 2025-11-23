@@ -14,5 +14,8 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID>, J
     Optional<ExpenseEntity> findByExpenseId(UUID id);
 
     @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items WHERE e.expenseId = :expenseId")
-    Optional<ExpenseEntity> findByExpenseIdWithItems(@Param("id") UUID expenseId);
+    Optional<ExpenseEntity> findByExpenseIdWithItems(@Param("expenseId") UUID expenseId);
+
+    @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items i WHERE e.expenseId = :expenseId AND i.category.categoryId = :categoryId")
+    Optional<ExpenseEntity> findByExpenseIdWithItemsByCategoryId(@Param("expenseId") UUID expenseId, @Param("categoryId") UUID categoryId);
 }

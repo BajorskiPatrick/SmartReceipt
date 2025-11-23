@@ -38,9 +38,9 @@ public class ExpenseController {
 
     @GetMapping("/{expenseId}")
     @ResponseStatus(HttpStatus.OK)
-    public ExpenseDetails getExpenseDetails(@PathVariable UUID expenseId) {
+    public ExpenseDetails getExpenseDetails(@PathVariable UUID expenseId, @RequestParam(required = false) UUID categoryId) {
         log.info("Fetching details for expense ID: {}", expenseId);
-        return expenseService.searchExpenseDetails(expenseId);
+        return expenseService.searchExpenseDetails(expenseId, categoryId);
     }
 
     @PutMapping("/{expenseId}")
@@ -65,6 +65,7 @@ public class ExpenseController {
     }
 
     @PutMapping("/{expenseId}/items/{itemId}")
+    @ResponseStatus(HttpStatus.OK)
     public ExpenseItem updateExpenseItem(
             @PathVariable UUID expenseId,
             @PathVariable UUID itemId,
