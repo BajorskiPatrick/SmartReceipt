@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AppUserDetailsService implements UserDetailsService {
@@ -23,13 +26,13 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.debug("Loading user by username: {}", email);
         UserEntity existingUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
 
         return new User(
                 existingUser.getEmail(),
                 existingUser.getPassword(),
-                Collections.singleton(new SimpleGrantedAuthority(existingUser.getRole().getValue()))
-        );
+                Collections.singleton(new SimpleGrantedAuthority(existingUser.getRole().getValue())));
     }
 }

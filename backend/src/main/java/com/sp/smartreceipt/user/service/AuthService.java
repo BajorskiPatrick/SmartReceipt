@@ -19,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,10 +40,12 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public void authenticate(String email, String password) {
+        log.debug("Authenticating user: {}", email);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
 
     public AuthResponse registerUser(UserRegistration userRegistration, HttpServletResponse response) {
+        log.info("Registering new user: {}", userRegistration.getEmail());
         String rawPassword = userRegistration.getPassword();
         UserEntity user = userRepository.save(translateToEntity(userRegistration));
         authenticate(user.getEmail(), rawPassword);
@@ -48,6 +53,7 @@ public class AuthService {
     }
 
     public AuthResponse loginUser(UserLogin userLogin, HttpServletResponse response) {
+        log.info("Generating tokens for user: {}", userLogin.getEmail());
         final UserDetails userDetails = userDetailsService.loadUserByUsername(userLogin.getEmail());
 
         final String accessToken = jwtUtil.generateToken(userDetails);
@@ -68,6 +74,7 @@ public class AuthService {
     }
 
     public void logoutUser(HttpServletResponse response) {
+        log.info("Clearing security context and cookies");
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(true);
@@ -93,9 +100,11 @@ public class AuthService {
         }
 
         String email = jwtUtil.extractUsernameFromRefreshToken(refreshToken);
+        log.debug("Refreshing token for user: {}", email);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
         if (!jwtUtil.validateRefreshToken(refreshToken, userDetails)) {
+            log.warn("Invalid refresh token for user: {}", email);
             throw new TokenRefreshException("Invalid refresh token");
         }
 

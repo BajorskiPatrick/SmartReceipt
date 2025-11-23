@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.SocketTimeoutException;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiOcrService {
@@ -30,6 +33,7 @@ public class AiOcrService {
 
     @Transactional
     public OcrExpense processReceiptUpload(MultipartFile file, NewOcrExpense ocrExpense) {
+        log.info("Processing receipt upload: {}", file.getOriginalFilename());
         try {
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
@@ -50,14 +54,18 @@ public class AiOcrService {
                     .body(OcrResult.class);
 
             if (aiResponse == null) {
+                log.error("No response received from OCR module");
                 throw new OcrProcessingException("No response received from OCR module");
             }
 
+            log.info("OCR processing completed successfully");
             return mapToExpenseDetails(aiResponse, ocrExpense);
 
-        }  catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException e) {
+            log.error("OCR service timeout", e);
             throw new OcrTimeoutException(e.getMessage());
         } catch (IOException e) {
+            log.error("File processing error during OCR", e);
             throw new OcrProcessingException("File processing error");
         }
     }
