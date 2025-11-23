@@ -30,208 +30,221 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExpenseService {
 
-    private final ExpenseRepository expenseRepository;
+        private final ExpenseRepository expenseRepository;
 
-    private final UserRepository userRepository;
+        private final UserRepository userRepository;
 
-    private final CategoryRepository categoryRepository;
+        private final CategoryRepository categoryRepository;
 
-    @Transactional
-    public ExpenseDetails addNewExpense(NewExpense newExpense) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
+        @Transactional
+        public ExpenseDetails addNewExpense(NewExpense newExpense) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String userEmail = authentication.getName();
+                log.info("Adding new expense for user: {}", userEmail);
 
-        ExpenseEntity expense = translateToEntity(newExpense);
+                ExpenseEntity expense = translateToEntity(newExpense);
 
-        UserEntity currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UserNotFoundException(userEmail));
-        expense.setUser(currentUser);
+                UserEntity currentUser = userRepository.findByEmail(userEmail)
+                                .orElseThrow(() -> new UserNotFoundException(userEmail));
+                expense.setUser(currentUser);
 
-        List<ExpenseItemEntity> expenseItems = newExpense.getItems().stream()
-                .map((item) -> translateToExpenseItemEntity(item, userEmail))
-                .toList();
+                List<ExpenseItemEntity> expenseItems = newExpense.getItems().stream()
+                                .map((item) -> translateToExpenseItemEntity(item, userEmail))
+                                .toList();
 
-        expenseItems.forEach(expense::addItem);
+                expenseItems.forEach(expense::addItem);
 
-        expense = expenseRepository.save(expense);
+                expense = expenseRepository.save(expense);
 
-        return translateToDetails(expense);
-    }
-
-    @Transactional(readOnly = true)
-    public ExpenseDetails searchExpenseDetails(UUID expenseId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-
-        ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
-                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-        if (!expense.getUser().getEmail().equals(userEmail)) {
-            throw new AccessDeniedException("You do not have rights to see this expense with ID: " + expenseId);
+                return translateToDetails(expense);
         }
 
-        return translateToDetails(expense);
-    }
+        @Transactional(readOnly = true)
+        public ExpenseDetails searchExpenseDetails(UUID expenseId) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String userEmail = authentication.getName();
+                log.debug("Searching details for expense ID: {}", expenseId);
 
-    @Transactional(readOnly = true)
-    public ExpenseSummaryPage searchExpenses(ExpenseFilterRequest parameters) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
+                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
-        Pageable pageable = PageRequest.of(
-                parameters.getPage(),
-                parameters.getSize(),
-                Sort.by(Sort.Direction.DESC, "transactionDate")
-        );
+                if (!expense.getUser().getEmail().equals(userEmail)) {
+                        throw new AccessDeniedException(
+                                        "You do not have rights to see this expense with ID: " + expenseId);
+                }
 
-        Specification<ExpenseEntity> spec = Specification
-                .where(ExpenseSpecifications.hasUser(userEmail))
-                .and(ExpenseSpecifications.inMonth(parameters.getYear(), parameters.getMonth()));
-
-        Page<ExpenseEntity> pageResult = expenseRepository.findAll(spec, pageable);
-
-        return translateToExpenseSummaryPage(pageResult);
-
-    }
-
-    @Transactional
-    public void deleteExpense(UUID expenseId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-
-        ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
-                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-        if (!expense.getUser().getEmail().equals(userEmail)) {
-            throw new AccessDeniedException("You do not have rights to delete this expense with ID: " + expenseId);
+                return translateToDetails(expense);
         }
 
-        expenseRepository.delete(expense);
-    }
+        @Transactional(readOnly = true)
+        public ExpenseSummaryPage searchExpenses(ExpenseFilterRequest parameters) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String userEmail = authentication.getName();
+                log.debug("Searching expenses for user: {} with params: {}", userEmail, parameters);
 
-    @Transactional
-    public ExpenseDetails updateExpense(UUID expenseId, NewExpense request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
+                Pageable pageable = PageRequest.of(
+                                parameters.getPage(),
+                                parameters.getSize(),
+                                Sort.by(Sort.Direction.DESC, "transactionDate"));
 
-        ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
-                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
+                Specification<ExpenseEntity> spec = Specification
+                                .where(ExpenseSpecifications.hasUser(userEmail))
+                                .and(ExpenseSpecifications.inMonth(parameters.getYear(), parameters.getMonth()));
 
-        if (!expense.getUser().getEmail().equals(userEmail)) {
-            throw new AccessDeniedException("You do not have rights to modify this expense with ID: " + expenseId);
+                Page<ExpenseEntity> pageResult = expenseRepository.findAll(spec, pageable);
+
+                return translateToExpenseSummaryPage(pageResult);
+
         }
 
-        expense.setDescription(request.getDescription());
-        expense.setTransactionDate(request.getTransactionDate());
+        @Transactional
+        public void deleteExpense(UUID expenseId) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String userEmail = authentication.getName();
+                log.info("Deleting expense ID: {} for user: {}", expenseId, userEmail);
 
-        expense.getItems().clear();
+                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
-        for (var itemRequest : request.getItems()) {
+                if (!expense.getUser().getEmail().equals(userEmail)) {
+                        throw new AccessDeniedException(
+                                        "You do not have rights to delete this expense with ID: " + expenseId);
+                }
 
-            var category = categoryRepository.findByCategoryIdAndUserEmail(itemRequest.getCategoryId(), userEmail)
-                    .orElseThrow(() -> new CategoryNotFoundException(itemRequest.getCategoryId().toString(), userEmail));
-
-            ExpenseItemEntity newItem = ExpenseItemEntity.builder()
-                    .expenseItemId(UUID.randomUUID())
-                    .productName(itemRequest.getProductName())
-                    .quantity(itemRequest.getQuantity())
-                    .price(itemRequest.getPrice())
-                    .category(category)
-                    .build();
-
-            expense.addItem(newItem);
+                expenseRepository.delete(expense);
         }
 
-        expense.setTotalAmount(calculateTotal(expense));
-        expense.setItemCount(expense.getItems().size());
+        @Transactional
+        public ExpenseDetails updateExpense(UUID expenseId, NewExpense request) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String userEmail = authentication.getName();
+                log.info("Updating expense ID: {} for user: {}", expenseId, userEmail);
 
-        ExpenseEntity savedExpense = expenseRepository.save(expense);
-        return translateToDetails(savedExpense);
-    }
+                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
-    private ExpenseEntity translateToEntity(NewExpense newExpense) {
-        return ExpenseEntity.builder()
-                .expenseId(UUID.randomUUID())
-                .description(newExpense.getDescription())
-                .transactionDate(newExpense.getTransactionDate())
-                .totalAmount(calculateTotal(newExpense))
-                .itemCount(newExpense.getItems().size())
-                .items(new ArrayList<>())
-                .build();
-    }
+                if (!expense.getUser().getEmail().equals(userEmail)) {
+                        throw new AccessDeniedException(
+                                        "You do not have rights to modify this expense with ID: " + expenseId);
+                }
 
-    private ExpenseDetails translateToDetails(ExpenseEntity expense) {
-        return ExpenseDetails.builder()
-                .expenseId(expense.getExpenseId())
-                .description(expense.getDescription())
-                .transactionDate(expense.getTransactionDate())
-                .totalAmount(expense.getTotalAmount())
-                .itemCount(expense.getItemCount())
-                .items(expense.getItems().stream()
-                        .map(this::translateToExpenseItem)
-                        .toList()
-                )
-                .build();
-    }
+                expense.setDescription(request.getDescription());
+                expense.setTransactionDate(request.getTransactionDate());
 
-    private ExpenseSummaryPage translateToExpenseSummaryPage(Page<ExpenseEntity> page) {
-        List<ExpenseSummary> expenses = page.getContent().stream().map(this::translateToExpenseSummary).toList();
+                expense.getItems().clear();
 
-        return ExpenseSummaryPage.builder()
-                .content(expenses)
-                .page(page.getNumber())
-                .totalPages(page.getTotalPages())
-                .size(page.getSize())
-                .totalElements((int) page.getTotalElements())
-                .build();
-    }
+                for (var itemRequest : request.getItems()) {
 
-    private ExpenseSummary translateToExpenseSummary(ExpenseEntity expense) {
-        return ExpenseSummary.builder()
-                .expenseId(expense.getExpenseId())
-                .totalAmount(expense.getTotalAmount())
-                .transactionDate(expense.getTransactionDate())
-                .itemCount(expense.getItemCount())
-                .build();
-    }
+                        var category = categoryRepository
+                                        .findByCategoryIdAndUserEmail(itemRequest.getCategoryId(), userEmail)
+                                        .orElseThrow(() -> new CategoryNotFoundException(
+                                                        itemRequest.getCategoryId().toString(), userEmail));
 
-    private ExpenseItem translateToExpenseItem(ExpenseItemEntity item) {
-        return ExpenseItem.builder()
-                .expenseItemId(item.getExpenseItemId())
-                .productName(item.getProductName())
-                .quantity(item.getQuantity())
-                .price(item.getPrice())
-                .categoryId(item.getCategory().getCategoryId())
-                .categoryName(item.getCategory().getName())
-                .build();
-    }
+                        ExpenseItemEntity newItem = ExpenseItemEntity.builder()
+                                        .expenseItemId(UUID.randomUUID())
+                                        .productName(itemRequest.getProductName())
+                                        .quantity(itemRequest.getQuantity())
+                                        .price(itemRequest.getPrice())
+                                        .category(category)
+                                        .build();
 
-    private ExpenseItemEntity translateToExpenseItemEntity(NewExpenseItem item, String email) {
-        CategoryEntity category = categoryRepository.findByCategoryIdAndUserEmail(item.getCategoryId(), email)
-                .orElseThrow(() -> new CategoryNotFoundException(item.getCategoryId().toString(), email));
+                        expense.addItem(newItem);
+                }
 
-        return ExpenseItemEntity.builder()
-                .expenseItemId(UUID.randomUUID())
-                .productName(item.getProductName())
-                .quantity(item.getQuantity())
-                .price(item.getPrice())
-                .category(category)
-                .build();
-    }
+                expense.setTotalAmount(calculateTotal(expense));
+                expense.setItemCount(expense.getItems().size());
 
-    private BigDecimal calculateTotal(NewExpense expense) {
-        return expense.getItems().stream()
-                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+                ExpenseEntity savedExpense = expenseRepository.save(expense);
+                return translateToDetails(savedExpense);
+        }
 
-    private BigDecimal calculateTotal(ExpenseEntity expense) {
-        return expense.getItems().stream()
-                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+        private ExpenseEntity translateToEntity(NewExpense newExpense) {
+                return ExpenseEntity.builder()
+                                .expenseId(UUID.randomUUID())
+                                .description(newExpense.getDescription())
+                                .transactionDate(newExpense.getTransactionDate())
+                                .totalAmount(calculateTotal(newExpense))
+                                .itemCount(newExpense.getItems().size())
+                                .items(new ArrayList<>())
+                                .build();
+        }
+
+        private ExpenseDetails translateToDetails(ExpenseEntity expense) {
+                return ExpenseDetails.builder()
+                                .expenseId(expense.getExpenseId())
+                                .description(expense.getDescription())
+                                .transactionDate(expense.getTransactionDate())
+                                .totalAmount(expense.getTotalAmount())
+                                .itemCount(expense.getItemCount())
+                                .items(expense.getItems().stream()
+                                                .map(this::translateToExpenseItem)
+                                                .toList())
+                                .build();
+        }
+
+        private ExpenseSummaryPage translateToExpenseSummaryPage(Page<ExpenseEntity> page) {
+                List<ExpenseSummary> expenses = page.getContent().stream().map(this::translateToExpenseSummary)
+                                .toList();
+
+                return ExpenseSummaryPage.builder()
+                                .content(expenses)
+                                .page(page.getNumber())
+                                .totalPages(page.getTotalPages())
+                                .size(page.getSize())
+                                .totalElements((int) page.getTotalElements())
+                                .build();
+        }
+
+        private ExpenseSummary translateToExpenseSummary(ExpenseEntity expense) {
+                return ExpenseSummary.builder()
+                                .expenseId(expense.getExpenseId())
+                                .totalAmount(expense.getTotalAmount())
+                                .transactionDate(expense.getTransactionDate())
+                                .itemCount(expense.getItemCount())
+                                .build();
+        }
+
+        private ExpenseItem translateToExpenseItem(ExpenseItemEntity item) {
+                return ExpenseItem.builder()
+                                .expenseItemId(item.getExpenseItemId())
+                                .productName(item.getProductName())
+                                .quantity(item.getQuantity())
+                                .price(item.getPrice())
+                                .categoryId(item.getCategory().getCategoryId())
+                                .categoryName(item.getCategory().getName())
+                                .build();
+        }
+
+        private ExpenseItemEntity translateToExpenseItemEntity(NewExpenseItem item, String email) {
+                CategoryEntity category = categoryRepository.findByCategoryIdAndUserEmail(item.getCategoryId(), email)
+                                .orElseThrow(() -> new CategoryNotFoundException(item.getCategoryId().toString(),
+                                                email));
+
+                return ExpenseItemEntity.builder()
+                                .expenseItemId(UUID.randomUUID())
+                                .productName(item.getProductName())
+                                .quantity(item.getQuantity())
+                                .price(item.getPrice())
+                                .category(category)
+                                .build();
+        }
+
+        private BigDecimal calculateTotal(NewExpense expense) {
+                return expense.getItems().stream()
+                                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
+        private BigDecimal calculateTotal(ExpenseEntity expense) {
+                return expense.getItems().stream()
+                                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
 }

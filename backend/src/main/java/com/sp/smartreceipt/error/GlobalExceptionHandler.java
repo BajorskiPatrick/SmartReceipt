@@ -23,51 +23,63 @@ public class GlobalExceptionHandler {
     // LEVEL 1 - business exceptions
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
         return createResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     // LEVEL 2 - framework / validation exceptions
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
         List<String> details = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
+        log.warn("Validation failed: {}", details);
 
         return createResponse(HttpStatus.BAD_REQUEST, "Request data validation error", details, request);
     }
 
     @ExceptionHandler(TokenRefreshException.class)
-    public ResponseEntity<ErrorResponse> handleDomainRule(TokenRefreshException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleTokenRefreshException(TokenRefreshException ex,
+            HttpServletRequest request) {
+        log.warn("Token refresh failed: {}", ex.getMessage());
         return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(FileUploadException.class)
-    public ResponseEntity<ErrorResponse> handleDomainRule(FileUploadException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleFileUploadException(FileUploadException ex, HttpServletRequest request) {
+        log.error("File upload error: {}", ex.getMessage());
         return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex,
+            HttpServletRequest request) {
+        log.warn("Max upload size exceeded: {}", ex.getMessage());
         return createResponse(HttpStatus.EXPECTATION_FAILED, "File is to large. Maximum size is 10MB", request);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+        log.warn("Bad credentials for request: {}", request.getRequestURI());
         return createResponse(HttpStatus.UNAUTHORIZED, "Email or Password is incorrect", request);
     }
 
     @ExceptionHandler(OcrProcessingException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(OcrProcessingException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleOcrProcessingException(OcrProcessingException ex,
+            HttpServletRequest request) {
+        log.error("OCR processing failed: {}", ex.getMessage());
         return createResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), request);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(AccessDeniedException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
+            HttpServletRequest request) {
+        log.warn("Access denied: {}", ex.getMessage());
         return createResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
-
 
     // LEVEL 3 - everything else (response code 500)
     @ExceptionHandler(Exception.class)
@@ -79,15 +91,16 @@ public class GlobalExceptionHandler {
         return createResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal server error. Contact with support and provide error ID:  " + errorId,
-                request
-        );
+                request);
     }
 
-    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, HttpServletRequest request) {
+    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message,
+            HttpServletRequest request) {
         return createResponse(status, message, List.of(), request);
     }
 
-    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, List<String> details, HttpServletRequest request) {
+    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, List<String> details,
+            HttpServletRequest request) {
         ErrorResponse body = new ErrorResponse(
                 UUID.randomUUID().toString(),
                 LocalDateTime.now(),
@@ -95,8 +108,7 @@ public class GlobalExceptionHandler {
                 status.getReasonPhrase(),
                 message,
                 request.getRequestURI(),
-                details
-        );
+                details);
         return new ResponseEntity<>(body, status);
     }
 }
