@@ -4,7 +4,6 @@ import com.sp.smartreceipt.category.repository.CategoryRepository;
 import com.sp.smartreceipt.error.exception.*;
 import com.sp.smartreceipt.expense.entity.ExpenseEntity;
 import com.sp.smartreceipt.expense.entity.ExpenseItemEntity;
-import com.sp.smartreceipt.expense.repository.ExpenseItemRepository;
 import com.sp.smartreceipt.expense.repository.ExpenseRepository;
 import com.sp.smartreceipt.model.ExpenseItem;
 import com.sp.smartreceipt.model.NewExpenseItem;
@@ -34,7 +33,8 @@ public class ExpenseItemService {
                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
         if (!expense.getUser().getEmail().equals(userEmail)) {
-            throw new AccessDeniedException("Ypu have no rights to update content of this expense with ID: " + expenseId);
+            throw new AccessDeniedException(
+                    "Ypu have no rights to update content of this expense with ID: " + expenseId);
         }
 
         ExpenseItemEntity itemEntity = expense.getItems().stream()
@@ -72,7 +72,7 @@ public class ExpenseItemService {
         ExpenseItemEntity itemToRemove = expense.getItems().stream()
                 .filter(item -> item.getExpenseItemId().equals(itemId))
                 .findFirst()
-                .orElseThrow(() -> new  ExpenseNotFoundException(expenseId.toString(), userEmail));
+                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
         expense.removeItem(itemToRemove);
 
