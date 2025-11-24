@@ -43,37 +43,36 @@ class ReceiptDetector:
         return rect
 
     def _four_point_transform(self, image, pts):
-        """
-        Wykonuje 'Perspective Warp' i automatycznie obraca do pionu.
-        """
         rect = self._order_points(pts)
         (tl, tr, br, bl) = rect
 
-        # 1. Obliczamy szerokość (maksymalna odległość między punktami poziomymi)
         widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
         widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
         maxWidth = max(int(widthA), int(widthB))
 
-        # 2. Obliczamy wysokość (maksymalna odległość między punktami pionowymi)
         heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
         heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
         maxHeight = max(int(heightA), int(heightB))
 
-        # 3. Definiujemy punkty docelowe
         dst = np.array([
             [0, 0],
             [maxWidth - 1, 0],
             [maxWidth - 1, maxHeight - 1],
             [0, maxHeight - 1]], dtype="float32")
 
-        # 4. Wykonujemy transformację
         M = cv2.getPerspectiveTransform(rect, dst)
-        warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
 
-        # 5. --- FIX: WYMUSZENIE PIONU (Portrait Mode) ---
-        # Jeśli obraz wyszedł szerszy niż wyższy (leży na boku), obracamy go.
-        h, w = warped.shape[:2]
-        if w > h:
+        # --- FIX 2: BIAŁE TŁO ZAMIAST CZARNEGO ---
+        # borderValue=(255, 255, 255) sprawia, że puste miejsca po obrocie są białe.
+        # To kluczowe, bo Donut myśli, że czarne to "treść/tekst", a białe to "papier".
+        warped = cv2.warpPerspective(
+            image, M, (maxWidth, maxHeight),
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=(255, 255, 255)
+        )
+
+        # FIX 1: Wymuszenie pionu
+        if maxWidth > maxHeight:
             warped = cv2.rotate(warped, cv2.ROTATE_90_CLOCKWISE)
 
         return warped

@@ -11,7 +11,7 @@ from src.ocr.receipt_detector import ReceiptDetector
 from src.ocr.receipt_parser import ReceiptParser
 # NOWY IMPORT
 from src.utils.visualizer import Visualizer
-
+from src.ocr.donut_parser import DonutReceiptParser
 # Konfiguracja ścieżek
 RAW_DIR = BASE_DIR / "data/cord/train"
 PROCESSED_DIR = BASE_DIR / "data/processed/train"
@@ -35,7 +35,7 @@ def main():
 
     try:
         detector = ReceiptDetector()
-        parser = ReceiptParser()
+        parser = DonutReceiptParser()
         visualizer = Visualizer()  # Inicjalizacja wizualizera
     except Exception as e:
         print(f"❌ Błąd inicjalizacji: {e}")
@@ -72,7 +72,6 @@ def main():
         visualizer.create_summary(
             original_path=img_file,
             cropped_path=cropped_path,
-            preprocessed_path=debug_img_path,  # To jest ten obrazek po CLAHE/Bilateral
             items=items,
             output_path=vis_output
         )
