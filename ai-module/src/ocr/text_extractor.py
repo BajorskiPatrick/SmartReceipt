@@ -1,59 +1,35 @@
-import easyocr
+from doctr.io import DocumentFile
+from doctr.models import ocr_predictor
 import numpy as np
-import logging
-
-logging.getLogger("easyocr").setLevel(logging.WARNING)
-
+import cv2
 
 class TextExtractor:
     def __init__(self, lang='pl'):
-        print(f"   ⏳ Inicjalizacja EasyOCR ({lang})...")
-        self.reader = easyocr.Reader([lang], gpu=True)
+        print(f"   ⏳ Inicjalizacja DocTR ({lang})...")
+        # pretrained=True pobiera modele. assume_straight_pages=False włącza prostowanie.
+        self.model = ocr_predictor(det_arch='db_resnet50', reco_arch='crnn_vgg16_bn', pretrained=True)
 
-    def extract_lines(self, img: np.ndarray, y_tolerance=25) -> list[str]:
-        """
-        Zwraca listę sklejonych linii tekstu.
-        """
-        try:
-            # detail=1 -> Zwraca bbox, tekst, pewność
-            results = self.reader.readtext(img, detail=1, paragraph=False)
-        except Exception as e:
-            print(f"   ⚠️ EasyOCR error: {e}")
-            return []
+    def extract_lines(self, img: np.ndarray, y_tolerance=None) -> list[str]:
+        # Doctr oczekuje listy obrazów w formacie (H, W, C) i wartościach 0-255
+        # Jeśli img jest grayscale, trzeba dodać wymiar kanału
+        if len(img.shape) == 2:
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        else:
+            img_rgb = img
 
-        if not results:
-            return []
+        # Inferencja
+        result = self.model([img_rgb])
 
-        # Sortujemy boxy od góry do dołu
-        sorted_boxes = sorted(results, key=lambda r: (r[0][0][1] + r[0][2][1]) / 2)
+        # Parsowanie wyniku (DocTR ma strukturę: Page -> Block -> Line -> Word)
+        lines_text = []
+        json_output = result.export()
+        print(json_output)
+        for page in json_output['pages']:
+            for block in page['blocks']:
+                for line in block['lines']:
+                    # Sklejanie słów w linii
+                    text = " ".join([word['value'] for word in line['words']])
+                    if text.strip():
+                        lines_text.append(text)
 
-        lines = []
-        current_line_boxes = []
-        current_y_avg = -1
-
-        for box, text, conf in sorted_boxes:
-            # Środek wysokości danego słowa
-            mid_y = (box[0][1] + box[2][1]) / 2
-
-            if current_y_avg == -1:
-                current_y_avg = mid_y
-                current_line_boxes.append((box, text))
-            elif abs(mid_y - current_y_avg) <= y_tolerance:
-                current_line_boxes.append((box, text))
-                # Aktualizacja średniej Y linii
-                current_y_avg = (current_y_avg * (len(current_line_boxes) - 1) + mid_y) / len(current_line_boxes)
-            else:
-                # Zapisz starą linię
-                current_line_boxes.sort(key=lambda r: r[0][0][0])  # Sortuj od lewej
-                lines.append(" ".join([item[1] for item in current_line_boxes]))
-
-                # Zacznij nową
-                current_line_boxes = [(box, text)]
-                current_y_avg = mid_y
-
-        # Dodaj ostatnią linię
-        if current_line_boxes:
-            current_line_boxes.sort(key=lambda r: r[0][0][0])
-            lines.append(" ".join([item[1] for item in current_line_boxes]))
-
-        return lines
+        return lines_text
