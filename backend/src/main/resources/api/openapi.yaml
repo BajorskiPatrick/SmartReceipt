@@ -358,6 +358,87 @@ paths:
         '404':
           description: "Nie znaleziono wydatku lub pozycji"
 
+  /budget:
+    get:
+      operationId: getUserBudget
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Aktualny budżet użytkownika"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  budget:
+                    type: number
+                    format: float
+                    example: 4000.00
+    post:
+      operationId: createUserBudget
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Utworzenie nowego budżetu użytkownika"
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                budget:
+                  type: number
+                  format: float
+                  example: 4500.00
+      responses:
+        '200':
+          description: "Budżet utworzony pomyślnie"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  budget:
+                    type: number
+                    format: float
+                    example: 4500.00
+    put:
+      operationId: updateUserBudget
+      tags:
+        - "1. Core API - Frontend -> Backend"
+      summary: "Aktualizacja budżetu użytkownika"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                budget:
+                  type: number
+                  format: float
+                  example: 4500.00
+      responses:
+        '200':
+          description: "Budżet zaktualizowany pomyślnie"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  budget:
+                    type: number
+                    format: float
+                    example: 4500.00
+
   /dashboard:
     get:
       operationId: getDashboardData
@@ -949,3 +1030,59 @@ components:
       properties:
         token:
           type: string
+
+    MonthlyBudget:
+      type: object
+      properties:
+        budgetId:
+          type: string
+          format: uuid
+        year:
+          type: integer
+        month:
+          type: integer
+        budget:
+          type: number
+          format: BigDecimal
+          example: 4000.00
+        categoryBudgets:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryBudget'
+
+    NewMonthlyBudget:
+      type: object
+      properties:
+        budget:
+          type: number
+          format: BigDecimal
+          example: 4000.00
+        categoryBudgets:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewCategoryBudget'
+
+    CategoryBudget:
+      type: object
+      properties:
+        categoryBudgetId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        budget:
+          type: number
+          format: BigDecimal
+          example: 1500.00
+
+    NewCategoryBudget:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        budget:
+          type: number
+          format: BigDecimal
+          example: 1500.00
