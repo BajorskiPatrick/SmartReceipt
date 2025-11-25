@@ -1,5 +1,6 @@
 package com.sp.smartreceipt.budget.entity;
 
+import com.sp.smartreceipt.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Table(name = "monthly_budgets", uniqueConstraints = {
         @UniqueConstraint(
                 name = "unique_monthly_budget_year_month",
-                columnNames = {"year", "month"}
+                columnNames = {"user_id", "year", "month"}
         )
 })
 @Builder
@@ -24,25 +25,34 @@ public class MonthlyBudgetEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private UUID budgetId;
+    private UUID monthlyBudgetId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Integer year;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Integer month;
 
     @Column(nullable = false)
     private java.math.BigDecimal budget;
 
     @OneToMany(
-            mappedBy = "expense",
+            mappedBy = "monthlyBudget",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @Builder.Default
     private List<CategoryBudgetEntity> categoryBudgets = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
+
+    public void addCategoryBudget(CategoryBudgetEntity categoryBudget) {
+        categoryBudgets.add(categoryBudget);
+        categoryBudget.setMonthlyBudget(this);
+    }
 }
