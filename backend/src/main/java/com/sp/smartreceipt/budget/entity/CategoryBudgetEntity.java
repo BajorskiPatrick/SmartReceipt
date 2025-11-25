@@ -27,6 +27,10 @@ public class CategoryBudgetEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "monthly_budget_id")
+    private MonthlyBudgetEntity monthlyBudget;
+
     @Column(nullable = false)
     private java.math.BigDecimal budget;
 }

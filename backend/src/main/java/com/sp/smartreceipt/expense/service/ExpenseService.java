@@ -145,23 +145,9 @@ public class ExpenseService {
 
                 expense.getItems().clear();
 
-                for (var itemRequest : request.getItems()) {
-
-                        var category = categoryRepository
-                                        .findByCategoryIdAndUserEmail(itemRequest.getCategoryId(), userEmail)
-                                        .orElseThrow(() -> new CategoryNotFoundException(
-                                                        itemRequest.getCategoryId().toString(), userEmail));
-
-                        ExpenseItemEntity newItem = ExpenseItemEntity.builder()
-                                        .expenseItemId(UUID.randomUUID())
-                                        .productName(itemRequest.getProductName())
-                                        .quantity(itemRequest.getQuantity())
-                                        .price(itemRequest.getPrice())
-                                        .category(category)
-                                        .build();
-
-                        expense.addItem(newItem);
-                }
+                request.getItems().forEach((item) -> {
+                    expense.addItem(translateToExpenseItemEntity(item, userEmail));
+                });
 
                 expense.setTotalAmount(calculateTotal(expense));
                 expense.setItemCount(expense.getItems().size());

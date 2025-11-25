@@ -15,10 +15,6 @@ tags:
   - name: "2. AI API - Backend -> Moduł AI"
     description: "Wewnętrzne endpointy modułu AI (FastAPI), z których korzysta backend."
 
-# ===============================================================
-# Paths - Definicje Endpointów
-# ===============================================================
-
 paths:
   /auth/register:
     post:
@@ -358,26 +354,38 @@ paths:
         '404':
           description: "Nie znaleziono wydatku lub pozycji"
 
-  /budget:
+  /budgets:
     get:
       operationId: getUserBudget
       tags:
         - "1. Core API - Frontend -> Backend"
       summary: "Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)"
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2025
+          description: "Rok budżetu"
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 11
+          description: "Miesiąc budżetu"
       responses:
         '200':
-          description: "Aktualny budżet użytkownika"
+          description: "Budżet użytkownika na aktualny miesiąc"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  budget:
-                    type: number
-                    format: float
-                    example: 4000.00
+                $ref: '#/components/schemas/MonthlyBudget'
+        '204':
+          description: "Brak zdefiniowanego budżetu na dany miesiąc"
     post:
       operationId: createUserBudget
       tags:
@@ -390,24 +398,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                budget:
-                  type: number
-                  format: float
-                  example: 4500.00
+              $ref: '#/components/schemas/NewMonthlyBudget'
       responses:
         '200':
           description: "Budżet utworzony pomyślnie"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  budget:
-                    type: number
-                    format: float
-                    example: 4500.00
+                $ref: '#/components/schemas/MonthlyBudget'
+        '400':
+          description: "Budżet na dany miesiąc już istnieje"
+
+  /budgets/{budgetId}:
     put:
       operationId: updateUserBudget
       tags:
@@ -415,29 +417,26 @@ paths:
       summary: "Aktualizacja budżetu użytkownika"
       security:
         - bearerAuth: []
+      parameters:
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                budget:
-                  type: number
-                  format: float
-                  example: 4500.00
+              $ref: '#/components/schemas/NewMonthlyBudget'
       responses:
         '200':
           description: "Budżet zaktualizowany pomyślnie"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  budget:
-                    type: number
-                    format: float
-                    example: 4500.00
+                $ref: '#/components/schemas/MonthlyBudget'
 
   /dashboard:
     get:
@@ -1057,6 +1056,10 @@ components:
           type: number
           format: BigDecimal
           example: 4000.00
+        year:
+          type: integer
+        month:
+          type: integer
         categoryBudgets:
           type: array
           items:
@@ -1071,6 +1074,8 @@ components:
         categoryId:
           type: string
           format: uuid
+        categoryName:
+          type: string
         budget:
           type: number
           format: BigDecimal
