@@ -892,10 +892,6 @@ components:
           type: number
           format: float
           example: 4000
-        remaining:
-          type: number
-          format: float
-          example: 749.25
 
     DashboardCategorySummaryItem:
       type: object
@@ -907,19 +903,23 @@ components:
         categoryName:
           type: string
           example: "Jedzenie"
-        totalAmount:
+        totalSpendingMonth:
           type: number
           format: float
           example: 1200.50
+        budget:
+          type: number
+          format: float
+          example: 4000
 
     DashboardTrendItem:
       type: object
       description: "Jeden słupek na wykresie trendu (Widżet 2)"
       properties:
+        year:
+          type: integer
         month:
-          type: string
-          description: "Miesiąc w formacie RRRR-MM"
-          example: "2025-10"
+          type: integer
         totalAmount:
           type: number
           format: float

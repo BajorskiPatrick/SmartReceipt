@@ -26,6 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -154,6 +157,22 @@ public class ExpenseService {
 
                 ExpenseEntity savedExpense = expenseRepository.save(expense);
                 return translateToDetails(savedExpense);
+        }
+
+        public List<ExpenseEntity> getExpensesForMonth(Integer year, Integer month) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userEmail = authentication.getName();
+
+            YearMonth yearMonth = YearMonth.of(year, month);
+            OffsetDateTime startOfMonth = yearMonth.atDay(1)
+                    .atStartOfDay()
+                    .atOffset(ZoneOffset.UTC);
+
+            OffsetDateTime endOfMonth = yearMonth.atEndOfMonth()
+                    .atTime(23, 59, 59, 999999999)
+                    .atOffset(ZoneOffset.UTC);
+
+            return expenseRepository.findAllByUserEmailAndTransactionDateBetween(userEmail, startOfMonth, endOfMonth);
         }
 
         private ExpenseEntity translateToEntity(NewExpense newExpense) {

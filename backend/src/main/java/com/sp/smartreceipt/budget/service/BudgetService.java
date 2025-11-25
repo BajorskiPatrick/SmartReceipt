@@ -6,6 +6,7 @@ import com.sp.smartreceipt.budget.repository.BudgetRepository;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
 import com.sp.smartreceipt.category.repository.CategoryRepository;
 import com.sp.smartreceipt.error.exception.BudgetNotFoundException;
+import com.sp.smartreceipt.error.exception.BudgetYearAndMonthMismatch;
 import com.sp.smartreceipt.error.exception.CategoryNotFoundException;
 import com.sp.smartreceipt.error.exception.UserNotFoundException;
 import com.sp.smartreceipt.model.CategoryBudget;
@@ -39,6 +40,7 @@ public class BudgetService {
     public MonthlyBudget getMonthlyBudget(Integer year, Integer month) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
+        log.info("Fetching budget for {}-{} for user {}", year, month, userEmail);
 
         MonthlyBudgetEntity monthlyBudget = budgetRepository.findByYearAndMonthAndUserEmail(year, month, userEmail)
                 .orElseThrow(() -> new BudgetNotFoundException(year, month, userEmail));
@@ -50,7 +52,7 @@ public class BudgetService {
     public MonthlyBudget createNewBudget(NewMonthlyBudget newMonthlyBudget) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
-        log.info("Adding new budget for user: {}", userEmail);
+        log.info("Adding new budget for {}-{} user: {}", newMonthlyBudget.getYear(), newMonthlyBudget.getMonth(), userEmail);
 
         MonthlyBudgetEntity monthlyBudget = translateToMonthlyBudgetEntity(newMonthlyBudget);
 
@@ -76,6 +78,12 @@ public class BudgetService {
 
         MonthlyBudgetEntity monthlyBudget = budgetRepository.findByMonthlyBudgetIdAndUserEmail(budgetId, userEmail)
                 .orElseThrow(() -> new BudgetNotFoundException(budgetId.toString(), userEmail));
+
+        if (monthlyBudget.getYear().equals(newMonthlyBudget.getYear()) || monthlyBudget.getMonth().equals(newMonthlyBudget.getMonth())) {
+            throw new BudgetYearAndMonthMismatch();
+        }
+
+        log.info("Updating monthly budget for {}-{} for user {}", monthlyBudget.getYear(), monthlyBudget.getMonth(), userEmail);
 
         monthlyBudget.setBudget(newMonthlyBudget.getBudget());
 
