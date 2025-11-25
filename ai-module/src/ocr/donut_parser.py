@@ -53,6 +53,7 @@ class DonutReceiptParser:
 
         # 2. Dekodowanie do JSON
         sequence = self.processor.batch_decode(outputs.sequences)[0]
+        print(f"{sequence=}")
         sequence = sequence.replace(self.processor.tokenizer.eos_token, "").replace(self.processor.tokenizer.pad_token,
                                                                                     "")
         sequence = re.sub(r"<.*?>", "", sequence, count=1).strip()
@@ -61,7 +62,7 @@ class DonutReceiptParser:
             json_output = self.processor.token2json(sequence)
         except Exception:
             return []
-
+        print(f"{json_output=}")
         parsed_items = []
 
         # --- FIX: Obsługa Listy vs Słownika ---
@@ -81,12 +82,10 @@ class DonutReceiptParser:
                     if not name or not price_str:
                         continue
 
-                    # CORD: ceny to często np. 20,000 (20 tysięcy)
-                    # Usuwamy przecinki i kropki, traktujemy jako int
-                    # Ale jeśli cena ma np. "@20,000" (jak w Twoim logu), usuwamy też @
                     clean_price = re.sub(r'[^\d]', '', price_str)
 
                     try:
+                        print(f"{clean_price=}")
                         price = float(clean_price)
                         parsed_items.append({
                             "product_name": name,
