@@ -10,9 +10,9 @@ servers:
     description: "Serwer modułu AI/ML (FastAPI)"
 
 tags:
-  - name: "1. Core API - Frontend -> Backend"
+  - name: "MainApp"
     description: "Endpointy wystawione przez główny backend (Spring Boot) dla aplikacji klienckiej (React)."
-  - name: "2. AI API - Backend -> Moduł AI"
+  - name: "OcrModule"
     description: "Wewnętrzne endpointy modułu AI (FastAPI), z których korzysta backend."
 
 paths:
@@ -20,7 +20,7 @@ paths:
     post:
       operationId: registerUser
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Rejestracja nowego użytkownika"
       requestBody:
         required: true
@@ -42,7 +42,7 @@ paths:
     post:
       operationId: loginUser
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Logowanie użytkownika"
       requestBody:
         required: true
@@ -64,7 +64,7 @@ paths:
     post:
       operationId: logoutUser
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Wylogowanie użytkownika"
       security:
         - bearerAuth: [ ]
@@ -76,7 +76,7 @@ paths:
     post:
       operationId: userTokenRefresh
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Odświeżenie tokenu użytkownika"
       responses:
         '200':
@@ -92,7 +92,7 @@ paths:
     post:
       operationId: uploadReceipt
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Przesłanie zdjęcia paragonu do przetworzenia"
       description: "Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek."
       security:
@@ -125,7 +125,7 @@ paths:
     post:
       operationId: addManualExpense
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Ręczne dodanie wydatku"
       security:
         - bearerAuth: []
@@ -147,7 +147,7 @@ paths:
     get:
       operationId: getExpensesList
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie historii wydatków (dla Widżetu 3)"
       description: "Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację."
       security:
@@ -200,7 +200,7 @@ paths:
     get:
       operationId: getExpenseDetails
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie pełnych szczegółów wydatku (z itemami)"
       description: "Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika 'Details' na liście."
       security:
@@ -232,7 +232,7 @@ paths:
     put:
       operationId: updateExpense
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Aktualizacja całego wydatku"
       description: "Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą."
       security:
@@ -265,7 +265,7 @@ paths:
     delete:
       operationId: deleteExpense
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Usunięcie wydatku"
       description: "Usuwa wydatek wraz ze wszystkimi jego pozycjami (items)."
       security:
@@ -288,7 +288,7 @@ paths:
     put:
       operationId: updateExpenseItem
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Aktualizacja konkretnej pozycji wydatku"
       description: "Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię)."
       security:
@@ -328,7 +328,7 @@ paths:
     delete:
       operationId: deleteExpenseItem
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Usunięcie konkretnej pozycji wydatku"
       description: "Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane."
       security:
@@ -358,7 +358,7 @@ paths:
     get:
       operationId: getUserBudget
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)"
       security:
         - bearerAuth: [ ]
@@ -389,7 +389,7 @@ paths:
     post:
       operationId: createUserBudget
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Utworzenie nowego budżetu użytkownika"
       security:
         - bearerAuth: [ ]
@@ -413,7 +413,7 @@ paths:
     put:
       operationId: updateUserBudget
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Aktualizacja budżetu użytkownika"
       security:
         - bearerAuth: []
@@ -442,7 +442,7 @@ paths:
     get:
       operationId: getDashboardData
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie zagregowanych danych do dashboardu"
       description: "Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend)."
       security:
@@ -475,7 +475,7 @@ paths:
     get:
       operationId: getShoppingLists
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie list zakupowych użytkownika"
       security:
         - bearerAuth: []
@@ -491,7 +491,7 @@ paths:
     post:
       operationId: createShoppingList
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Stworzenie nowej listy zakupowej"
       security:
         - bearerAuth: []
@@ -513,7 +513,7 @@ paths:
     get:
       operationId: getShoppingListDetails
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie pełnych szczegółów listy zakupów"
       description: "Pobiera pełny obiekt listy zakupów, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika 'Details' na liście."
       security:
@@ -540,7 +540,7 @@ paths:
     post:
       operationId: addItemsToShoppingList
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Dodanie listy produktów do listy zakupowej"
       description: "Dodaje pełną listę produktów do danej listy zakupowej. Frontend wysyła zbiorcze zapytanie dla wszystkich itemów dodawanych przez użytkownika w danej akcji."
       security:
@@ -571,7 +571,7 @@ paths:
     get:
       operationId: getCategories
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Pobranie wszystkich kategorii użytkownika"
       description: "Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu)."
       security:
@@ -588,7 +588,7 @@ paths:
     post:
       operationId: createCategory
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Tworzenie nowej kategorii wydatków"
       security:
         - bearerAuth: [ ]
@@ -610,7 +610,7 @@ paths:
     put:
       operationId: updaetCategory
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Aktualizacja kategorii"
       description: "Aktualizuje informacje o kategorii - nazwę i opis"
       security:
@@ -643,7 +643,7 @@ paths:
     delete:
       operationId: deleteCategory
       tags:
-        - "1. Core API - Frontend -> Backend"
+        - "MainApp"
       summary: "Usunięcie kategorii"
       description: "Usunięcie kategorii. Polega na ustawieniu flagi deleted na true, aby nie zwracać tej kategorii jako dostępnej do wyboru, ale żeby stare wydatki nie straciły kategorii"
       security:
@@ -666,7 +666,7 @@ paths:
     post:
       operationId: processReceiptOcr
       tags:
-        - "2. AI API - Backend -> Moduł AI"
+        - "OcrModule"
       summary: "Przetwarzanie obrazu paragonu (OCR)"
       description: "Endpoint modułu AI, który przyjmuje obraz i zwraca ustrukturyzowane dane w formacie JSON. Wykorzystuje biblioteki takie jak Tesseract, easyocr lub PaddleOCR."
       requestBody:
@@ -689,7 +689,6 @@ paths:
         '400':
           description: "Nie udało się przetworzyć obrazu"
 
-
 components:
   securitySchemes:
     bearerAuth:
@@ -700,51 +699,67 @@ components:
   schemas:
     UserRegistration:
       type: object
+      required:
+        - email
+        - password
       properties:
         email:
           type: string
           format: email
+          maxLength: 100
           example: "jan.kowalski@example.com"
         password:
           type: string
           format: password
+          minLength: 8
+          maxLength: 64
+          description: "Hasło musi mieć od 8 do 64 znaków"
           example: "super_secret_password"
-          
+
     UserLogin:
       type: object
+      required:
+        - email
+        - password
       properties:
         email:
           type: string
           format: email
+          maxLength: 100
         password:
           type: string
           format: password
-          
+          maxLength: 64
+
     AuthResponse:
       type: object
       properties:
         email:
           type: string
-          description: "User email"
         token:
           type: string
-          description: "Token JWT"
         role:
           $ref: "#/components/schemas/Role"
 
     ExpenseBase:
       type: object
+      required:
+        - transactionDate
+        - totalAmount
       properties:
         description:
           type: string
+          maxLength: 255
         transactionDate:
           type: string
           format: date-time
         totalAmount:
           type: number
           format: float
+          minimum: 0.00
         itemCount:
           type: integer
+          minimum: 0
 
     ExpenseDetails:
       allOf:
@@ -767,7 +782,6 @@ components:
             expenseId:
               type: string
               format: uuid
-              description: "ID podsumowywanego wydatku"
               example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     OcrExpense:
@@ -783,7 +797,7 @@ components:
 
     ExpenseSummaryPage:
       type: object
-      description: "Standardowy obiekt odpowiedzi dla paginacji (używany przez GET /expenses)"
+      description: "Standardowy obiekt odpowiedzi dla paginacji"
       properties:
         content:
           type: array
@@ -791,57 +805,78 @@ components:
             $ref: '#/components/schemas/ExpenseSummary'
         page:
           type: integer
+          minimum: 0
           example: 0
         size:
           type: integer
+          minimum: 1
           example: 20
         totalPages:
           type: integer
+          minimum: 0
           example: 5
         totalElements:
           type: integer
+          minimum: 0
           example: 98
 
     NewExpense:
       type: object
+      required:
+        - transactionDate
       properties:
         description:
           type: string
+          maxLength: 255
         transactionDate:
           type: string
           format: date-time
         items:
           type: array
+          description: "Lista pozycji. Może być pusta, jeśli dodajemy sam ogólny wydatek."
           items:
             $ref: '#/components/schemas/NewExpenseItem'
 
     NewOcrExpense:
       type: object
+      required:
+        - transactionDate
       properties:
         description:
           type: string
+          maxLength: 255
         transactionDate:
           type: string
           format: date-time
 
     ExpenseItemBase:
       type: object
+      required:
+        - productName
+        - price
+        - quantity
+        - categoryId
       properties:
         productName:
           type: string
+          minLength: 1
+          maxLength: 150
           example: "Mleko 2%"
         quantity:
           type: integer
+          minimum: 1
           default: 1
         price:
           type: number
           format: float
+          minimum: 0.00
+          description: "Cena za sztukę, nie może być ujemna"
         categoryId:
           type: string
           format: uuid
-          description: "ID kategorii z endpointu /categories"
+          description: "ID kategorii (opcjonalne, bo OCR może nie rozpoznać)"
           example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-          
+
     ExpenseItem:
       allOf:
         - $ref: '#/components/schemas/ExpenseItemBase'
@@ -850,7 +885,6 @@ components:
             expenseItemId:
               type: string
               format: uuid
-            # Dodajemy categoryName dla wygody frontendu
             categoryName:
               type: string
               example: "Jedzenie"
@@ -865,86 +899,87 @@ components:
 
     DashboardData:
       type: object
-      description: "Kompletny obiekt danych potrzebny do renderowania dashboardu."
       properties:
         kpi:
           $ref: '#/components/schemas/DashboardKpi'
         categorySummary:
           type: array
-          description: "Dane dla Widżetu 1 (wykres pączkowy)"
           items:
             $ref: '#/components/schemas/DashboardCategorySummaryItem'
         trendSummary:
           type: array
-          description: "Dane dla Widżetu 2 (wykres słupkowy 6-miesięczny)"
           items:
             $ref: '#/components/schemas/DashboardTrendItem'
 
     DashboardKpi:
       type: object
-      description: "Kluczowe wskaźniki (Szybkie statystyki) na górze dashboardu."
       properties:
         totalSpendingMonth:
           type: number
           format: float
-          example: 3250.75
         budget:
           type: number
           format: float
-          example: 4000
 
     DashboardCategorySummaryItem:
       type: object
-      description: "Jeden element na wykresie kategorii (Widżet 1)"
       properties:
         categoryId:
           type: string
           format: uuid
         categoryName:
           type: string
-          example: "Jedzenie"
         totalSpendingMonth:
           type: number
           format: float
-          example: 1200.50
         budget:
           type: number
           format: float
-          example: 4000
 
     DashboardTrendItem:
       type: object
-      description: "Jeden słupek na wykresie trendu (Widżet 2)"
       properties:
         year:
           type: integer
         month:
           type: integer
+          minimum: 1
+          maximum: 12
         totalAmount:
           type: number
           format: float
-          example: 2950.00
 
     Category:
       type: object
+      required:
+        - categoryId
+        - name
       properties:
         categoryId:
           type: string
           format: uuid
         name:
           type: string
+          minLength: 1
+          maxLength: 50
           example: "Jedzenie"
         description:
           type: string
+          maxLength: 255
 
     NewCategory:
       type: object
+      required:
+        - name
       properties:
         name:
           type: string
+          minLength: 2
+          maxLength: 50
           example: "Jedzenie"
         description:
           type: string
+          maxLength: 255
 
     ShoppingList:
       type: object
@@ -964,12 +999,17 @@ components:
             $ref: '#/components/schemas/ShoppingListItem'
         itemCount:
           type: integer
+          minimum: 0
 
     NewShoppingList:
       type: object
+      required:
+        - name
       properties:
         name:
           type: string
+          minLength: 1
+          maxLength: 100
         items:
           type: array
           items:
@@ -996,20 +1036,27 @@ components:
 
     NewShoppingListItems:
       type: object
-      items:
-        type: array
+      required:
+        - items
+      properties:
         items:
-          $ref: "#/components/schemas/NewShoppingListItem"
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/NewShoppingListItem"
 
     NewShoppingListItem:
       type: object
+      required:
+        - productName
       properties:
         productName:
           type: string
+          minLength: 1
+          maxLength: 100
 
     OcrResult:
       type: object
-      description: "Ustrukturyzowane dane zwrócone przez moduł OCR."
       properties:
         expenses:
           type: array
@@ -1021,11 +1068,9 @@ components:
       enum:
         - ROLE_USER
         - ROLE_ADMIN
-      description: "Możliwe role użytkownika"
 
     RefreshedToken:
       type: object
-      description: "New refreshed token"
       properties:
         token:
           type: string
@@ -1043,7 +1088,6 @@ components:
         budget:
           type: number
           format: BigDecimal
-          example: 4000.00
         categoryBudgets:
           type: array
           items:
@@ -1051,15 +1095,24 @@ components:
 
     NewMonthlyBudget:
       type: object
+      required:
+        - budget
+        - year
+        - month
       properties:
         budget:
           type: number
           format: BigDecimal
+          minimum: 0.00
           example: 4000.00
         year:
           type: integer
+          minimum: 2020
+          maximum: 2100
         month:
           type: integer
+          minimum: 1
+          maximum: 12
         categoryBudgets:
           type: array
           items:
@@ -1079,10 +1132,12 @@ components:
         budget:
           type: number
           format: BigDecimal
-          example: 1500.00
 
     NewCategoryBudget:
       type: object
+      required:
+        - categoryId
+        - budget
       properties:
         categoryId:
           type: string
@@ -1090,4 +1145,5 @@ components:
         budget:
           type: number
           format: BigDecimal
+          minimum: 0.00
           example: 1500.00

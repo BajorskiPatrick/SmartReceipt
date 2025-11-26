@@ -21,7 +21,7 @@ public class CategoryController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Category> getAllCategories() {
-        return categoryService.fetchAllCategories();
+        return categoryService.fetchAllActiveCategories();
     }
 
     @PostMapping
