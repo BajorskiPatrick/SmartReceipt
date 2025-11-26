@@ -13,13 +13,10 @@ import java.util.UUID;
 
 public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long>, JpaSpecificationExecutor<ExpenseEntity> {
 
-    Optional<ExpenseEntity> findByExpenseId(UUID id);
+    Optional<ExpenseEntity> findByExpenseIdAndUserEmail(UUID id, String userEmail);
 
-    @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items WHERE e.expenseId = :expenseId")
-    Optional<ExpenseEntity> findByExpenseIdWithItems(@Param("expenseId") UUID expenseId);
-
-    @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items i WHERE e.expenseId = :expenseId AND i.category.categoryId = :categoryId")
-    Optional<ExpenseEntity> findByExpenseIdWithItemsByCategoryId(@Param("expenseId") UUID expenseId, @Param("categoryId") UUID categoryId);
+    @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items WHERE e.expenseId = :expenseId AND e.user.email = :userEmail")
+    Optional<ExpenseEntity> findByExpenseIdAndUserEmailWithItems(@Param("expenseId") UUID expenseId, @Param("userEmail") String userEmail);
 
     List<ExpenseEntity> findAllByUserEmailAndTransactionDateBetween(String email, OffsetDateTime start, OffsetDateTime end);
 }
