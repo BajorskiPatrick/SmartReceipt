@@ -66,32 +66,32 @@ class DonutReceiptParser:
         parsed_items = []
 
         # --- FIX: Obsługa Listy vs Słownika ---
-        if 'menu' in json_output:
-            menu_data = json_output['menu']
+        menu_data = json_output.get('menu', [])
+        if isinstance(menu_data, dict):
+            menu_data = [menu_data]
 
-            # Jeśli to pojedynczy słownik, pakujemy go w listę
-            if isinstance(menu_data, dict):
-                menu_data = [menu_data]
+        if isinstance(menu_data, list):
+            for item in menu_data:
+                if not isinstance(item, dict):
+                    continue
 
-            # Teraz bezpiecznie iterujemy
-            if isinstance(menu_data, list):
-                for item in menu_data:
-                    name = item.get('nm', '').strip()
-                    price_str = item.get('price', item.get('unitprice', '')).strip()
+                # Prosta i bezpieczna ekstrakcja danych
+                val_nm = item.get('nm')
+                name = str(val_nm).strip() if isinstance(val_nm, (str, int, float)) else ""
 
-                    if not name or not price_str:
-                        continue
+                val_price = item.get('price') or item.get('unitprice')
+                price_str = str(val_price).strip() if isinstance(val_price, (str, int, float)) else ""
 
-                    clean_price = re.sub(r'[^\d]', '', price_str)
+                if not name or not price_str:
+                    continue
 
-                    try:
-                        print(f"{clean_price=}")
-                        price = float(clean_price)
-                        parsed_items.append({
-                            "product_name": name,
-                            "price": price
-                        })
-                    except ValueError:
-                        continue
+                try:
+                    clean_price = re.sub(r'[^\d.]', '', price_str)
+                    parsed_items.append({
+                        "product_name": name,
+                        "price": float(clean_price)
+                    })
+                except ValueError:
+                    continue
 
         return parsed_items

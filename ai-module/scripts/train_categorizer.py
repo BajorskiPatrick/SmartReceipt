@@ -10,66 +10,132 @@ OUTPUT_DIR = Path("src/nlp/models/my-receipt-categorizer")
 
 # 1. PRZYGOTOWANIE DANYCH (Few-Shot)
 data = [
-    # --- SPOŻYWCZE ---
-    ("Mleko 3.2% Łaciate", "Spożywcze"),
-    ("Chleb wiejski krojony", "Spożywcze"),
-    ("Masło Extra", "Spożywcze"),
-    ("Ser Gouda plastry", "Spożywcze"),
-    ("Pomidory luz", "Spożywcze"),
-    ("Kurczak filet z piersi", "Spożywcze"),
-    ("Baton Snickers", "Spożywcze"),
-    ("Chipsy Lay's paprykowe", "Spożywcze"),
-    ("Nasi Putih", "Spożywcze"),  # CORD
-    ("Chicken Picatta", "Spożywcze"),  # CORD
+    # --- GROCERIES ---
+    ("Mleko 3.2% Łaciate", "Groceries"),
+    ("Chleb wiejski krojony", "Groceries"),
+    ("Masło Extra", "Groceries"),
+    ("Ser Gouda plastry", "Groceries"),
+    ("Pomidory luz", "Groceries"),
+    ("Kurczak filet z piersi", "Groceries"),
+    ("Baton Snickers", "Groceries"),
+    ("Chipsy Lay's paprykowe", "Groceries"),
+    ("Fresh Milk 1L", "Groceries"),
+    ("Whole Wheat Bread", "Groceries"),
+    ("Butter Salted", "Groceries"),
+    ("Cheddar Cheese", "Groceries"),
+    ("Tomatoes", "Groceries"),
+    ("Chicken Breast", "Groceries"),
+    ("Chocolate Bar", "Groceries"),
+    ("Potato Chips", "Groceries"),
+    ("Coca Cola 0.5L", "Groceries"),
+    ("Woda Żywiec Zdrój", "Groceries"),
+    ("Sok pomarańczowy 100%", "Groceries"),
+    ("Orange Juice", "Groceries"),
+    ("Mineral Water", "Groceries"),
 
-    # --- NAPOJE ---
-    ("Coca Cola 0.5L", "Napoje"),
-    ("Woda Żywiec Zdrój", "Napoje"),
-    ("Sok pomarańczowy 100%", "Napoje"),
-    ("Java Tea", "Napoje"),  # CORD
-    ("Ice Tea Peach", "Napoje"),
-    ("Pepsi Max", "Napoje"),
+    # --- ALCOHOL AND STIMULANTS ---
+    ("Piwo Tyskie 0.5L", "Alcohol and stimulants"),
+    ("Wódka Wyborowa", "Alcohol and stimulants"),
+    ("Wino czerwone wytrawne", "Alcohol and stimulants"),
+    ("Papierosy Marlboro Gold", "Alcohol and stimulants"),
+    ("L&M Blue", "Alcohol and stimulants"),
+    ("Piwo Żywiec", "Alcohol and stimulants"),
+    ("Heineken Beer", "Alcohol and stimulants"),
+    ("Vodka Absolut", "Alcohol and stimulants"),
+    ("Red Wine Cabernet", "Alcohol and stimulants"),
+    ("Marlboro Cigarettes", "Alcohol and stimulants"),
+    ("Whisky Jameson", "Alcohol and stimulants"),
 
-    # --- ALKOHOL I UŻYWKI ---
-    ("Piwo Tyskie 0.5L", "Alkohol i Używki"),
-    ("Wódka Wyborowa", "Alkohol i Używki"),
-    ("Wino czerwone wytrawne", "Alkohol i Używki"),
-    ("Papierosy Marlboro Gold", "Alkohol i Używki"),
-    ("L&M Blue", "Alkohol i Używki"),
-    ("Piwo Żywiec", "Alkohol i Używki"),
+    # --- HOUSEHOLD AND CHEMISTRY ---
+    ("Domestos 1L", "Household and chemistry"),
+    ("Papier toaletowy 8 rolek", "Household and chemistry"),
+    ("Płyn do naczyń Ludwik", "Household and chemistry"),
+    ("Proszek do prania Vizir", "Household and chemistry"),
+    ("Ręcznik papierowy", "Household and chemistry"),
+    ("Toilet Paper 12 rolls", "Household and chemistry"),
+    ("Dishwashing Liquid", "Household and chemistry"),
+    ("Laundry Detergent", "Household and chemistry"),
+    ("Paper Towels", "Household and chemistry"),
+    ("Bleach", "Household and chemistry"),
 
-    # --- DOM I CHEMIA ---
-    ("Domestos 1L", "Dom i Chemia"),
-    ("Papier toaletowy 8 rolek", "Dom i Chemia"),
-    ("Płyn do naczyń Ludwik", "Dom i Chemia"),
-    ("Proszek do prania Vizir", "Dom i Chemia"),
-    ("Ręcznik papierowy", "Dom i Chemia"),
+    # --- COSMETICS ---
+    ("Szampon Head&Shoulders", "Cosmetics"),
+    ("Żel pod prysznic Nivea", "Cosmetics"),
+    ("Pasta do zębów Colgate", "Cosmetics"),
+    ("Dezodorant Rexona", "Cosmetics"),
+    ("Shampoo", "Cosmetics"),
+    ("Shower Gel", "Cosmetics"),
+    ("Toothpaste", "Cosmetics"),
+    ("Deodorant Stick", "Cosmetics"),
+    ("Face Cream", "Cosmetics"),
 
-    # --- KOSMETYKI ---
-    ("Szampon Head&Shoulders", "Kosmetyki"),
-    ("Żel pod prysznic Nivea", "Kosmetyki"),
-    ("Pasta do zębów Colgate", "Kosmetyki"),
-    ("Dezodorant Rexona", "Kosmetyki"),
+    # --- ENTERTAINMENT ---
+    ("Bilet do kina", "Entertainment"),
+    ("Gra na PS5", "Entertainment"),
+    ("Książka", "Entertainment"),
+    ("Spotify Premium", "Entertainment"),
+    ("Cinema Ticket", "Entertainment"),
+    ("Video Game", "Entertainment"),
+    ("Book", "Entertainment"),
+    ("Netflix Subscription", "Entertainment"),
+    ("Concert Ticket", "Entertainment"),
 
-    # --- RESTAURACJA (CORD) ---
-    ("Burger wołowy zestaw", "Restauracja"),
-    ("Pizza Margherita", "Restauracja"),
-    ("Kebab w bułce", "Restauracja"),
-    ("Sushi zestaw mały", "Restauracja"),
-    ("Lunch dnia", "Restauracja"),
+    # --- TAXES AND FEES ---
+    ("Service Charge", "Taxes and fees"),
+    ("Opłata serwisowa", "Taxes and fees"),
+    ("Napiwek", "Taxes and fees"),
+    ("Koszt dostawy", "Taxes and fees"),
+    ("Delivery Fee", "Taxes and fees"),
+    ("Tip", "Taxes and fees"),
+    ("Tax", "Taxes and fees"),
+    ("Service Fee", "Taxes and fees"),
 
-    # --- PODATKI I OPŁATY ---
-    ("Service Charge", "Podatki i Opłaty"),
-    ("Pajak Resto", "Podatki i Opłaty"),
-    ("Opłata serwisowa", "Podatki i Opłaty"),
-    ("Napiwek", "Podatki i Opłaty"),
-    ("Koszt dostawy", "Podatki i Opłaty"),
-
-    # --- INNE ---
-    ("Torba foliowa", "Inne"),
-    ("Reklamówka", "Inne"),
+    # --- TRANSPORT ---
     ("Bilet autobusowy", "Transport"),
-    ("Benzyna PB95", "Transport")
+    ("Benzyna PB95", "Transport"),
+    ("Uber Przejazd", "Transport"),
+    ("Bilet PKP", "Transport"),
+    ("Bus Ticket", "Transport"),
+    ("Gasoline", "Transport"),
+    ("Uber Ride", "Transport"),
+    ("Train Ticket", "Transport"),
+    ("Parking Fee", "Transport"),
+
+    # --- OTHER ---
+    ("Torba foliowa", "Other"),
+    ("Reklamówka", "Other"),
+    ("Plastic Bag", "Other"),
+    ("Shopping Bag", "Other"),
+    ("Unknown Item", "Other"),
+
+    # --- IGNORE / NOISE (Non-products) ---
+    ("Suma", "Ignore"),
+    ("Suma PLN", "Ignore"),
+    ("Total", "Ignore"),
+    ("Total USD", "Ignore"),
+    ("Subtotal", "Ignore"),
+    ("Podsuma", "Ignore"),
+    ("Reszta", "Ignore"),
+    ("Change", "Ignore"),
+    ("Gotówka", "Ignore"),
+    ("Cash", "Ignore"),
+    ("Karta płatnicza", "Ignore"),
+    ("Credit Card", "Ignore"),
+    ("Visa", "Ignore"),
+    ("MasterCard", "Ignore"),
+    ("NIP 525-000-11-22", "Ignore"),
+    ("Tax ID", "Ignore"),
+    ("Tel: 22 123 45 67", "Ignore"),
+    ("Dziękujemy", "Ignore"),
+    ("Thank you", "Ignore"),
+    ("Zapraszamy ponownie", "Ignore"),
+    ("Visit us again", "Ignore"),
+    ("Sprzedaż opodatkowana", "Ignore"),
+    ("Taxable amount", "Ignore"),
+    ("Stolik 5", "Ignore"),
+    ("Table 12", "Ignore"),
+    ("Paragon fiskalny", "Ignore"),
+    ("Fiscal Receipt", "Ignore")
 ]
 
 texts = [x[0] for x in data]
