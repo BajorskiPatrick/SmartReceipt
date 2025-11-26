@@ -52,7 +52,7 @@ public class DashboardService {
     }
 
     private List<DashboardCategorySummaryItem> generateCategorySummaryItems(List<ExpenseEntity> expenses, Integer year, Integer month, String userEmail) {
-        List<Category> categories = categoryService.fetchAllCategories();
+        List<Category> categories = categoryService.fetchAllActiveCategories();
         List<CategoryBudgetEntity> categoryBudgets = budgetRepository.findByYearAndMonthAndUserEmail(year, month, userEmail)
                 .map(MonthlyBudgetEntity::getCategoryBudgets)
                 .orElse(new ArrayList<>());

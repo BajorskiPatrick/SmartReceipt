@@ -26,7 +26,7 @@ public class CategoryService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public List<Category> fetchAllCategories() {
+    public List<Category> fetchAllActiveCategories() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
