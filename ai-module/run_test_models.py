@@ -42,7 +42,8 @@ def main():
         return
 
     images = list(RAW_DIR.glob("*.png")) + list(RAW_DIR.glob("*.jpg"))
-    images = images[:5]
+    # images = images[:5]
+    images = [Path("image.png")]
 
     if not images:
         print(f"⚠️ Brak zdjęć w {RAW_DIR}")

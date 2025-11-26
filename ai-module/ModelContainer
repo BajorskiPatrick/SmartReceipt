@@ -1,0 +1,31 @@
+import asyncio
+from src.ocr.receipt_detector import ReceiptDetector
+from src.ocr.donut_parser import DonutReceiptParser
+from src.nlp.categorizer import ProductCategorizer
+from src.utils.visualizer import Visualizer
+
+
+class ModelContainer:
+    """
+    Singleton container to hold heavy AI models im memory
+    """
+
+    def __init__(self):
+        self.receipt_detector = None
+        self.donut_parser = None
+        self.product_categorizer = None
+        self.visualizer = None
+        self.semaphore = asyncio.Semaphore(1)
+    
+    def load_models(self):
+        """
+        Load all models into memory
+        """
+        self.receipt_detector = ReceiptDetector()
+        self.donut_parser = DonutReceiptParser()
+        self.product_categorizer = ProductCategorizer()
+        self.visualizer = Visualizer()
+        print("All models loaded into memory.") #TODO: replace with logger
+
+model_container = ModelContainer()
+# load models at the begginning of application lifespan
