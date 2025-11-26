@@ -75,16 +75,19 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.debug("Searching details for expense ID: {}", expenseId);
 
-                ExpenseEntity expense = categoryId == null ?
-                        expenseRepository.findByExpenseIdWithItems(expenseId)
-                                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail))
-                        :
-                        expenseRepository.findByExpenseIdWithItemsByCategoryId(expenseId, categoryId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdWithItems(expenseId)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 if (!expense.getUser().getEmail().equals(userEmail)) {
                         throw new AccessDeniedException(
-                                        "You do not have rights to see this expense with ID: " + expenseId);
+                                "You do not have rights to see this expense with ID: " + expenseId);
+                }
+
+                if (categoryId != null) {
+                    List<ExpenseItemEntity> filteredItems = expense.getItems().stream()
+                            .filter(item -> item.getCategory().getCategoryId().equals(categoryId))
+                            .toList();
+                    expense.setItems(filteredItems);
                 }
 
                 return translateToDetails(expense);
