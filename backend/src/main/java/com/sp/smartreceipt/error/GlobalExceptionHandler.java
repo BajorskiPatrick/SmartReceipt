@@ -27,6 +27,12 @@ public class GlobalExceptionHandler {
         return createResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(BudgetYearAndMonthMismatch.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(BudgetYearAndMonthMismatch ex, HttpServletRequest request) {
+        log.warn("Unsupported operation: {}", ex.getMessage());
+        return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     // LEVEL 2 - framework / validation exceptions
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex,

@@ -6,10 +6,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID>, JpaSpecificationExecutor<ExpenseEntity> {
+public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long>, JpaSpecificationExecutor<ExpenseEntity> {
 
     Optional<ExpenseEntity> findByExpenseId(UUID id);
 
@@ -18,4 +20,6 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID>, J
 
     @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items i WHERE e.expenseId = :expenseId AND i.category.categoryId = :categoryId")
     Optional<ExpenseEntity> findByExpenseIdWithItemsByCategoryId(@Param("expenseId") UUID expenseId, @Param("categoryId") UUID categoryId);
+
+    List<ExpenseEntity> findAllByUserEmailAndTransactionDateBetween(String email, OffsetDateTime start, OffsetDateTime end);
 }

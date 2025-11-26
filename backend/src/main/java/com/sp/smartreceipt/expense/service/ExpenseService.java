@@ -26,6 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -72,16 +75,19 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.debug("Searching details for expense ID: {}", expenseId);
 
-                ExpenseEntity expense = categoryId == null ?
-                        expenseRepository.findByExpenseIdWithItems(expenseId)
-                                .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail))
-                        :
-                        expenseRepository.findByExpenseIdWithItemsByCategoryId(expenseId, categoryId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdWithItems(expenseId)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 if (!expense.getUser().getEmail().equals(userEmail)) {
                         throw new AccessDeniedException(
-                                        "You do not have rights to see this expense with ID: " + expenseId);
+                                "You do not have rights to see this expense with ID: " + expenseId);
+                }
+
+                if (categoryId != null) {
+                    List<ExpenseItemEntity> filteredItems = expense.getItems().stream()
+                            .filter(item -> item.getCategory().getCategoryId().equals(categoryId))
+                            .toList();
+                    expense.setItems(filteredItems);
                 }
 
                 return translateToDetails(expense);
@@ -145,29 +151,31 @@ public class ExpenseService {
 
                 expense.getItems().clear();
 
-                for (var itemRequest : request.getItems()) {
-
-                        var category = categoryRepository
-                                        .findByCategoryIdAndUserEmail(itemRequest.getCategoryId(), userEmail)
-                                        .orElseThrow(() -> new CategoryNotFoundException(
-                                                        itemRequest.getCategoryId().toString(), userEmail));
-
-                        ExpenseItemEntity newItem = ExpenseItemEntity.builder()
-                                        .expenseItemId(UUID.randomUUID())
-                                        .productName(itemRequest.getProductName())
-                                        .quantity(itemRequest.getQuantity())
-                                        .price(itemRequest.getPrice())
-                                        .category(category)
-                                        .build();
-
-                        expense.addItem(newItem);
-                }
+                request.getItems().forEach((item) -> {
+                    expense.addItem(translateToExpenseItemEntity(item, userEmail));
+                });
 
                 expense.setTotalAmount(calculateTotal(expense));
                 expense.setItemCount(expense.getItems().size());
 
                 ExpenseEntity savedExpense = expenseRepository.save(expense);
                 return translateToDetails(savedExpense);
+        }
+
+        public List<ExpenseEntity> getExpensesForMonth(Integer year, Integer month) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userEmail = authentication.getName();
+
+            YearMonth yearMonth = YearMonth.of(year, month);
+            OffsetDateTime startOfMonth = yearMonth.atDay(1)
+                    .atStartOfDay()
+                    .atOffset(ZoneOffset.UTC);
+
+            OffsetDateTime endOfMonth = yearMonth.atEndOfMonth()
+                    .atTime(23, 59, 59, 999999999)
+                    .atOffset(ZoneOffset.UTC);
+
+            return expenseRepository.findAllByUserEmailAndTransactionDateBetween(userEmail, startOfMonth, endOfMonth);
         }
 
         private ExpenseEntity translateToEntity(NewExpense newExpense) {

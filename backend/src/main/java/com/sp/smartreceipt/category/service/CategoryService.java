@@ -30,7 +30,7 @@ public class CategoryService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
-        return categoryRepository.findAllByUserEmailAndDeletedFalse(  userEmail)
+        return categoryRepository.findAllByUserEmailAndDeletedFalse(userEmail)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
