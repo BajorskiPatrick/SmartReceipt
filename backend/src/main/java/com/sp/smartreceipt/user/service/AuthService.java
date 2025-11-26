@@ -1,5 +1,6 @@
 package com.sp.smartreceipt.user.service;
 
+import com.sp.smartreceipt.category.service.CategoryService;
 import com.sp.smartreceipt.config.util.JwtUtil;
 import com.sp.smartreceipt.error.exception.TokenRefreshException;
 import com.sp.smartreceipt.model.*;
@@ -34,6 +35,8 @@ public class AuthService {
 
     private final UserService userService;
 
+    private final CategoryService categoryService;
+
     private final JwtUtil jwtUtil;
 
     private final PasswordEncoder passwordEncoder;
@@ -49,6 +52,7 @@ public class AuthService {
         String rawPassword = userRegistration.getPassword();
         UserEntity user = userRepository.save(translateToEntity(userRegistration));
         authenticate(user.getEmail(), rawPassword);
+        categoryService.addPredefinedCategoriesToUser(user);
         return loginUser(translateToUserLogin(user), response);
     }
 

@@ -1,5 +1,6 @@
 package com.sp.smartreceipt.category.service;
 
+import com.sp.smartreceipt.category.config.PredefinedCategories;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
 import com.sp.smartreceipt.category.repository.CategoryRepository;
 import com.sp.smartreceipt.error.exception.CategoryNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,6 +80,21 @@ public class CategoryService {
 
         category.setDeleted(true);
         categoryRepository.save(category);
+    }
+
+    @Transactional
+    public void addPredefinedCategoriesToUser(UserEntity user) {
+        Arrays.stream(PredefinedCategories.values()).forEach(predefinedCategory -> {
+            CategoryEntity category = CategoryEntity.builder()
+                    .categoryId(UUID.randomUUID())
+                    .name(predefinedCategory.getDisplayName())
+                    .description("")
+                    .deleted(false)
+                    .user(user)
+                    .build();
+
+            categoryRepository.save(category);
+        });
     }
 
     private CategoryEntity mapToEntity(NewCategory newCategory) {

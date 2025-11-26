@@ -75,13 +75,8 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.debug("Searching details for expense ID: {}", expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseIdWithItems(expenseId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailWithItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-                if (!expense.getUser().getEmail().equals(userEmail)) {
-                        throw new AccessDeniedException(
-                                "You do not have rights to see this expense with ID: " + expenseId);
-                }
 
                 if (categoryId != null) {
                     List<ExpenseItemEntity> filteredItems = expense.getItems().stream()
@@ -121,13 +116,8 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.info("Deleting expense ID: {} for user: {}", expenseId, userEmail);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmail(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-                if (!expense.getUser().getEmail().equals(userEmail)) {
-                        throw new AccessDeniedException(
-                                        "You do not have rights to delete this expense with ID: " + expenseId);
-                }
 
                 expenseRepository.delete(expense);
         }
@@ -138,13 +128,8 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.info("Updating expense ID: {} for user: {}", expenseId, userEmail);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmail(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-                if (!expense.getUser().getEmail().equals(userEmail)) {
-                        throw new AccessDeniedException(
-                                        "You do not have rights to modify this expense with ID: " + expenseId);
-                }
 
                 expense.setDescription(request.getDescription());
                 expense.setTransactionDate(request.getTransactionDate());
