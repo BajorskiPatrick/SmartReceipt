@@ -61,7 +61,15 @@ class ProductCategorizer:
             item['category'] = categories[i]
             item['category_conf'] = probs[i].max().item()
 
-        return items
+        # Filtrujemy elementy oznaczone jako 'Ignore'
+        filtered_items = [
+            item for item in items 
+            if item['category'] != 'Ignore'
+        ]
+        
+        print(f"   🗑️ Usunięto {len(items) - len(filtered_items)} elementów 'Ignore'")
+
+        return filtered_items
 
 
 # --- TEST ---
@@ -71,9 +79,21 @@ if __name__ == "__main__":
     test_products = [
         "Mleko 3.2%",
         "Wódka Wyborowa",
-        "Marlboro Gold",  # To powinno teraz wejść w Używki, a nie w Inne/Ubrania
-        "Pajak Resto",  # Powinno wejść w Podatki
-        "Chicken Picatta"
+        "Marlboro Gold",
+        "Pajak Resto",
+        "Chicken Picatta",
+        "Domestos 1L",
+        "Bilet do kina",
+        "Uber Przejazd",
+        "Szampon Nivea",
+        "Torba foliowa",
+        "Coca Cola 0.5L",
+        # --- Śmieci do testowania ---
+        "Suma PLN",
+        "Visa 4231",
+        "NIP 525-123-45-67",
+        "Total USD",
+        "Reszta"
     ]
 
     print(f"\n{'PRODUKT':<25} | {'KATEGORIA':<25} | {'PEWNOŚĆ'}")
