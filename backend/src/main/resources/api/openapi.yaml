@@ -5,15 +5,15 @@ info:
 
 servers:
   - url: "http://localhost:8080/api/v1.0"
-    description: "Główny serwer backendowy (Spring Boot)"
+    description: "Main backend server (Spring Boot)"
   - url: "http://localhost:8000/api/v1.0"
-    description: "Serwer modułu AI/ML (FastAPI)"
+    description: "AI/ML module server (FastAPI)"
 
 tags:
   - name: "MainApp"
-    description: "Endpointy wystawione przez główny backend (Spring Boot) dla aplikacji klienckiej (React)."
+    description: "Endpoints exposed by the main backend (Spring Boot) for the client application (React)."
   - name: "OcrModule"
-    description: "Wewnętrzne endpointy modułu AI (FastAPI), z których korzysta backend."
+    description: "Internal AI module endpoints (FastAPI) used by the backend."
 
 paths:
   /auth/register:
@@ -21,7 +21,7 @@ paths:
       operationId: registerUser
       tags:
         - "MainApp"
-      summary: "Rejestracja nowego użytkownika"
+      summary: "Register new user"
       requestBody:
         required: true
         content:
@@ -30,20 +30,20 @@ paths:
               $ref: '#/components/schemas/UserRegistration'
       responses:
         '201':
-          description: "Użytkownik pomyślnie zarejestrowany"
+          description: "User successfully registered"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthResponse"
         '400':
-          description: "Błędne dane wejściowe"
-  
+          description: "Invalid input data"
+
   /auth/login:
     post:
       operationId: loginUser
       tags:
         - "MainApp"
-      summary: "Logowanie użytkownika"
+      summary: "User login"
       requestBody:
         required: true
         content:
@@ -52,49 +52,49 @@ paths:
               $ref: '#/components/schemas/UserLogin'
       responses:
         '200':
-          description: "Pomyślne logowanie"
+          description: "Successful login"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
         '401':
-          description: "Nieprawidłowe dane logowania"
+          description: "Invalid credentials"
 
   /auth/logout:
     post:
       operationId: logoutUser
       tags:
         - "MainApp"
-      summary: "Wylogowanie użytkownika"
+      summary: "User logout"
       security:
         - bearerAuth: [ ]
       responses:
         '200':
-          description: "Pomyślnie wylogowano"
+          description: "Successfully logged out"
 
   /auth/refresh:
     post:
       operationId: userTokenRefresh
       tags:
         - "MainApp"
-      summary: "Odświeżenie tokenu użytkownika"
+      summary: "Refresh user token"
       responses:
         '200':
-          description: "Pomyślnie odświeżono token"
+          description: "Token successfully refreshed"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefreshedToken'
         '401':
-          description: "Brak tokenu lub token niepoprawny"
+          description: "Missing or invalid token"
 
   /expenses/upload:
     post:
       operationId: uploadReceipt
       tags:
         - "MainApp"
-      summary: "Przesłanie zdjęcia paragonu do przetworzenia"
-      description: "Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek."
+      summary: "Upload receipt image for processing"
+      description: "Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add."
       security:
         - bearerAuth: []
       requestBody:
@@ -107,26 +107,26 @@ paths:
                 image:
                   type: string
                   format: binary
-                  description: "Plik obrazu paragonu"
+                  description: "Receipt image file"
           application/json:
             schema:
               $ref: '#/components/schemas/NewOcrExpense'
       responses:
         '201':
-          description: "Paragon przetworzony, wydatek gotowy do zatwierdzenia"
+          description: "Receipt processed, expense ready for approval"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OcrExpense'
         '500':
-          description: "Błąd podczas przetwarzania obrazu"
-          
+          description: "Error during image processing"
+
   /expenses/manual:
     post:
       operationId: addManualExpense
       tags:
         - "MainApp"
-      summary: "Ręczne dodanie wydatku"
+      summary: "Manually add expense"
       security:
         - bearerAuth: []
       requestBody:
@@ -137,7 +137,7 @@ paths:
               $ref: '#/components/schemas/NewExpense'
       responses:
         '201':
-          description: "Wydatek dodany pomyślnie"
+          description: "Expense added successfully"
           content:
             application/json:
               schema:
@@ -148,8 +148,8 @@ paths:
       operationId: getExpensesList
       tags:
         - "MainApp"
-      summary: "Pobranie historii wydatków (dla Widżetu 3)"
-      description: "Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację."
+      summary: "Get expense history (for Widget 3)"
+      description: "Returns a list of expenses for the logged-in user. Key endpoint for Widget 3 on the dashboard. Supports filtering by date (year/month) and category. Supports pagination by default."
       security:
         - bearerAuth: [ ]
       parameters:
@@ -159,20 +159,21 @@ paths:
           schema:
             type: integer
             example: 2025
-          description: "Rok, dla którego pobierane są wydatki"
+          description: "Year for which expenses are fetched"
         - name: month
           in: query
           required: true
           schema:
             type: integer
             example: 11
-          description: "Miesiąc (1-12), dla którego pobierane są wydatki"
+          description: "Month (1-12) for which expenses are fetched"
         - name: categoryId
           in: query
           required: false
           schema:
             type: string
             format: uuid
+            example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
             description: "From which category expenses should be fetched"
         - name: page
           in: query
@@ -180,17 +181,19 @@ paths:
           schema:
             type: integer
             default: 0
-            description: "Numer strony (dla paginacji)"
+            example: 0
+            description: "Page number (for pagination)"
         - name: size
           in: query
           required: false
           schema:
             type: integer
             default: 20
-            description: "Liczba elementów na stronie"
+            example: 20
+            description: "Number of elements per page"
       responses:
         '200':
-          description: "Spaginowana lista wydatków"
+          description: "Paginated list of expenses"
           content:
             application/json:
               schema:
@@ -201,18 +204,19 @@ paths:
       operationId: getExpenseDetails
       tags:
         - "MainApp"
-      summary: "Pobranie pełnych szczegółów wydatku (z itemami)"
-      description: "Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika 'Details' na liście."
+      summary: "Get full expense details (with items)"
+      description: "Fetches the full expense object, including a list of all its items. Used when the user clicks 'Details' on the list."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: expenseId
           in: path
           required: true
-          description: "ID wydatku, którego szczegóły chcemy pobrać"
+          description: "ID of the expense to fetch details for"
           schema:
             type: string
             format: uuid
+            example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         - name: categoryId
           in: query
           required: false
@@ -220,31 +224,33 @@ paths:
           schema:
             type: string
             format: uuid
+            example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
       responses:
         '200':
-          description: "Szczegóły wydatku"
+          description: "Expense details"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseDetails'
         '404':
-          description: "Nie znaleziono wydatku"
+          description: "Expense not found"
     put:
       operationId: updateExpense
       tags:
         - "MainApp"
-      summary: "Aktualizacja całego wydatku"
-      description: "Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą."
+      summary: "Update entire expense"
+      description: "Updates basic information about the expense and all its items. The items list is replaced with the new one."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: expenseId
           in: path
           required: true
-          description: "ID wydatku do aktualizacji"
+          description: "ID of the expense to update"
           schema:
             type: string
             format: uuid
+            example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
       requestBody:
         required: true
         content:
@@ -253,61 +259,64 @@ paths:
               $ref: '#/components/schemas/NewExpense'
       responses:
         '200':
-          description: "Wydatek zaktualizowany pomyślnie"
+          description: "Expense updated successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseDetails'
         '404':
-          description: "Nie znaleziono wydatku"
+          description: "Expense not found"
         '400':
-          description: "Błędne dane wejściowe"
+          description: "Invalid input data"
     delete:
       operationId: deleteExpense
       tags:
         - "MainApp"
-      summary: "Usunięcie wydatku"
-      description: "Usuwa wydatek wraz ze wszystkimi jego pozycjami (items)."
+      summary: "Delete expense"
+      description: "Deletes the expense along with all its items."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: expenseId
           in: path
           required: true
-          description: "ID wydatku do usunięcia"
+          description: "ID of the expense to delete"
           schema:
             type: string
             format: uuid
+            example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
       responses:
         '204':
-          description: "Wydatek usunięty pomyślnie"
+          description: "Expense deleted successfully"
         '404':
-          description: "Nie znaleziono wydatku"
+          description: "Expense not found"
 
   /expenses/{expenseId}/items/{itemId}:
     put:
       operationId: updateExpenseItem
       tags:
         - "MainApp"
-      summary: "Aktualizacja konkretnej pozycji wydatku"
-      description: "Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię)."
+      summary: "Update specific expense item"
+      description: "Updates details of a single item in the expense (e.g., product name, price, category)."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: expenseId
           in: path
           required: true
-          description: "ID wydatku"
+          description: "Expense ID"
           schema:
             type: string
             format: uuid
+            example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         - name: itemId
           in: path
           required: true
-          description: "ID pozycji (itemu) do aktualizacji"
+          description: "ID of the item to update"
           schema:
             type: string
             format: uuid
+            example: "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
       requestBody:
         required: true
         content:
@@ -316,50 +325,52 @@ paths:
               $ref: '#/components/schemas/NewExpenseItem'
       responses:
         '200':
-          description: "Pozycja zaktualizowana pomyślnie"
+          description: "Item updated successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseItem'
         '404':
-          description: "Nie znaleziono wydatku lub pozycji"
+          description: "Expense or item not found"
         '400':
-          description: "Błędne dane wejściowe"
+          description: "Invalid input data"
     delete:
       operationId: deleteExpenseItem
       tags:
         - "MainApp"
-      summary: "Usunięcie konkretnej pozycji wydatku"
-      description: "Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane."
+      summary: "Delete specific expense item"
+      description: "Removes a single item from the expense. The total amount and item count are automatically recalculated."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: expenseId
           in: path
           required: true
-          description: "ID wydatku"
+          description: "Expense ID"
           schema:
             type: string
             format: uuid
+            example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
         - name: itemId
           in: path
           required: true
-          description: "ID pozycji (itemu) do usunięcia"
+          description: "ID of the item to delete"
           schema:
             type: string
             format: uuid
+            example: "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
       responses:
         '204':
-          description: "Pozycja usunięta pomyślnie"
+          description: "Item deleted successfully"
         '404':
-          description: "Nie znaleziono wydatku lub pozycji"
+          description: "Expense or item not found"
 
   /budgets:
     get:
       operationId: getUserBudget
       tags:
         - "MainApp"
-      summary: "Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)"
+      summary: "Get current user budget (for this month)"
       security:
         - bearerAuth: [ ]
       parameters:
@@ -369,28 +380,28 @@ paths:
           schema:
             type: integer
             example: 2025
-          description: "Rok budżetu"
+          description: "Budget year"
         - name: month
           in: query
           required: true
           schema:
             type: integer
             example: 11
-          description: "Miesiąc budżetu"
+          description: "Budget month"
       responses:
         '200':
-          description: "Budżet użytkownika na aktualny miesiąc"
+          description: "User budget for the current month"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonthlyBudget'
         '204':
-          description: "Brak zdefiniowanego budżetu na dany miesiąc"
+          description: "No budget defined for this month"
     post:
       operationId: createUserBudget
       tags:
         - "MainApp"
-      summary: "Utworzenie nowego budżetu użytkownika"
+      summary: "Create new user budget"
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -401,20 +412,20 @@ paths:
               $ref: '#/components/schemas/NewMonthlyBudget'
       responses:
         '200':
-          description: "Budżet utworzony pomyślnie"
+          description: "Budget created successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonthlyBudget'
         '400':
-          description: "Budżet na dany miesiąc już istnieje"
+          description: "Budget for this month already exists"
 
   /budgets/{budgetId}:
     put:
       operationId: updateUserBudget
       tags:
         - "MainApp"
-      summary: "Aktualizacja budżetu użytkownika"
+      summary: "Update user budget"
       security:
         - bearerAuth: []
       parameters:
@@ -424,6 +435,7 @@ paths:
           schema:
             type: string
             format: uuid
+            example: "e5f6g7h8-i9j0-1234-5678-901234efghij"
       requestBody:
         required: true
         content:
@@ -432,7 +444,7 @@ paths:
               $ref: '#/components/schemas/NewMonthlyBudget'
       responses:
         '200':
-          description: "Budżet zaktualizowany pomyślnie"
+          description: "Budget updated successfully"
           content:
             application/json:
               schema:
@@ -443,8 +455,8 @@ paths:
       operationId: getDashboardData
       tags:
         - "MainApp"
-      summary: "Pobranie zagregowanych danych do dashboardu"
-      description: "Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend)."
+      summary: "Get aggregated dashboard data"
+      description: "Returns all data needed for the initial dashboard load for a given month (KPI, Widget 1 - categories, Widget 2 - trend)."
       security:
         - bearerAuth: []
       parameters:
@@ -454,34 +466,34 @@ paths:
           schema:
             type: integer
             example: 2025
-          description: "Rok do analizy"
+          description: "Year for analysis"
         - name: month
           in: query
           required: true
           schema:
             type: integer
             example: 11
-          description: "Miesiąc do analizy (1-12). Trend 6-miesięczny będzie obliczony wstecz od tej daty."
+          description: "Month for analysis (1-12). The 6-month trend will be calculated backwards from this date."
       responses:
         '200':
-          description: "Zagregowane dane do dashboardu"
+          description: "Aggregated dashboard data"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DashboardData'
-  
+
 
   /shopping-lists:
     get:
       operationId: getShoppingLists
       tags:
         - "MainApp"
-      summary: "Pobranie list zakupowych użytkownika"
+      summary: "Get user shopping lists"
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: "Lista list zakupowych"
+          description: "List of shopping lists"
           content:
             application/json:
               schema:
@@ -492,7 +504,7 @@ paths:
       operationId: createShoppingList
       tags:
         - "MainApp"
-      summary: "Stworzenie nowej listy zakupowej"
+      summary: "Create new shopping list"
       security:
         - bearerAuth: []
       requestBody:
@@ -503,7 +515,7 @@ paths:
               $ref: '#/components/schemas/NewShoppingList'
       responses:
         '201':
-          description: "Lista utworzona"
+          description: "List created"
           content:
             application/json:
               schema:
@@ -514,45 +526,47 @@ paths:
       operationId: getShoppingListDetails
       tags:
         - "MainApp"
-      summary: "Pobranie pełnych szczegółów listy zakupów"
-      description: "Pobiera pełny obiekt listy zakupów, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika 'Details' na liście."
+      summary: "Get full shopping list details"
+      description: "Fetches the full shopping list object, including a list of all its items. Used when the user clicks 'Details' on the list."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: shoppingListId
           in: path
           required: true
-          description: "ID listy zakupów, której szczegóły chcemy pobrać"
+          description: "ID of the shopping list to fetch details for"
           schema:
             type: string
             format: uuid
+            example: "c3d4e5f6-g7h8-9012-3456-789012cdefgh"
       responses:
         '200':
-          description: "Szczegóły wydatku"
+          description: "Shopping list details"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ShoppingList'
         '404':
-          description: "Nie znaleziono listy zakupów"
+          description: "Shopping list not found"
 
   /shopping-lists/{shoppingListId}/items:
     post:
       operationId: addItemsToShoppingList
       tags:
         - "MainApp"
-      summary: "Dodanie listy produktów do listy zakupowej"
-      description: "Dodaje pełną listę produktów do danej listy zakupowej. Frontend wysyła zbiorcze zapytanie dla wszystkich itemów dodawanych przez użytkownika w danej akcji."
+      summary: "Add list of products to shopping list"
+      description: "Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action."
       security:
         - bearerAuth: []
       parameters:
         - name: shoppingListId
           in: path
           required: true
-          description: "ID listy zakupów, której szczegóły chcemy pobrać"
+          description: "ID of the shopping list"
           schema:
             type: string
             format: uuid
+            example: "c3d4e5f6-g7h8-9012-3456-789012cdefgh"
       requestBody:
         required: true
         content:
@@ -561,7 +575,7 @@ paths:
               $ref: '#/components/schemas/NewShoppingListItems'
       responses:
         '201':
-          description: "Produkt dodany pomyślnie"
+          description: "Product added successfully"
           content:
             application/json:
               schema:
@@ -572,13 +586,13 @@ paths:
       operationId: getCategories
       tags:
         - "MainApp"
-      summary: "Pobranie wszystkich kategorii użytkownika"
-      description: "Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu)."
+      summary: "Get all user categories"
+      description: "Returns a list of user-defined expense categories (e.g., for the dropdown when manually adding an expense or filtering)."
       security:
         - bearerAuth: [ ]
       responses:
         '200':
-          description: "Lista kategorii"
+          description: "List of categories"
           content:
             application/json:
               schema:
@@ -589,7 +603,7 @@ paths:
       operationId: createCategory
       tags:
         - "MainApp"
-      summary: "Tworzenie nowej kategorii wydatków"
+      summary: "Create new expense category"
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -600,7 +614,7 @@ paths:
               $ref: '#/components/schemas/NewCategory'
       responses:
         '201':
-          description: "Kategoria utworzona"
+          description: "Category created"
           content:
             application/json:
               schema:
@@ -611,18 +625,19 @@ paths:
       operationId: updaetCategory
       tags:
         - "MainApp"
-      summary: "Aktualizacja kategorii"
-      description: "Aktualizuje informacje o kategorii - nazwę i opis"
+      summary: "Update category"
+      description: "Updates category information - name and description"
       security:
         - bearerAuth: [ ]
       parameters:
         - name: categoryId
           in: path
           required: true
-          description: "ID kategorii do aktualizacji"
+          description: "ID of the category to update"
           schema:
             type: string
             format: uuid
+            example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
       requestBody:
         required: true
         content:
@@ -631,44 +646,45 @@ paths:
               $ref: '#/components/schemas/NewCategory'
       responses:
         '200':
-          description: "Kategoria zaktualizowana pomyślnie"
+          description: "Category updated successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Category'
         '404':
-          description: "Nie znaleziono kategorii"
+          description: "Category not found"
         '400':
-          description: "Błędne dane wejściowe"
+          description: "Invalid input data"
     delete:
       operationId: deleteCategory
       tags:
         - "MainApp"
-      summary: "Usunięcie kategorii"
-      description: "Usunięcie kategorii. Polega na ustawieniu flagi deleted na true, aby nie zwracać tej kategorii jako dostępnej do wyboru, ale żeby stare wydatki nie straciły kategorii"
+      summary: "Delete category"
+      description: "Deletes a category. Sets the 'deleted' flag to true so it is not returned as an available choice, but old expenses do not lose their category."
       security:
         - bearerAuth: [ ]
       parameters:
         - name: categoryId
           in: path
           required: true
-          description: "ID kategorii"
+          description: "Category ID"
           schema:
             type: string
             format: uuid
+            example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
       responses:
         '204':
-          description: "Kategoria usunięta pomyślnie"
+          description: "Category deleted successfully"
         '404':
-          description: "Nie znaleziono kategorii"
+          description: "Category not found"
 
   /ai/ocr/process:
     post:
       operationId: processReceiptOcr
       tags:
         - "OcrModule"
-      summary: "Przetwarzanie obrazu paragonu (OCR)"
-      description: "Endpoint modułu AI, który przyjmuje obraz i zwraca ustrukturyzowane dane w formacie JSON. Wykorzystuje biblioteki takie jak Tesseract, easyocr lub PaddleOCR."
+      summary: "Process receipt image (OCR)"
+      description: "AI module endpoint that accepts an image and returns structured data in JSON format. Uses libraries such as Tesseract, easyocr, or PaddleOCR."
       requestBody:
         required: true
         content:
@@ -679,15 +695,16 @@ paths:
                 image:
                   type: string
                   format: binary
+                  example: "binary_image_content_here"
       responses:
         '200':
-          description: "Dane z paragonu wyekstrahowane pomyślnie"
+          description: "Receipt data extracted successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OcrResult'
         '400':
-          description: "Nie udało się przetworzyć obrazu"
+          description: "Failed to process image"
 
 components:
   securitySchemes:
@@ -707,13 +724,13 @@ components:
           type: string
           format: email
           maxLength: 100
-          example: "jan.kowalski@example.com"
+          example: "john.doe@example.com"
         password:
           type: string
           format: password
           minLength: 8
           maxLength: 64
-          description: "Hasło musi mieć od 8 do 64 znaków"
+          description: "Password must be between 8 and 64 characters"
           example: "super_secret_password"
 
     UserLogin:
@@ -726,18 +743,22 @@ components:
           type: string
           format: email
           maxLength: 100
+          example: "john.doe@example.com"
         password:
           type: string
           format: password
           maxLength: 64
+          example: "super_secret_password"
 
     AuthResponse:
       type: object
       properties:
         email:
           type: string
+          example: "john.doe@example.com"
         token:
           type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         role:
           $ref: "#/components/schemas/Role"
 
@@ -750,16 +771,20 @@ components:
         description:
           type: string
           maxLength: 255
+          example: "Weekly grocery shopping in Lidl"
         transactionDate:
           type: string
           format: date-time
+          example: "2025-11-15T14:30:00Z"
         totalAmount:
           type: number
           format: float
           minimum: 0.00
+          example: 125.50
         itemCount:
           type: integer
           minimum: 0
+          example: 5
 
     ExpenseDetails:
       allOf:
@@ -769,6 +794,7 @@ components:
             expenseId:
               type: string
               format: uuid
+              example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
             items:
               type: array
               items:
@@ -782,7 +808,7 @@ components:
             expenseId:
               type: string
               format: uuid
-              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+              example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
     OcrExpense:
       allOf:
@@ -797,7 +823,7 @@ components:
 
     ExpenseSummaryPage:
       type: object
-      description: "Standardowy obiekt odpowiedzi dla paginacji"
+      description: "Standard response object for pagination"
       properties:
         content:
           type: array
@@ -828,12 +854,14 @@ components:
         description:
           type: string
           maxLength: 255
+          example: "Weekly grocery shopping in Lidl"
         transactionDate:
           type: string
           format: date-time
+          example: "2025-11-15T14:30:00Z"
         items:
           type: array
-          description: "Lista pozycji. Może być pusta, jeśli dodajemy sam ogólny wydatek."
+          description: "List of items. Can be empty if adding just a general expense."
           items:
             $ref: '#/components/schemas/NewExpenseItem'
 
@@ -845,9 +873,11 @@ components:
         description:
           type: string
           maxLength: 255
+          example: "Receipt from Shell station"
         transactionDate:
           type: string
           format: date-time
+          example: "2025-11-15T10:00:00Z"
 
     ExpenseItemBase:
       type: object
@@ -861,20 +891,22 @@ components:
           type: string
           minLength: 1
           maxLength: 150
-          example: "Mleko 2%"
+          example: "Milk 2%"
         quantity:
           type: integer
           minimum: 1
           default: 1
+          example: 2
         price:
           type: number
           format: float
           minimum: 0.00
-          description: "Cena za sztukę, nie może być ujemna"
+          description: "Price per unit, cannot be negative"
+          example: 3.50
         categoryId:
           type: string
           format: uuid
-          description: "ID kategorii (opcjonalne, bo OCR może nie rozpoznać)"
+          description: "Category ID (optional, as OCR might not recognize it)"
           example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     ExpenseItem:
@@ -885,9 +917,10 @@ components:
             expenseItemId:
               type: string
               format: uuid
+              example: "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
             categoryName:
               type: string
-              example: "Jedzenie"
+              example: "Food"
 
     NewExpenseItem:
       allOf:
@@ -917,9 +950,11 @@ components:
         totalSpendingMonth:
           type: number
           format: float
+          example: 2450.00
         budget:
           type: number
           format: float
+          example: 3000.00
 
     DashboardCategorySummaryItem:
       type: object
@@ -927,27 +962,34 @@ components:
         categoryId:
           type: string
           format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
         categoryName:
           type: string
+          example: "Food"
         totalSpendingMonth:
           type: number
           format: float
+          example: 1200.50
         budget:
           type: number
           format: float
+          example: 1500.00
 
     DashboardTrendItem:
       type: object
       properties:
         year:
           type: integer
+          example: 2025
         month:
           type: integer
           minimum: 1
           maximum: 12
+          example: 10
         totalAmount:
           type: number
           format: float
+          example: 2100.00
 
     Category:
       type: object
@@ -958,14 +1000,16 @@ components:
         categoryId:
           type: string
           format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
         name:
           type: string
           minLength: 1
           maxLength: 50
-          example: "Jedzenie"
+          example: "Food"
         description:
           type: string
           maxLength: 255
+          example: "Groceries and restaurants"
 
     NewCategory:
       type: object
@@ -976,10 +1020,11 @@ components:
           type: string
           minLength: 2
           maxLength: 50
-          example: "Jedzenie"
+          example: "Food"
         description:
           type: string
           maxLength: 255
+          example: "Groceries and restaurants"
 
     ShoppingList:
       type: object
@@ -987,12 +1032,14 @@ components:
         shoppingListId:
           type: string
           format: uuid
+          example: "c3d4e5f6-g7h8-9012-3456-789012cdefgh"
         name:
           type: string
-          example: "Zakupy na weekend"
+          example: "Weekend shopping"
         createdAt:
           type: string
           format: date-time
+          example: "2025-11-10T09:00:00Z"
         items:
           type: array
           items:
@@ -1000,6 +1047,7 @@ components:
         itemCount:
           type: integer
           minimum: 0
+          example: 12
 
     NewShoppingList:
       type: object
@@ -1010,6 +1058,7 @@ components:
           type: string
           minLength: 1
           maxLength: 100
+          example: "Weekend shopping"
         items:
           type: array
           items:
@@ -1021,18 +1070,21 @@ components:
         shoppingListItemId:
           type: string
           format: uuid
+          example: "d4e5f6g7-h8i9-0123-4567-890123defghi"
         productName:
           type: string
-          example: "Chleb"
+          example: "Bread"
         quantity:
           type: integer
           default: 1
+          example: 2
         unit:
           type: string
-          example: "szt."
+          example: "pcs."
         isPurchased:
           type: boolean
           default: false
+          example: false
 
     NewShoppingListItems:
       type: object
@@ -1054,6 +1106,7 @@ components:
           type: string
           minLength: 1
           maxLength: 100
+          example: "Butter"
 
     OcrResult:
       type: object
@@ -1074,6 +1127,7 @@ components:
       properties:
         token:
           type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
     MonthlyBudget:
       type: object
@@ -1081,13 +1135,17 @@ components:
         budgetId:
           type: string
           format: uuid
+          example: "e5f6g7h8-i9j0-1234-5678-901234efghij"
         year:
           type: integer
+          example: 2025
         month:
           type: integer
+          example: 11
         budget:
           type: number
-          format: BigDecimal
+          format: float
+          example: 5000.00
         categoryBudgets:
           type: array
           items:
@@ -1102,17 +1160,19 @@ components:
       properties:
         budget:
           type: number
-          format: BigDecimal
+          format: float
           minimum: 0.00
-          example: 4000.00
+          example: 5000.00
         year:
           type: integer
           minimum: 2020
           maximum: 2100
+          example: 2025
         month:
           type: integer
           minimum: 1
           maximum: 12
+          example: 11
         categoryBudgets:
           type: array
           items:
@@ -1124,14 +1184,18 @@ components:
         categoryBudgetId:
           type: string
           format: uuid
+          example: "f6g7h8i9-j0k1-2345-6789-012345fghijk"
         categoryId:
           type: string
           format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
         categoryName:
           type: string
+          example: "Food"
         budget:
           type: number
-          format: BigDecimal
+          format: float
+          example: 1500.00
 
     NewCategoryBudget:
       type: object
@@ -1142,8 +1206,9 @@ components:
         categoryId:
           type: string
           format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
         budget:
           type: number
-          format: BigDecimal
+          format: float
           minimum: 0.00
           example: 1500.00
