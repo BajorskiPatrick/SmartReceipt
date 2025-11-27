@@ -18,7 +18,7 @@
 import { ExpenseSummary } from './expense-summary';
 
 /**
- * Standardowy obiekt odpowiedzi dla paginacji
+ * Standard response object for pagination
  * @export
  * @interface ExpenseSummaryPage
  */

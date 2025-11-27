@@ -27,7 +27,7 @@ export interface UserRegistration {
      */
     'email': string;
     /**
-     * Hasło musi mieć od 8 do 64 znaków
+     * Password must be between 8 and 64 characters
      * @type {string}
      * @memberof UserRegistration
      */
