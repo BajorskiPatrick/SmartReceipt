@@ -36,7 +36,7 @@ export interface NewExpense {
      */
     'transactionDate': string;
     /**
-     * Lista pozycji. Może być pusta, jeśli dodajemy sam ogólny wydatek.
+     * List of items. Can be empty if adding just a general expense.
      * @type {Array<NewExpenseItem>}
      * @memberof NewExpense
      */

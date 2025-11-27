@@ -28,6 +28,8 @@ import { Category } from '../models';
 // @ts-ignore
 import { DashboardData } from '../models';
 // @ts-ignore
+import { ErrorResponse } from '../models';
+// @ts-ignore
 import { ExpenseDetails } from '../models';
 // @ts-ignore
 import { ExpenseItem } from '../models';
@@ -66,9 +68,9 @@ import { UserRegistration } from '../models';
 export const MainAppApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Dodaje pełną listę produktów do danej listy zakupowej. Frontend wysyła zbiorcze zapytanie dla wszystkich itemów dodawanych przez użytkownika w danej akcji.
-         * @summary Dodanie listy produktów do listy zakupowej
-         * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+         * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
+         * @summary Add list of products to shopping list
+         * @param {string} shoppingListId ID of the shopping list
          * @param {NewShoppingListItems} newShoppingListItems 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -111,7 +113,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Ręczne dodanie wydatku
+         * @summary Manually add expense
          * @param {NewExpense} newExpense 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -151,7 +153,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Tworzenie nowej kategorii wydatków
+         * @summary Create new expense category
          * @param {NewCategory} newCategory 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -191,7 +193,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Stworzenie nowej listy zakupowej
+         * @summary Create new shopping list
          * @param {NewShoppingList} newShoppingList 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -231,7 +233,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Utworzenie nowego budżetu użytkownika
+         * @summary Create new user budget
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -270,9 +272,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Usunięcie kategorii. Polega na ustawieniu flagi deleted na true, aby nie zwracać tej kategorii jako dostępnej do wyboru, ale żeby stare wydatki nie straciły kategorii
-         * @summary Usunięcie kategorii
-         * @param {string} categoryId ID kategorii
+         * Deletes a category. Sets the \'deleted\' flag to true so it is not returned as an available choice, but old expenses do not lose their category.
+         * @summary Delete category
+         * @param {string} categoryId Category ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -308,9 +310,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Usuwa wydatek wraz ze wszystkimi jego pozycjami (items).
-         * @summary Usunięcie wydatku
-         * @param {string} expenseId ID wydatku do usunięcia
+         * Deletes the expense along with all its items.
+         * @summary Delete expense
+         * @param {string} expenseId ID of the expense to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -346,10 +348,10 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane.
-         * @summary Usunięcie konkretnej pozycji wydatku
-         * @param {string} expenseId ID wydatku
-         * @param {string} itemId ID pozycji (itemu) do usunięcia
+         * Removes a single item from the expense. The total amount and item count are automatically recalculated.
+         * @summary Delete specific expense item
+         * @param {string} expenseId Expense ID
+         * @param {string} itemId ID of the item to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -388,8 +390,8 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu).
-         * @summary Pobranie wszystkich kategorii użytkownika
+         * Returns a list of user-defined expense categories (e.g., for the dropdown when manually adding an expense or filtering).
+         * @summary Get all user categories
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -422,10 +424,10 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend).
-         * @summary Pobranie zagregowanych danych do dashboardu
-         * @param {number} year Rok do analizy
-         * @param {number} month Miesiąc do analizy (1-12). Trend 6-miesięczny będzie obliczony wstecz od tej daty.
+         * Returns all data needed for the initial dashboard load for a given month (KPI, Widget 1 - categories, Widget 2 - trend).
+         * @summary Get aggregated dashboard data
+         * @param {number} year Year for analysis
+         * @param {number} month Month for analysis (1-12). The 6-month trend will be calculated backwards from this date.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -470,9 +472,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-         * @summary Pobranie pełnych szczegółów wydatku (z itemami)
-         * @param {string} expenseId ID wydatku, którego szczegóły chcemy pobrać
+         * Fetches the full expense object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+         * @summary Get full expense details (with items)
+         * @param {string} expenseId ID of the expense to fetch details for
          * @param {string} [categoryId] Category which expense items we want to see in details
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -513,10 +515,10 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację.
-         * @summary Pobranie historii wydatków (dla Widżetu 3)
-         * @param {number} year Rok, dla którego pobierane są wydatki
-         * @param {number} month Miesiąc (1-12), dla którego pobierane są wydatki
+         * Returns a list of expenses for the logged-in user. Key endpoint for Widget 3 on the dashboard. Supports filtering by date (year/month) and category. Supports pagination by default.
+         * @summary Get expense history (for Widget 3)
+         * @param {number} year Year for which expenses are fetched
+         * @param {number} month Month (1-12) for which expenses are fetched
          * @param {string} [categoryId] 
          * @param {number} [page] 
          * @param {number} [size] 
@@ -576,9 +578,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Pobiera pełny obiekt listy zakupów, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-         * @summary Pobranie pełnych szczegółów listy zakupów
-         * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+         * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+         * @summary Get full shopping list details
+         * @param {string} shoppingListId ID of the shopping list to fetch details for
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -615,7 +617,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Pobranie list zakupowych użytkownika
+         * @summary Get user shopping lists
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -649,9 +651,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)
-         * @param {number} year Rok budżetu
-         * @param {number} month Miesiąc budżetu
+         * @summary Get current user budget (for this month)
+         * @param {number} year Budget year
+         * @param {number} month Budget month
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -697,7 +699,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Logowanie użytkownika
+         * @summary User login
          * @param {UserLogin} userLogin 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -733,7 +735,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Wylogowanie użytkownika
+         * @summary User logout
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -767,7 +769,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Rejestracja nowego użytkownika
+         * @summary Register new user
          * @param {UserRegistration} userRegistration 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -802,9 +804,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Aktualizuje informacje o kategorii - nazwę i opis
-         * @summary Aktualizacja kategorii
-         * @param {string} categoryId ID kategorii do aktualizacji
+         * Updates category information - name and description
+         * @summary Update category
+         * @param {string} categoryId ID of the category to update
          * @param {NewCategory} newCategory 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -846,9 +848,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą.
-         * @summary Aktualizacja całego wydatku
-         * @param {string} expenseId ID wydatku do aktualizacji
+         * Updates basic information about the expense and all its items. The items list is replaced with the new one.
+         * @summary Update entire expense
+         * @param {string} expenseId ID of the expense to update
          * @param {NewExpense} newExpense 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -890,10 +892,10 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię).
-         * @summary Aktualizacja konkretnej pozycji wydatku
-         * @param {string} expenseId ID wydatku
-         * @param {string} itemId ID pozycji (itemu) do aktualizacji
+         * Updates details of a single item in the expense (e.g., product name, price, category).
+         * @summary Update specific expense item
+         * @param {string} expenseId Expense ID
+         * @param {string} itemId ID of the item to update
          * @param {NewExpenseItem} newExpenseItem 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -939,7 +941,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Aktualizacja budżetu użytkownika
+         * @summary Update user budget
          * @param {string} budgetId 
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
@@ -982,9 +984,9 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek.
-         * @summary Przesłanie zdjęcia paragonu do przetworzenia
-         * @param {File} [image] Plik obrazu paragonu
+         * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
+         * @summary Upload receipt image for processing
+         * @param {File} [image] Receipt image file
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1026,7 +1028,7 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Odświeżenie tokenu użytkownika
+         * @summary Refresh user token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1065,9 +1067,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = MainAppApiAxiosParamCreator(configuration)
     return {
         /**
-         * Dodaje pełną listę produktów do danej listy zakupowej. Frontend wysyła zbiorcze zapytanie dla wszystkich itemów dodawanych przez użytkownika w danej akcji.
-         * @summary Dodanie listy produktów do listy zakupowej
-         * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+         * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
+         * @summary Add list of products to shopping list
+         * @param {string} shoppingListId ID of the shopping list
          * @param {NewShoppingListItems} newShoppingListItems 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1080,7 +1082,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Ręczne dodanie wydatku
+         * @summary Manually add expense
          * @param {NewExpense} newExpense 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1093,7 +1095,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Tworzenie nowej kategorii wydatków
+         * @summary Create new expense category
          * @param {NewCategory} newCategory 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1106,7 +1108,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Stworzenie nowej listy zakupowej
+         * @summary Create new shopping list
          * @param {NewShoppingList} newShoppingList 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1119,7 +1121,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Utworzenie nowego budżetu użytkownika
+         * @summary Create new user budget
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1131,9 +1133,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Usunięcie kategorii. Polega na ustawieniu flagi deleted na true, aby nie zwracać tej kategorii jako dostępnej do wyboru, ale żeby stare wydatki nie straciły kategorii
-         * @summary Usunięcie kategorii
-         * @param {string} categoryId ID kategorii
+         * Deletes a category. Sets the \'deleted\' flag to true so it is not returned as an available choice, but old expenses do not lose their category.
+         * @summary Delete category
+         * @param {string} categoryId Category ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1144,9 +1146,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Usuwa wydatek wraz ze wszystkimi jego pozycjami (items).
-         * @summary Usunięcie wydatku
-         * @param {string} expenseId ID wydatku do usunięcia
+         * Deletes the expense along with all its items.
+         * @summary Delete expense
+         * @param {string} expenseId ID of the expense to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1157,10 +1159,10 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane.
-         * @summary Usunięcie konkretnej pozycji wydatku
-         * @param {string} expenseId ID wydatku
-         * @param {string} itemId ID pozycji (itemu) do usunięcia
+         * Removes a single item from the expense. The total amount and item count are automatically recalculated.
+         * @summary Delete specific expense item
+         * @param {string} expenseId Expense ID
+         * @param {string} itemId ID of the item to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1171,8 +1173,8 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu).
-         * @summary Pobranie wszystkich kategorii użytkownika
+         * Returns a list of user-defined expense categories (e.g., for the dropdown when manually adding an expense or filtering).
+         * @summary Get all user categories
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1183,10 +1185,10 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend).
-         * @summary Pobranie zagregowanych danych do dashboardu
-         * @param {number} year Rok do analizy
-         * @param {number} month Miesiąc do analizy (1-12). Trend 6-miesięczny będzie obliczony wstecz od tej daty.
+         * Returns all data needed for the initial dashboard load for a given month (KPI, Widget 1 - categories, Widget 2 - trend).
+         * @summary Get aggregated dashboard data
+         * @param {number} year Year for analysis
+         * @param {number} month Month for analysis (1-12). The 6-month trend will be calculated backwards from this date.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1197,9 +1199,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-         * @summary Pobranie pełnych szczegółów wydatku (z itemami)
-         * @param {string} expenseId ID wydatku, którego szczegóły chcemy pobrać
+         * Fetches the full expense object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+         * @summary Get full expense details (with items)
+         * @param {string} expenseId ID of the expense to fetch details for
          * @param {string} [categoryId] Category which expense items we want to see in details
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1211,10 +1213,10 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację.
-         * @summary Pobranie historii wydatków (dla Widżetu 3)
-         * @param {number} year Rok, dla którego pobierane są wydatki
-         * @param {number} month Miesiąc (1-12), dla którego pobierane są wydatki
+         * Returns a list of expenses for the logged-in user. Key endpoint for Widget 3 on the dashboard. Supports filtering by date (year/month) and category. Supports pagination by default.
+         * @summary Get expense history (for Widget 3)
+         * @param {number} year Year for which expenses are fetched
+         * @param {number} month Month (1-12) for which expenses are fetched
          * @param {string} [categoryId] 
          * @param {number} [page] 
          * @param {number} [size] 
@@ -1228,9 +1230,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Pobiera pełny obiekt listy zakupów, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-         * @summary Pobranie pełnych szczegółów listy zakupów
-         * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+         * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+         * @summary Get full shopping list details
+         * @param {string} shoppingListId ID of the shopping list to fetch details for
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1242,7 +1244,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Pobranie list zakupowych użytkownika
+         * @summary Get user shopping lists
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1254,9 +1256,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)
-         * @param {number} year Rok budżetu
-         * @param {number} month Miesiąc budżetu
+         * @summary Get current user budget (for this month)
+         * @param {number} year Budget year
+         * @param {number} month Budget month
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1268,7 +1270,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Logowanie użytkownika
+         * @summary User login
          * @param {UserLogin} userLogin 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1281,7 +1283,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Wylogowanie użytkownika
+         * @summary User logout
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1293,7 +1295,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Rejestracja nowego użytkownika
+         * @summary Register new user
          * @param {UserRegistration} userRegistration 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1305,9 +1307,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Aktualizuje informacje o kategorii - nazwę i opis
-         * @summary Aktualizacja kategorii
-         * @param {string} categoryId ID kategorii do aktualizacji
+         * Updates category information - name and description
+         * @summary Update category
+         * @param {string} categoryId ID of the category to update
          * @param {NewCategory} newCategory 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1319,9 +1321,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą.
-         * @summary Aktualizacja całego wydatku
-         * @param {string} expenseId ID wydatku do aktualizacji
+         * Updates basic information about the expense and all its items. The items list is replaced with the new one.
+         * @summary Update entire expense
+         * @param {string} expenseId ID of the expense to update
          * @param {NewExpense} newExpense 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1333,10 +1335,10 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię).
-         * @summary Aktualizacja konkretnej pozycji wydatku
-         * @param {string} expenseId ID wydatku
-         * @param {string} itemId ID pozycji (itemu) do aktualizacji
+         * Updates details of a single item in the expense (e.g., product name, price, category).
+         * @summary Update specific expense item
+         * @param {string} expenseId Expense ID
+         * @param {string} itemId ID of the item to update
          * @param {NewExpenseItem} newExpenseItem 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1349,7 +1351,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Aktualizacja budżetu użytkownika
+         * @summary Update user budget
          * @param {string} budgetId 
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
@@ -1362,9 +1364,9 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek.
-         * @summary Przesłanie zdjęcia paragonu do przetworzenia
-         * @param {File} [image] Plik obrazu paragonu
+         * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
+         * @summary Upload receipt image for processing
+         * @param {File} [image] Receipt image file
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1376,7 +1378,7 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Odświeżenie tokenu użytkownika
+         * @summary Refresh user token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1397,9 +1399,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = MainAppApiFp(configuration)
     return {
         /**
-         * Dodaje pełną listę produktów do danej listy zakupowej. Frontend wysyła zbiorcze zapytanie dla wszystkich itemów dodawanych przez użytkownika w danej akcji.
-         * @summary Dodanie listy produktów do listy zakupowej
-         * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+         * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
+         * @summary Add list of products to shopping list
+         * @param {string} shoppingListId ID of the shopping list
          * @param {NewShoppingListItems} newShoppingListItems 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1409,7 +1411,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Ręczne dodanie wydatku
+         * @summary Manually add expense
          * @param {NewExpense} newExpense 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1419,7 +1421,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Tworzenie nowej kategorii wydatków
+         * @summary Create new expense category
          * @param {NewCategory} newCategory 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1429,7 +1431,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Stworzenie nowej listy zakupowej
+         * @summary Create new shopping list
          * @param {NewShoppingList} newShoppingList 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1439,7 +1441,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Utworzenie nowego budżetu użytkownika
+         * @summary Create new user budget
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1448,9 +1450,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.createUserBudget(newMonthlyBudget, options).then((request) => request(axios, basePath));
         },
         /**
-         * Usunięcie kategorii. Polega na ustawieniu flagi deleted na true, aby nie zwracać tej kategorii jako dostępnej do wyboru, ale żeby stare wydatki nie straciły kategorii
-         * @summary Usunięcie kategorii
-         * @param {string} categoryId ID kategorii
+         * Deletes a category. Sets the \'deleted\' flag to true so it is not returned as an available choice, but old expenses do not lose their category.
+         * @summary Delete category
+         * @param {string} categoryId Category ID
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1458,9 +1460,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.deleteCategory(categoryId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Usuwa wydatek wraz ze wszystkimi jego pozycjami (items).
-         * @summary Usunięcie wydatku
-         * @param {string} expenseId ID wydatku do usunięcia
+         * Deletes the expense along with all its items.
+         * @summary Delete expense
+         * @param {string} expenseId ID of the expense to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1468,10 +1470,10 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.deleteExpense(expenseId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane.
-         * @summary Usunięcie konkretnej pozycji wydatku
-         * @param {string} expenseId ID wydatku
-         * @param {string} itemId ID pozycji (itemu) do usunięcia
+         * Removes a single item from the expense. The total amount and item count are automatically recalculated.
+         * @summary Delete specific expense item
+         * @param {string} expenseId Expense ID
+         * @param {string} itemId ID of the item to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1479,8 +1481,8 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.deleteExpenseItem(expenseId, itemId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu).
-         * @summary Pobranie wszystkich kategorii użytkownika
+         * Returns a list of user-defined expense categories (e.g., for the dropdown when manually adding an expense or filtering).
+         * @summary Get all user categories
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1488,10 +1490,10 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getCategories(options).then((request) => request(axios, basePath));
         },
         /**
-         * Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend).
-         * @summary Pobranie zagregowanych danych do dashboardu
-         * @param {number} year Rok do analizy
-         * @param {number} month Miesiąc do analizy (1-12). Trend 6-miesięczny będzie obliczony wstecz od tej daty.
+         * Returns all data needed for the initial dashboard load for a given month (KPI, Widget 1 - categories, Widget 2 - trend).
+         * @summary Get aggregated dashboard data
+         * @param {number} year Year for analysis
+         * @param {number} month Month for analysis (1-12). The 6-month trend will be calculated backwards from this date.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1499,9 +1501,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getDashboardData(year, month, options).then((request) => request(axios, basePath));
         },
         /**
-         * Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-         * @summary Pobranie pełnych szczegółów wydatku (z itemami)
-         * @param {string} expenseId ID wydatku, którego szczegóły chcemy pobrać
+         * Fetches the full expense object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+         * @summary Get full expense details (with items)
+         * @param {string} expenseId ID of the expense to fetch details for
          * @param {string} [categoryId] Category which expense items we want to see in details
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1510,10 +1512,10 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getExpenseDetails(expenseId, categoryId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację.
-         * @summary Pobranie historii wydatków (dla Widżetu 3)
-         * @param {number} year Rok, dla którego pobierane są wydatki
-         * @param {number} month Miesiąc (1-12), dla którego pobierane są wydatki
+         * Returns a list of expenses for the logged-in user. Key endpoint for Widget 3 on the dashboard. Supports filtering by date (year/month) and category. Supports pagination by default.
+         * @summary Get expense history (for Widget 3)
+         * @param {number} year Year for which expenses are fetched
+         * @param {number} month Month (1-12) for which expenses are fetched
          * @param {string} [categoryId] 
          * @param {number} [page] 
          * @param {number} [size] 
@@ -1524,9 +1526,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getExpensesList(year, month, categoryId, page, size, options).then((request) => request(axios, basePath));
         },
         /**
-         * Pobiera pełny obiekt listy zakupów, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-         * @summary Pobranie pełnych szczegółów listy zakupów
-         * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+         * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+         * @summary Get full shopping list details
+         * @param {string} shoppingListId ID of the shopping list to fetch details for
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1535,7 +1537,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Pobranie list zakupowych użytkownika
+         * @summary Get user shopping lists
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1544,9 +1546,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)
-         * @param {number} year Rok budżetu
-         * @param {number} month Miesiąc budżetu
+         * @summary Get current user budget (for this month)
+         * @param {number} year Budget year
+         * @param {number} month Budget month
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1555,7 +1557,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Logowanie użytkownika
+         * @summary User login
          * @param {UserLogin} userLogin 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1565,7 +1567,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Wylogowanie użytkownika
+         * @summary User logout
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1574,7 +1576,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Rejestracja nowego użytkownika
+         * @summary Register new user
          * @param {UserRegistration} userRegistration 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1583,9 +1585,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.registerUser(userRegistration, options).then((request) => request(axios, basePath));
         },
         /**
-         * Aktualizuje informacje o kategorii - nazwę i opis
-         * @summary Aktualizacja kategorii
-         * @param {string} categoryId ID kategorii do aktualizacji
+         * Updates category information - name and description
+         * @summary Update category
+         * @param {string} categoryId ID of the category to update
          * @param {NewCategory} newCategory 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1594,9 +1596,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.updaetCategory(categoryId, newCategory, options).then((request) => request(axios, basePath));
         },
         /**
-         * Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą.
-         * @summary Aktualizacja całego wydatku
-         * @param {string} expenseId ID wydatku do aktualizacji
+         * Updates basic information about the expense and all its items. The items list is replaced with the new one.
+         * @summary Update entire expense
+         * @param {string} expenseId ID of the expense to update
          * @param {NewExpense} newExpense 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1605,10 +1607,10 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.updateExpense(expenseId, newExpense, options).then((request) => request(axios, basePath));
         },
         /**
-         * Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię).
-         * @summary Aktualizacja konkretnej pozycji wydatku
-         * @param {string} expenseId ID wydatku
-         * @param {string} itemId ID pozycji (itemu) do aktualizacji
+         * Updates details of a single item in the expense (e.g., product name, price, category).
+         * @summary Update specific expense item
+         * @param {string} expenseId Expense ID
+         * @param {string} itemId ID of the item to update
          * @param {NewExpenseItem} newExpenseItem 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1618,7 +1620,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Aktualizacja budżetu użytkownika
+         * @summary Update user budget
          * @param {string} budgetId 
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
@@ -1628,9 +1630,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.updateUserBudget(budgetId, newMonthlyBudget, options).then((request) => request(axios, basePath));
         },
         /**
-         * Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek.
-         * @summary Przesłanie zdjęcia paragonu do przetworzenia
-         * @param {File} [image] Plik obrazu paragonu
+         * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
+         * @summary Upload receipt image for processing
+         * @param {File} [image] Receipt image file
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1639,7 +1641,7 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Odświeżenie tokenu użytkownika
+         * @summary Refresh user token
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1657,9 +1659,9 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
  */
 export class MainAppApi extends BaseAPI {
     /**
-     * Dodaje pełną listę produktów do danej listy zakupowej. Frontend wysyła zbiorcze zapytanie dla wszystkich itemów dodawanych przez użytkownika w danej akcji.
-     * @summary Dodanie listy produktów do listy zakupowej
-     * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+     * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
+     * @summary Add list of products to shopping list
+     * @param {string} shoppingListId ID of the shopping list
      * @param {NewShoppingListItems} newShoppingListItems 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1671,7 +1673,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Ręczne dodanie wydatku
+     * @summary Manually add expense
      * @param {NewExpense} newExpense 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1683,7 +1685,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Tworzenie nowej kategorii wydatków
+     * @summary Create new expense category
      * @param {NewCategory} newCategory 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1695,7 +1697,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Stworzenie nowej listy zakupowej
+     * @summary Create new shopping list
      * @param {NewShoppingList} newShoppingList 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1707,7 +1709,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Utworzenie nowego budżetu użytkownika
+     * @summary Create new user budget
      * @param {NewMonthlyBudget} newMonthlyBudget 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1718,9 +1720,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Usunięcie kategorii. Polega na ustawieniu flagi deleted na true, aby nie zwracać tej kategorii jako dostępnej do wyboru, ale żeby stare wydatki nie straciły kategorii
-     * @summary Usunięcie kategorii
-     * @param {string} categoryId ID kategorii
+     * Deletes a category. Sets the \'deleted\' flag to true so it is not returned as an available choice, but old expenses do not lose their category.
+     * @summary Delete category
+     * @param {string} categoryId Category ID
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1730,9 +1732,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Usuwa wydatek wraz ze wszystkimi jego pozycjami (items).
-     * @summary Usunięcie wydatku
-     * @param {string} expenseId ID wydatku do usunięcia
+     * Deletes the expense along with all its items.
+     * @summary Delete expense
+     * @param {string} expenseId ID of the expense to delete
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1742,10 +1744,10 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Usuwa pojedynczy item z wydatku. Całkowita kwota wydatku i liczba itemów są automatycznie przeliczane.
-     * @summary Usunięcie konkretnej pozycji wydatku
-     * @param {string} expenseId ID wydatku
-     * @param {string} itemId ID pozycji (itemu) do usunięcia
+     * Removes a single item from the expense. The total amount and item count are automatically recalculated.
+     * @summary Delete specific expense item
+     * @param {string} expenseId Expense ID
+     * @param {string} itemId ID of the item to delete
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1755,8 +1757,8 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Zwraca listę zdefiniowanych przez użytkownika kategorii wydatków (np. do dropdowna przy ręcznym dodawaniu wydatku lub filtrowaniu).
-     * @summary Pobranie wszystkich kategorii użytkownika
+     * Returns a list of user-defined expense categories (e.g., for the dropdown when manually adding an expense or filtering).
+     * @summary Get all user categories
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1766,10 +1768,10 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Zwraca wszystkie dane potrzebne do inicjalnego załadowania dashboardu dla danego miesiąca (KPI, Widżet 1 - kategorie, Widżet 2 - trend).
-     * @summary Pobranie zagregowanych danych do dashboardu
-     * @param {number} year Rok do analizy
-     * @param {number} month Miesiąc do analizy (1-12). Trend 6-miesięczny będzie obliczony wstecz od tej daty.
+     * Returns all data needed for the initial dashboard load for a given month (KPI, Widget 1 - categories, Widget 2 - trend).
+     * @summary Get aggregated dashboard data
+     * @param {number} year Year for analysis
+     * @param {number} month Month for analysis (1-12). The 6-month trend will be calculated backwards from this date.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1779,9 +1781,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Pobiera pełny obiekt wydatku, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-     * @summary Pobranie pełnych szczegółów wydatku (z itemami)
-     * @param {string} expenseId ID wydatku, którego szczegóły chcemy pobrać
+     * Fetches the full expense object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+     * @summary Get full expense details (with items)
+     * @param {string} expenseId ID of the expense to fetch details for
      * @param {string} [categoryId] Category which expense items we want to see in details
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1792,10 +1794,10 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Zwraca listę wydatków zalogowanego użytkownika. Kluczowy endpoint dla Widżetu 3 na dashboardzie. Umożliwia filtrowanie po dacie (rok/miesiąc) oraz kategorii. Domyślnie wspiera paginację.
-     * @summary Pobranie historii wydatków (dla Widżetu 3)
-     * @param {number} year Rok, dla którego pobierane są wydatki
-     * @param {number} month Miesiąc (1-12), dla którego pobierane są wydatki
+     * Returns a list of expenses for the logged-in user. Key endpoint for Widget 3 on the dashboard. Supports filtering by date (year/month) and category. Supports pagination by default.
+     * @summary Get expense history (for Widget 3)
+     * @param {number} year Year for which expenses are fetched
+     * @param {number} month Month (1-12) for which expenses are fetched
      * @param {string} [categoryId] 
      * @param {number} [page] 
      * @param {number} [size] 
@@ -1808,9 +1810,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Pobiera pełny obiekt listy zakupów, w tym listę wszystkich jego pozycji (itemów). Używane, gdy użytkownik klika \'Details\' na liście.
-     * @summary Pobranie pełnych szczegółów listy zakupów
-     * @param {string} shoppingListId ID listy zakupów, której szczegóły chcemy pobrać
+     * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
+     * @summary Get full shopping list details
+     * @param {string} shoppingListId ID of the shopping list to fetch details for
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1821,7 +1823,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Pobranie list zakupowych użytkownika
+     * @summary Get user shopping lists
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1832,9 +1834,9 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Pobranie aktualnego budżetu użytkownika (dla tego miesiąca)
-     * @param {number} year Rok budżetu
-     * @param {number} month Miesiąc budżetu
+     * @summary Get current user budget (for this month)
+     * @param {number} year Budget year
+     * @param {number} month Budget month
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1845,7 +1847,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Logowanie użytkownika
+     * @summary User login
      * @param {UserLogin} userLogin 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1857,7 +1859,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Wylogowanie użytkownika
+     * @summary User logout
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1868,7 +1870,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Rejestracja nowego użytkownika
+     * @summary Register new user
      * @param {UserRegistration} userRegistration 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1879,9 +1881,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Aktualizuje informacje o kategorii - nazwę i opis
-     * @summary Aktualizacja kategorii
-     * @param {string} categoryId ID kategorii do aktualizacji
+     * Updates category information - name and description
+     * @summary Update category
+     * @param {string} categoryId ID of the category to update
      * @param {NewCategory} newCategory 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1892,9 +1894,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Aktualizuje podstawowe informacje o wydatku oraz wszystkie jego pozycje (items). Items są zastępowane nową listą.
-     * @summary Aktualizacja całego wydatku
-     * @param {string} expenseId ID wydatku do aktualizacji
+     * Updates basic information about the expense and all its items. The items list is replaced with the new one.
+     * @summary Update entire expense
+     * @param {string} expenseId ID of the expense to update
      * @param {NewExpense} newExpense 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1905,10 +1907,10 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Aktualizuje szczegóły pojedynczego itemu w wydatku (np. nazwę produktu, cenę, kategorię).
-     * @summary Aktualizacja konkretnej pozycji wydatku
-     * @param {string} expenseId ID wydatku
-     * @param {string} itemId ID pozycji (itemu) do aktualizacji
+     * Updates details of a single item in the expense (e.g., product name, price, category).
+     * @summary Update specific expense item
+     * @param {string} expenseId Expense ID
+     * @param {string} itemId ID of the item to update
      * @param {NewExpenseItem} newExpenseItem 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1920,7 +1922,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Aktualizacja budżetu użytkownika
+     * @summary Update user budget
      * @param {string} budgetId 
      * @param {NewMonthlyBudget} newMonthlyBudget 
      * @param {*} [options] Override http request option.
@@ -1932,9 +1934,9 @@ export class MainAppApi extends BaseAPI {
     }
 
     /**
-     * Endpoint przyjmuje obraz paragonu. Backend wysyła go do modułu AI w celu ekstrakcji danych (OCR) i kategoryzacji, a następnie zwraca użytkownikowi gotowy do zaakceptowania i dodania wydatek.
-     * @summary Przesłanie zdjęcia paragonu do przetworzenia
-     * @param {File} [image] Plik obrazu paragonu
+     * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
+     * @summary Upload receipt image for processing
+     * @param {File} [image] Receipt image file
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
@@ -1945,7 +1947,7 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Odświeżenie tokenu użytkownika
+     * @summary Refresh user token
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi

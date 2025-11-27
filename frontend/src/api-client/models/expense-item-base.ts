@@ -33,13 +33,13 @@ export interface ExpenseItemBase {
      */
     'quantity': number;
     /**
-     * Cena za sztukę, nie może być ujemna
+     * Price per unit, cannot be negative
      * @type {number}
      * @memberof ExpenseItemBase
      */
     'price': number;
     /**
-     * ID kategorii (opcjonalne, bo OCR może nie rozpoznać)
+     * Category ID (optional, as OCR might not recognize it)
      * @type {string}
      * @memberof ExpenseItemBase
      */
