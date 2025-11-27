@@ -80,12 +80,6 @@ public class GlobalExceptionHandler {
         return createResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
-            HttpServletRequest request) {
-        log.warn("Access denied: {}", ex.getMessage());
-        return createResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
-    }
 
     // LEVEL 3 - everything else (response code 500)
     @ExceptionHandler(Exception.class)
@@ -100,21 +94,21 @@ public class GlobalExceptionHandler {
                 request);
     }
 
-    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message,
-            HttpServletRequest request) {
+    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, HttpServletRequest request) {
         return createResponse(status, message, List.of(), request);
     }
 
-    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, List<String> details,
-            HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                UUID.randomUUID().toString(),
-                LocalDateTime.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                message,
-                request.getRequestURI(),
-                details);
+    private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, List<String> details, HttpServletRequest request) {
+        ErrorResponse body = ErrorResponse.builder()
+                .id(UUID.randomUUID().toString())
+                .timestamp(LocalDateTime.now())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message(message)
+                .path(request.getRequestURI())
+                .details(details)
+                .build();
+
         return new ResponseEntity<>(body, status);
     }
 }
