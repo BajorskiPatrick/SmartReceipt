@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "category_budgets")
+@Table(name = "monthly_category_budgets")
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryBudgetEntity {
+public class MonthlyCategoryBudgetEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

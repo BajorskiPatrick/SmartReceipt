@@ -45,13 +45,13 @@ public class MonthlyBudgetEntity {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @Builder.Default
-    private List<CategoryBudgetEntity> categoryBudgets = new ArrayList<>();
+    private List<MonthlyCategoryBudgetEntity> categoryBudgets = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    public void addCategoryBudget(CategoryBudgetEntity categoryBudget) {
+    public void addCategoryBudget(MonthlyCategoryBudgetEntity categoryBudget) {
         categoryBudgets.add(categoryBudget);
         categoryBudget.setMonthlyBudget(this);
     }
