@@ -1,6 +1,6 @@
 package com.sp.smartreceipt.dashboard.service;
 
-import com.sp.smartreceipt.budget.entity.CategoryBudgetEntity;
+import com.sp.smartreceipt.budget.entity.MonthlyCategoryBudgetEntity;
 import com.sp.smartreceipt.budget.entity.MonthlyBudgetEntity;
 import com.sp.smartreceipt.budget.repository.BudgetRepository;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
@@ -53,7 +53,7 @@ public class DashboardService {
     }
 
     private List<DashboardCategorySummaryItem> generateCategorySummaryItems(List<ExpenseEntity> expenses, Integer year, Integer month, String userEmail) {
-        List<CategoryBudgetEntity> categoryBudgets = budgetRepository.findByYearAndMonthAndUserEmail(year, month, userEmail)
+        List<MonthlyCategoryBudgetEntity> categoryBudgets = budgetRepository.findByYearAndMonthAndUserEmail(year, month, userEmail)
                 .map(MonthlyBudgetEntity::getCategoryBudgets)
                 .orElse(new ArrayList<>());
 
@@ -69,7 +69,7 @@ public class DashboardService {
         categoryTotalSpendingMap.forEach((category, total) -> {
             BigDecimal budget = categoryBudgets.stream()
                     .filter(cb -> cb.getCategory().getCategoryId().equals(category.getCategoryId()))
-                    .map(CategoryBudgetEntity::getBudget)
+                    .map(MonthlyCategoryBudgetEntity::getBudget)
                     .findFirst()
                     .orElse(BigDecimal.ZERO);
 

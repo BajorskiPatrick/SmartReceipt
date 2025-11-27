@@ -1,6 +1,6 @@
 package com.sp.smartreceipt.budget.service;
 
-import com.sp.smartreceipt.budget.entity.CategoryBudgetEntity;
+import com.sp.smartreceipt.budget.entity.MonthlyCategoryBudgetEntity;
 import com.sp.smartreceipt.budget.entity.MonthlyBudgetEntity;
 import com.sp.smartreceipt.budget.repository.BudgetRepository;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
@@ -60,7 +60,7 @@ public class BudgetService {
                 .orElseThrow(() -> new UserNotFoundException(userEmail));
         monthlyBudget.setUser(currentUser);
 
-        List<CategoryBudgetEntity> categoryBudgetEntities = newMonthlyBudget.getCategoryBudgets().stream()
+        List<MonthlyCategoryBudgetEntity> categoryBudgetEntities = newMonthlyBudget.getCategoryBudgets().stream()
                 .map((item) -> translateToCategoryBudgetEntity(item, userEmail))
                 .toList();
 
@@ -97,12 +97,12 @@ public class BudgetService {
         return translateToMonthlyBudgetDto(updatedBudget);
     }
 
-    private CategoryBudgetEntity translateToCategoryBudgetEntity(NewCategoryBudget categoryBudget, String email) {
+    private MonthlyCategoryBudgetEntity translateToCategoryBudgetEntity(NewCategoryBudget categoryBudget, String email) {
         CategoryEntity category = categoryRepository.findByCategoryIdAndUserEmail(categoryBudget.getCategoryId(), email)
                 .orElseThrow(() -> new CategoryNotFoundException(categoryBudget.getCategoryId().toString(),
                         email));
 
-        return CategoryBudgetEntity.builder()
+        return MonthlyCategoryBudgetEntity.builder()
                 .categoryBudgetId(UUID.randomUUID())
                 .category(category)
                 .budget(categoryBudget.getBudget())
@@ -131,10 +131,11 @@ public class BudgetService {
                 .build();
     }
 
-    private CategoryBudget translateToCategoryBudgetDto(CategoryBudgetEntity categoryBudget) {
+    private CategoryBudget translateToCategoryBudgetDto(MonthlyCategoryBudgetEntity categoryBudget) {
         return CategoryBudget.builder()
                 .categoryBudgetId(categoryBudget.getCategoryBudgetId())
                 .categoryId(categoryBudget.getCategory().getCategoryId())
+                .categoryName(categoryBudget.getCategory().getName())
                 .budget(categoryBudget.getBudget())
                 .build();
     }
