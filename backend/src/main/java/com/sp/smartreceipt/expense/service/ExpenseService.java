@@ -2,7 +2,6 @@ package com.sp.smartreceipt.expense.service;
 
 import com.sp.smartreceipt.category.entity.CategoryEntity;
 import com.sp.smartreceipt.category.repository.CategoryRepository;
-import com.sp.smartreceipt.error.exception.AccessDeniedException;
 import com.sp.smartreceipt.error.exception.CategoryNotFoundException;
 import com.sp.smartreceipt.error.exception.ExpenseNotFoundException;
 import com.sp.smartreceipt.error.exception.UserNotFoundException;
@@ -147,6 +146,7 @@ public class ExpenseService {
                 return translateToDetails(savedExpense);
         }
 
+        @Transactional(readOnly = true)
         public List<ExpenseEntity> getExpensesForMonth(Integer year, Integer month) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userEmail = authentication.getName();

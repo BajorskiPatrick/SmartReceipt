@@ -33,13 +33,8 @@ public class ExpenseItemService {
                 String userEmail = authentication.getName();
                 log.info("Updating item ID: {} in expense ID: {}", itemId, expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseId(expenseId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmail(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-                if (!expense.getUser().getEmail().equals(userEmail)) {
-                        throw new AccessDeniedException(
-                                        "Ypu have no rights to update content of this expense with ID: " + expenseId);
-                }
 
                 ExpenseItemEntity itemEntity = expense.getItems().stream()
                                 .filter(item -> item.getExpenseItemId().equals(itemId))
@@ -68,12 +63,8 @@ public class ExpenseItemService {
                 String userEmail = authentication.getName();
                 log.info("Deleting item ID: {} from expense ID: {}", itemId, expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseIdWithItems(expenseId)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailWithItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
-
-                if (!expense.getUser().getEmail().equals(userEmail)) {
-                        throw new AccessDeniedException("You do not have rights to modify this expense ");
-                }
 
                 ExpenseItemEntity itemToRemove = expense.getItems().stream()
                                 .filter(item -> item.getExpenseItemId().equals(itemId))
