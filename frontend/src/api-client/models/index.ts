@@ -24,7 +24,6 @@ export * from './new-shopping-list-item';
 export * from './new-shopping-list-items';
 export * from './ocr-expense';
 export * from './ocr-expense-item';
-export * from './ocr-result';
 export * from './refreshed-token';
 export * from './role';
 export * from './shopping-list';
