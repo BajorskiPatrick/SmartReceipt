@@ -33,7 +33,7 @@ public class ExpenseItemService {
                 String userEmail = authentication.getName();
                 log.info("Updating item ID: {} in expense ID: {}", itemId, expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmail(expenseId, userEmail)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailAndFetchItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 ExpenseItemEntity itemEntity = expense.getItems().stream()
@@ -63,7 +63,7 @@ public class ExpenseItemService {
                 String userEmail = authentication.getName();
                 log.info("Deleting item ID: {} from expense ID: {}", itemId, expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailWithItems(expenseId, userEmail)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailAndFetchItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 ExpenseItemEntity itemToRemove = expense.getItems().stream()

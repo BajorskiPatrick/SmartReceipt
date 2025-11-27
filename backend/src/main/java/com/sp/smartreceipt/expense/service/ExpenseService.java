@@ -74,7 +74,7 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.debug("Searching details for expense ID: {}", expenseId);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailWithItems(expenseId, userEmail)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailAndFetchItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 if (categoryId != null) {
@@ -127,7 +127,7 @@ public class ExpenseService {
                 String userEmail = authentication.getName();
                 log.info("Updating expense ID: {} for user: {}", expenseId, userEmail);
 
-                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmail(expenseId, userEmail)
+                ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailAndFetchItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
 
                 expense.setDescription(request.getDescription());
@@ -147,7 +147,7 @@ public class ExpenseService {
         }
 
         @Transactional(readOnly = true)
-        public List<ExpenseEntity> getExpensesForMonth(Integer year, Integer month) {
+        public List<ExpenseEntity> getExpensesForMonth(Integer year, Integer month, Boolean withItems) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userEmail = authentication.getName();
 
@@ -160,7 +160,8 @@ public class ExpenseService {
                     .atTime(23, 59, 59, 999999999)
                     .atOffset(ZoneOffset.UTC);
 
-            return expenseRepository.findAllByUserEmailAndTransactionDateBetween(userEmail, startOfMonth, endOfMonth);
+            return withItems ? expenseRepository.findAllByUserEmailAndTransactionDateBetweenAndFetchItems(userEmail, startOfMonth, endOfMonth) :
+                    expenseRepository.findAllByUserEmailAndTransactionDateBetween(userEmail, startOfMonth, endOfMonth);
         }
 
         private ExpenseEntity translateToEntity(NewExpense newExpense) {

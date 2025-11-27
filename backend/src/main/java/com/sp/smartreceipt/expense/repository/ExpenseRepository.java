@@ -1,6 +1,7 @@
 package com.sp.smartreceipt.expense.repository;
 
 import com.sp.smartreceipt.expense.entity.ExpenseEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,8 +16,17 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long>, J
 
     Optional<ExpenseEntity> findByExpenseIdAndUserEmail(UUID id, String userEmail);
 
-    @Query("SELECT e FROM ExpenseEntity e LEFT JOIN FETCH e.items WHERE e.expenseId = :expenseId AND e.user.email = :userEmail")
-    Optional<ExpenseEntity> findByExpenseIdAndUserEmailWithItems(@Param("expenseId") UUID expenseId, @Param("userEmail") String userEmail);
+    @EntityGraph(attributePaths = {"items"})
+    @Query("SELECT e FROM ExpenseEntity e WHERE e.expenseId = :id AND e.user.email = :userEmail")
+    Optional<ExpenseEntity> findByExpenseIdAndUserEmailAndFetchItems(@Param("id") UUID id, @Param("userEmail") String userEmail);
 
     List<ExpenseEntity> findAllByUserEmailAndTransactionDateBetween(String email, OffsetDateTime start, OffsetDateTime end);
+
+    @EntityGraph(attributePaths = {"items"})
+    @Query("SELECT e FROM ExpenseEntity e WHERE e.user.email = :email AND e.transactionDate BETWEEN :start AND :end")
+    List<ExpenseEntity> findAllByUserEmailAndTransactionDateBetweenAndFetchItems(
+            @Param("email") String email,
+            @Param("start") OffsetDateTime start,
+            @Param("end") OffsetDateTime end
+    );
 }
