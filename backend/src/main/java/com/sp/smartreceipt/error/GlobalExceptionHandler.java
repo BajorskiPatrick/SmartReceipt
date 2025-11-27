@@ -1,7 +1,7 @@
 package com.sp.smartreceipt.error;
 
 import com.sp.smartreceipt.error.exception.*;
-import com.sp.smartreceipt.error.model.ErrorResponse;
+import com.sp.smartreceipt.model.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -100,8 +101,8 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> createResponse(HttpStatus status, String message, List<String> details, HttpServletRequest request) {
         ErrorResponse body = ErrorResponse.builder()
-                .id(UUID.randomUUID().toString())
-                .timestamp(LocalDateTime.now())
+                .errorId(UUID.randomUUID())
+                .timestamp(OffsetDateTime.now())
                 .status(status.value())
                 .error(status.getReasonPhrase())
                 .message(message)

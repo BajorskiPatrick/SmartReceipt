@@ -37,6 +37,16 @@ paths:
                 $ref: "#/components/schemas/AuthResponse"
         '400':
           description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/login:
     post:
@@ -57,8 +67,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: "Invalid credentials"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/logout:
     post:
@@ -71,6 +97,12 @@ paths:
       responses:
         '200':
           description: "Successfully logged out"
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/refresh:
     post:
@@ -85,8 +117,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefreshedToken'
-        '401':
-          description: "Missing or invalid token"
+        '400':
+          description: "Token refresh failed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /expenses/upload:
     post:
@@ -112,14 +154,42 @@ paths:
             schema:
               $ref: '#/components/schemas/NewOcrExpense'
       responses:
-        '201':
-          description: "Receipt processed, expense ready for approval"
+        '200':
+          description: "Receipt processed successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OcrExpense'
+        '400':
+          description: "Invalid file or validation error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '417':
+          description: "File size exceeds maximum limit (10MB)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: "OCR processing failed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
-          description: "Error during image processing"
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /expenses/manual:
     post:
@@ -142,6 +212,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseDetails'
+        '400':
+          description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /expenses:
     get:
@@ -198,6 +286,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseSummaryPage'
+        '400':
+          description: "Invalid input parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /expenses/{expenseId}:
     get:
@@ -234,6 +334,16 @@ paths:
                 $ref: '#/components/schemas/ExpenseDetails'
         '404':
           description: "Expense not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       operationId: updateExpense
       tags:
@@ -264,10 +374,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseDetails'
-        '404':
-          description: "Expense not found"
         '400':
           description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Expense not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: deleteExpense
       tags:
@@ -290,6 +414,16 @@ paths:
           description: "Expense deleted successfully"
         '404':
           description: "Expense not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /expenses/{expenseId}/items/{itemId}:
     put:
@@ -330,10 +464,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExpenseItem'
-        '404':
-          description: "Expense or item not found"
         '400':
           description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Expense or item not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: deleteExpenseItem
       tags:
@@ -364,6 +512,16 @@ paths:
           description: "Item deleted successfully"
         '404':
           description: "Expense or item not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /budgets:
     get:
@@ -395,8 +553,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonthlyBudget'
-        '204':
-          description: "No budget defined for this month"
+        '400':
+          description: "Invalid input parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: createUserBudget
       tags:
@@ -411,14 +579,24 @@ paths:
             schema:
               $ref: '#/components/schemas/NewMonthlyBudget'
       responses:
-        '200':
+        '201':
           description: "Budget created successfully"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonthlyBudget'
         '400':
-          description: "Budget for this month already exists"
+          description: "Invalid input data or budget for this month already exists"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /budgets/{budgetId}:
     put:
@@ -449,6 +627,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonthlyBudget'
+        '400':
+          description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Budget not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /dashboard:
     get:
@@ -481,7 +677,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DashboardData'
-
+        '400':
+          description: "Invalid input parameters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /shopping-lists:
     get:
@@ -599,6 +806,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Category'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: createCategory
       tags:
@@ -619,6 +832,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Category'
+        '400':
+          description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /categories/{categoryId}:
     put:
@@ -651,10 +876,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Category'
-        '404':
-          description: "Category not found"
         '400':
           description: "Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Category not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       operationId: deleteCategory
       tags:
@@ -677,6 +916,16 @@ paths:
           description: "Category deleted successfully"
         '404':
           description: "Category not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /ai/ocr/process:
     post:
@@ -705,6 +954,10 @@ paths:
                 $ref: '#/components/schemas/OcrResult'
         '400':
           description: "Failed to process image"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
@@ -1212,3 +1465,39 @@ components:
           format: float
           minimum: 0.00
           example: 1500.00
+
+    ErrorResponse:
+      required:
+        - errorId
+        - timestamp
+        - status
+        - error
+        - message
+        - path
+        - details
+      properties:
+        errorId:
+          type: string
+          format: uuid
+          example: "f48ac10b-58cc-4372-a567-0e02b2c3d479"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-15T14:30:00Z"
+        status:
+          type: integer
+          example: 404
+        error:
+          type: string
+          example: "Resource not found for this email"
+        message:
+          type: string
+          example: "Resource not found"
+        path:
+          type: string
+          example: "http://localhost:8080/api/v1.0/categories"
+        details:
+          type: array
+          items:
+            type: string
+          example: ["Resource with provided ID does not exist"]
