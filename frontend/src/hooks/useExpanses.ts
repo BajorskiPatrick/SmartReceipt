@@ -1,42 +1,33 @@
-// src/hooks/useExpanses.ts  //// 🔥 CHANGED (was in repo but now real)
-"use client";
-
+// src/hooks/useExpenses.ts
 import { useEffect, useState } from "react";
 import { api } from "@/api-client/client";
 import type { ExpenseSummary } from "@/api-client/models";
 
-export function useExpanses(year?: number, month?: number, categoryId?: string, refreshTrigger: number = 0, initialPage = 0, initialSize = 20) {
+export function useExpenses(year?: number, month?: number, categoryId?: string) {
   const now = new Date();
   const y = year ?? now.getFullYear();
   const m = month ?? now.getMonth() + 1;
 
-  const [page, setPage] = useState<number>(initialPage);
-  const [size] = useState<number>(initialSize);
   const [data, setData] = useState<ExpenseSummary[]>([]);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    let mounted = true;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.getExpensesList(y, m, categoryId, page, size);
-        const payload = (res && (res as any).data) ? (res as any).data : res;
-        if (!mounted) return;
-        setData(payload?.content ?? payload ?? []);
-        setTotalPages(payload?.totalPages ?? Math.ceil((payload?.totalElements ?? payload.length) / size));
-      } catch (e: any) {
-        setError(e?.message ?? "Błąd ładowania wydatków");
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-    load();
-    return () => { mounted = false; };
-  }, [y, m, categoryId, page, size, refreshTrigger]);
+    setIsLoading(true);
+    api.getExpensesList(y, m, categoryId, page, 20)
+      .then((res: any) => {
+        const payload = res?.data ?? res;
+        // payload likely has items/content and totalPages/totalElements
+        const items = payload.items ?? payload.content ?? payload.expenses ?? [];
+        setData(items);
+        setTotalPages(payload.totalPages ?? payload.totalPages ?? 1);
+      })
+      .catch(() => {
+        setData([]);
+      })
+      .finally(() => setIsLoading(false));
+  }, [y, m, categoryId, page]);
 
-  return { data, page, setPage, size, totalPages, loading, error };
+  return { data, page, totalPages, setPage, isLoading };
 }
