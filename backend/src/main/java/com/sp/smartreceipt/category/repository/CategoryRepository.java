@@ -7,11 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> {
+public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
 
     Optional<CategoryEntity> findByCategoryIdAndUserEmail(UUID categoryId, String userEmail);
-
-    List<CategoryEntity> findAllByUserEmail(String userEmail);
 
     List<CategoryEntity> findAllByUserEmailAndDeletedFalse(String userEmail);
 }

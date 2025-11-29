@@ -13,11 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public Role getUserRole(String email) {
         log.debug("Fetching role for user: {}", email);
         return userRepository.findByEmail(email)
