@@ -2,11 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { api } from "@/api-client/client";
-import type { UserLogin, UserRegistration } from "@/api-client/models";
-
-const basePath = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1.0";
+import type { UserLogin } from "@/api-client/models";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -15,47 +12,57 @@ export function useAuth() {
   async function login(data: UserLogin) {
     setLoading(true);
     setError(null);
-
     try {
-      const res: any = await axios.post(`${basePath}/auth/login`, data, { withCredentials: true });
+      const res: any = await api.loginUser(data);
+      // try a few possible shapes
+      const token =
+        (res && res.data && (res.data.token || res.data.accessToken)) ||
+        (res && (res.token || res.accessToken)) ||
+        null;
 
-      const token = res?.data?.token;
-      if (!token) throw new Error("Brak tokenu w odpowiedzi");
+      if (!token) {
+        // sometimes generator returns object directly
+        // try to read a top-level 'token'
+        if (res && typeof res === "object") {
+          const possible = (res as any).token ?? (res as any).accessToken;
+          if (possible) {
+            localStorage.setItem("accessToken", possible);
+            return true;
+          }
+        }
+        throw new Error("No token in response");
+      }
 
       localStorage.setItem("accessToken", token);
       return true;
     } catch (e: any) {
-      setError(e.message || "Błąd logowania");
+      setError(e?.message || "Błąd logowania");
       return false;
     } finally {
       setLoading(false);
     }
   }
 
-  async function register(data: UserRegistration) {
-    setLoading(true);
-    setError(null);
-
+  async function refresh() {
     try {
-      await axios.post(`${basePath}/auth/register`, data, { withCredentials: true });
-      return true;
-    } catch (e: any) {
-      setError(e.message || "Błąd rejestracji");
-      return false;
-    } finally {
-      setLoading(false);
+      const res: any = await api.userTokenRefresh();
+      const token =
+        (res && res.data && (res.data.token || res.data.accessToken)) ||
+        (res && (res.token || res.accessToken)) ||
+        null;
+      if (token) localStorage.setItem("accessToken", token);
+      else localStorage.removeItem("accessToken");
+    } catch {
+      localStorage.removeItem("accessToken");
     }
   }
 
-  async function logout() {
+  function logout() {
     try {
-      await axios.post(`${basePath}/auth/logout`, {}, { withCredentials: true });
-    } catch (e) {
-      console.warn("Logout request failed", e);
-    }
+      api.logoutUser();
+    } catch {}
     localStorage.removeItem("accessToken");
-    window.location.href = "/login";
   }
 
-  return { login, register, logout, loading, error };
+  return { login, refresh, logout, loading, error };
 }
