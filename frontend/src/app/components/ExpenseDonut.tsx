@@ -67,16 +67,12 @@ interface ExpenseDonutProps {
   totalLabel?: string;
 }
 
-export const CATEGORY_COLORS: Record<string, string> = {
-    'Food': '#42A5F5',
-    'Groceries': '#66BB6A',
-    'Transport': '#FFA726',
-    'Taxes and fees': '#EF5350',
-    'Cosmetics': '#AB47BC',
-    'Household and chemistry': '#26A69A',
-    'Entertainment': '#FFCA28',
-    'Other': '#78909C',
-};
+const defaultColors = [
+  'hsl(210, 18%, 60%)',
+  'hsl(210, 18%, 45%)',
+  'hsl(210, 18%, 35%)',
+  'hsl(210, 18%, 25%)',
+];
 
 export default function ExpenseDonut({ data, totalLabel = 'Total' }: ExpenseDonutProps) {
   const total = data.reduce((s, d) => s + d.value, 0);
@@ -92,7 +88,7 @@ export default function ExpenseDonut({ data, totalLabel = 'Total' }: ExpenseDonu
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <PieChart
-            colors={data.map(d => CATEGORY_COLORS[d.label] || CATEGORY_COLORS['Other'])}
+            colors={defaultColors}
             margin={{ left: 40, right: 40, top: 40, bottom: 40 }}
             series={[
               {
