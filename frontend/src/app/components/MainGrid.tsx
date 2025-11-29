@@ -1,93 +1,194 @@
 import * as React from 'react';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Copyright from '../internals/components/Copyright';
-import ChartUserByCountry from './ChartUserByCountry';
-import CustomizedTreeView from './CustomizedTreeView';
-import CustomizedDataGrid from './CustomizedDataGrid';
-import HighlightedCard from './HighlightedCard';
-import PageViewsBarChart from './PageViewsBarChart';
-import SessionsChart from './SessionsChart';
-import StatCard, { StatCardProps } from './StatCard';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Collapse from '@mui/material/Collapse';
+import BoxUnstyled from '@mui/material/Box';
+import ExpenseDonut from './ExpenseDonut';
 
-const data: StatCardProps[] = [
-  {
-    title: 'Users',
-    value: '14k',
-    interval: 'Last 30 days',
-    trend: 'up',
-    data: [
-      200, 24, 220, 260, 240, 380, 100, 240, 280, 240, 300, 340, 320, 360, 340, 380,
-      360, 400, 380, 420, 400, 640, 340, 460, 440, 480, 460, 600, 880, 920,
-    ],
-  },
-  {
-    title: 'Conversions',
-    value: '325',
-    interval: 'Last 30 days',
-    trend: 'down',
-    data: [
-      1640, 1250, 970, 1130, 1050, 900, 720, 1080, 900, 450, 920, 820, 840, 600, 820,
-      780, 800, 760, 380, 740, 660, 620, 840, 500, 520, 480, 400, 360, 300, 220,
-    ],
-  },
-  {
-    title: 'Event count',
-    value: '200k',
-    interval: 'Last 30 days',
-    trend: 'neutral',
-    data: [
-      500, 400, 510, 530, 520, 600, 530, 520, 510, 730, 520, 510, 530, 620, 510, 530,
-      520, 410, 530, 520, 610, 530, 520, 610, 530, 420, 510, 430, 520, 510,
-    ],
-  },
+type ExpenseRow = {
+  id: string;
+  date: string;
+  description: string;
+  category: string;
+  amount: number;
+  note?: string;
+};
+
+const MOCK_EXPENSES: ExpenseRow[] = [
+  { id: '1', date: '2025-11-10', description: 'Grocery', category: 'Food', amount: 45.5, note: 'Weekly shopping' },
+  { id: '2', date: '2025-11-08', description: 'Train ticket', category: 'Transport', amount: 12.0 },
+  { id: '3', date: '2025-11-02', description: 'Coffee', category: 'Food', amount: 4.3 },
+  { id: '4', date: '2025-11-01', description: 'Office supplies', category: 'Work', amount: 18.75 },
 ];
 
 export default function MainGrid() {
+  const [current, setCurrent] = React.useState(() => new Date(2025, 10, 1)); // November 2025
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+
+  const donutData = [
+    { label: 'Food', value: 120.8 },
+    { label: 'Transport', value: 48.5 },
+    { label: 'Work', value: 18.75 },
+    { label: 'Other', value: 30.0 },
+  ];
+
+  const totalThisMonth = donutData.reduce((s, d) => s + d.value, 0);
+
+  function prevMonth() {
+    const d = new Date(current);
+    d.setMonth(d.getMonth() - 1);
+    setCurrent(d);
+  }
+
+  function nextMonth() {
+    const d = new Date(current);
+    d.setMonth(d.getMonth() + 1);
+    setCurrent(d);
+  }
+
+  function toggleRow(id: string) {
+    setExpanded((s) => ({ ...s, [id]: !s[id] }));
+  }
+
+  const monthLabel = current.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+
   return (
     <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' } }}>
-      {/* cards */}
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-        Overview
-      </Typography>
-      <Grid
-        container
-        spacing={2}
-        columns={12}
-        sx={{ mb: (theme) => theme.spacing(2) }}
-      >
-        {data.map((card, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6, lg: 3 }}>
-            <StatCard {...card} />
-          </Grid>
-        ))}
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <HighlightedCard />
+      <Box sx={{ position: 'relative', mb: 2 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography component="h2" variant="h6">
+            Dashboard
+          </Typography>
+          {/* empty box to keep spacing */}
+          <Box />
+        </Stack>
+
+        {/* Centered month navigation on md+ */}
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{
+            position: { xs: 'static', md: 'absolute' },
+            left: { md: '50%' },
+            transform: { md: 'translateX(-50%)' },
+            top: { md: 0 },
+            width: { xs: '100%', md: 'auto' },
+            justifyContent: 'center',
+          }}
+        >
+          <IconButton aria-label="previous month" onClick={prevMonth}>
+            <ArrowBackIosNewIcon fontSize="small" />
+          </IconButton>
+          <Paper sx={{ px: 2, py: 0.5, textAlign: 'center' }}>{monthLabel}</Paper>
+          <IconButton aria-label="next month" onClick={nextMonth}>
+            <ArrowForwardIosIcon fontSize="small" />
+          </IconButton>
+        </Stack>
+      </Box>
+
+      {/* KPI cards and quick actions */}
+      <Grid container spacing={2} sx={{ mb: 2 }} columns={12}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="caption">This month</Typography>
+              <Typography variant="h6">{totalThisMonth.toFixed(2)} PLN</Typography>
+              <Typography variant="body2" color="text.secondary">vs last month: +12%</Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SessionsChart />
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="caption">Remaining budget</Typography>
+              <Typography variant="h6">420.00 PLN</Typography>
+              <Typography variant="body2" color="text.secondary">You are within limits</Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <PageViewsBarChart />
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="caption">Avg per day</Typography>
+              <Typography variant="h6">35.00 PLN</Typography>
+              <Typography variant="body2" color="text.secondary">Projected end of month</Typography>
+            </CardContent>
+          </Card>
         </Grid>
-      </Grid>
-      <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-        Details
-      </Typography>
-      <Grid container spacing={2} columns={12}>
-        <Grid size={{ xs: 12, lg: 9 }}>
-          <CustomizedDataGrid />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 3 }}>
-          <Stack gap={2} direction={{ xs: 'column', sm: 'row', lg: 'column' }}>
-            <CustomizedTreeView />
-            <ChartUserByCountry />
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Stack direction="row" spacing={1} sx={{ height: '100%' }} alignItems="center">
+            <Button variant="contained">Add expense</Button>
+            <Button variant="outlined">Add from receipt</Button>
           </Stack>
         </Grid>
       </Grid>
-      <Copyright sx={{ my: 4 }} />
+
+      {/* Main area: donut + expenses list */}
+      <Grid container spacing={2} columns={12}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <ExpenseDonut data={donutData} totalLabel="This month" />
+        </Grid>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>Recent expenses</Typography>
+          <TableContainer component={Box}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {MOCK_EXPENSES.map((row) => (
+                  <React.Fragment key={row.id}>
+                    <TableRow hover>
+                      <TableCell>{row.date}</TableCell>
+                      <TableCell>{row.description}</TableCell>
+                      <TableCell>{row.category}</TableCell>
+                      <TableCell align="right">{row.amount.toFixed(2)} PLN</TableCell>
+                      <TableCell>
+                        <Button size="small" onClick={() => toggleRow(row.id)}>Details</Button>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                        <Collapse in={!!expanded[row.id]} timeout="auto" unmountOnExit>
+                          <BoxUnstyled sx={{ margin: 1 }}>
+                            <Typography variant="body2">Note: {row.note ?? '—'}</Typography>
+                            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                              <Button size="small">Edit</Button>
+                              <Button size="small">Receipt</Button>
+                            </Stack>
+                          </BoxUnstyled>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
