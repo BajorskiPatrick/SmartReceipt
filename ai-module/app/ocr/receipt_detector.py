@@ -3,7 +3,9 @@ import numpy as np
 import pytesseract
 from ultralytics import YOLO
 from pathlib import Path
+from app.utils.logger import get_logger
 
+logger = get_logger("ReceiptDetector")
 
 class ReceiptDetector:
     def __init__(self, model_path: str = None):
@@ -18,6 +20,7 @@ class ReceiptDetector:
 
         # Ładujemy model
         self.model = YOLO(str(self.model_path))
+        logger.info(f"Model loaded from {self.model_path}")
 
     def _order_points(self, pts):
         """
@@ -54,11 +57,15 @@ class ReceiptDetector:
         heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
         maxHeight = max(int(heightA), int(heightB))
 
-        dst = np.array([
-            [0, 0],
-            [maxWidth - 1, 0],
-            [maxWidth - 1, maxHeight - 1],
-            [0, maxHeight - 1]], dtype="float32")
+        dst = np.array(
+            [
+                [0, 0],
+                [maxWidth - 1, 0],
+                [maxWidth - 1, maxHeight - 1],
+                [0, maxHeight - 1],
+            ],
+            dtype="float32",
+        )
 
         M = cv2.getPerspectiveTransform(rect, dst)
 
@@ -66,9 +73,11 @@ class ReceiptDetector:
         # borderValue=(255, 255, 255) sprawia, że puste miejsca po obrocie są białe.
         # To kluczowe, bo Donut myśli, że czarne to "treść/tekst", a białe to "papier".
         warped = cv2.warpPerspective(
-            image, M, (maxWidth, maxHeight),
+            image,
+            M,
+            (maxWidth, maxHeight),
             borderMode=cv2.BORDER_CONSTANT,
-            borderValue=(255, 255, 255)
+            borderValue=(255, 255, 255),
         )
 
         # FIX 1: Wymuszenie pionu
@@ -84,7 +93,9 @@ class ReceiptDetector:
         try:
             # Tesseract OSD działa lepiej na większych obrazkach z ramką
             # Dodajemy białą ramkę (border), żeby tekst nie dotykał krawędzi
-            img_with_border = cv2.copyMakeBorder(img, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+            img_with_border = cv2.copyMakeBorder(
+                img, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255)
+            )
 
             # Ograniczamy wielkość do analizy (dla szybkości)
             h, w = img_with_border.shape[:2]
@@ -98,7 +109,11 @@ class ReceiptDetector:
             osd = pytesseract.image_to_osd(check_img, config="--dpi 300 --psm 0")
 
             # Parsujemy wynik
-            rotate_angle = int([line for line in osd.split("\n") if "Rotate" in line][0].split(":")[1].strip())
+            rotate_angle = int(
+                [line for line in osd.split("\n") if "Rotate" in line][0]
+                .split(":")[1]
+                .strip()
+            )
 
             # Obracamy ORYGINAŁ (bez ramki)
             if rotate_angle == 90:
@@ -111,13 +126,13 @@ class ReceiptDetector:
             return img
         except Exception as e:
             # Jeśli OSD zawiedzie (np. mało tekstu), zwracamy oryginał
-            # print(f"   ⚠️ OSD Warning: {e}")
+            # logger.warning(f"   ⚠️ OSD Warning: {e}")
             return img
 
     def process(self, image_path: Path, output_path: Path = None):
         img = cv2.imread(str(image_path))
         if img is None:
-            print(f"Nie można załadować: {image_path}")
+            logger.error(f"Nie można załadować: {image_path}")
             return None
 
         # 1. Inferencja YOLO
@@ -129,7 +144,7 @@ class ReceiptDetector:
             if results[0].boxes and len(results[0].boxes) > 0:
                 # Tu można dodać logikę dla zwykłych boxów, na razie pomijamy
                 pass
-            print(f"⚠️ Nie wykryto paragonu (OBB) na: {image_path.name}")
+            logger.warning(f"⚠️ Nie wykryto paragonu (OBB) na: {image_path.name}")
             return None
 
         # 2. Wybór największego paragonu

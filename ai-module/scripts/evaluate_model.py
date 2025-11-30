@@ -2,9 +2,15 @@ from ultralytics import YOLO
 from pathlib import Path
 import random
 import shutil
+import sys
 
 # --- KONFIGURACJA ---
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
+
+from app.utils.logger import get_logger
+logger = get_logger("EvaluateModel")
+
 MODEL_PATH = BASE_DIR / "src/ocr/models/receipt_yolo_best.pt"
 CORD_RAW_DIR = BASE_DIR / "data/cord/train"
 OUTPUT_DIR = BASE_DIR / "data/detections/visual_test"
@@ -14,8 +20,8 @@ DATASET_YAML = BASE_DIR / "data/yolo_dataset/data.yaml"
 def evaluate():
     # 1. Ładowanie modelu
     if not MODEL_PATH.exists():
-        print(f"❌ Nie znaleziono modelu w {MODEL_PATH}")
-        print(
+        logger.error(f"❌ Nie znaleziono modelu w {MODEL_PATH}")
+        logger.error(
             "   Upewnij się, że skopiowałeś 'best.pt' po treningu (skrypt train_receipt_detector.py to robi)."
         )
         return
@@ -23,17 +29,17 @@ def evaluate():
     model = YOLO(str(MODEL_PATH))
 
     # --- CZĘŚĆ A: Metryki (na danych oznaczonych w Roboflow) ---
-    print("\n📊 --- OBLICZANIE METRYK (VALIDATION SET) ---")
+    logger.info("📊 --- OBLICZANIE METRYK (VALIDATION SET) ---")
     if DATASET_YAML.exists():
         metrics = model.val(data=str(DATASET_YAML))
-        print(f"\n✅ mAP50 (Precyzja ogólna): {metrics.box.map50:.2%}")
-        print(f"✅ mAP50-95 (Precyzja dokładna): {metrics.box.map:.2%}")
-        print("(Im bliżej 100%, tym lepiej. Dla paragonów mAP50 > 90% to super wynik)")
+        logger.info(f"✅ mAP50 (Precyzja ogólna): {metrics.box.map50:.2%}")
+        logger.info(f"✅ mAP50-95 (Precyzja dokładna): {metrics.box.map:.2%}")
+        logger.info("(Im bliżej 100%, tym lepiej. Dla paragonów mAP50 > 90% to super wynik)")
     else:
-        print("⚠️ Pomijam metryki (brak pliku data.yaml)")
+        logger.warning("⚠️ Pomijam metryki (brak pliku data.yaml)")
 
     # --- CZĘŚĆ B: Test wzrokowy (na surowych danych CORD) ---
-    print("\n👁️ --- TEST WZROKOWY (RAW CORD DATA) ---")
+    logger.info("👁️ --- TEST WZROKOWY (RAW CORD DATA) ---")
 
     # Czyścimy stary folder z wynikami
     if OUTPUT_DIR.exists():
@@ -44,14 +50,14 @@ def evaluate():
     all_images = list(CORD_RAW_DIR.glob("*.png")) + list(CORD_RAW_DIR.glob("*.jp*g"))
 
     if not all_images:
-        print("❌ Brak zdjęć w data/cord/train")
+        logger.warning("❌ Brak zdjęć w data/cord/train")
         return
 
     # Bierzemy losowe 20 zdjęć, żeby nie czekać wieki
     sample_size = min(20, len(all_images))
     selected_images = random.sample(all_images, sample_size)
 
-    print(f"🚀 Przetwarzam {sample_size} losowych zdjęć z {CORD_RAW_DIR}...")
+    logger.info(f"🚀 Przetwarzam {sample_size} losowych zdjęć z {CORD_RAW_DIR}...")
 
     # Uruchamiamy predykcję i zapisujemy wyniki
     # save=True -> YOLO samo narysuje ramki i zapisze w runs/obb/predict...
@@ -65,9 +71,9 @@ def evaluate():
         exist_ok=True,  # Nadpisz
     )
 
-    print("\n✅ Zakończono! Wyniki wizualne zapisano w:")
-    print(f"📂 {OUTPUT_DIR}")
-    print("👉 Wejdź tam i zobacz, czy ramki dobrze obejmują paragony.")
+    logger.info("✅ Zakończono! Wyniki wizualne zapisano w:")
+    logger.info(f"📂 {OUTPUT_DIR}")
+    logger.info("👉 Wejdź tam i zobacz, czy ramki dobrze obejmują paragony.")
 
 
 if __name__ == "__main__":
