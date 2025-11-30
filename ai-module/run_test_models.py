@@ -1,23 +1,27 @@
 from pathlib import Path
 import shutil
 import sys
-import matplotlib.pyplot as plt  # Potrzebne, jesli uv nie dociagnelo zaleznosci visualizera
+import copy
 
 # Dodajemy ścieżkę do projektu
 BASE_DIR = Path(__file__).parent
 sys.path.append(str(BASE_DIR))
 
-from src.ocr.receipt_detector import ReceiptDetector
-from src.ocr.receipt_parser import ReceiptParser
-# NOWY IMPORT
-from src.utils.visualizer import Visualizer
-from src.ocr.donut_parser import DonutReceiptParser
+from app.ocr.receipt_detector import ReceiptDetector
+from app.ocr.donut_parser import DonutReceiptParser
+from app.nlp.categorizer import ProductCategorizer
+from app.ocr.LocalLlmReceiptParser import LocalLlmReceiptParser
+from app.utils.visualizer import Visualizer
+
+from app.utils.logger import get_logger
+
+logger = get_logger("TestModels")
+
 # Konfiguracja ścieżek
 RAW_DIR = BASE_DIR / "data/cord/train"
 PROCESSED_DIR = BASE_DIR / "data/processed/train"
 RESULTS_DIR = BASE_DIR / "data/detections/train"
 DEBUG_DIR = BASE_DIR / "data/debug"
-# NOWY FOLDER NA RAPORTY GRAFICZNE
 VISUAL_DIR = BASE_DIR / "data/visualizations"
 
 # Tworzenie katalogów
@@ -31,59 +35,69 @@ DEBUG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def main():
-    print("--- SmartReceipt Pipeline + Visualization ---")
+    logger.info("--- SmartReceipt Pipeline + Visualization ---")
 
     try:
         detector = ReceiptDetector()
-        parser = DonutReceiptParser()
-        visualizer = Visualizer()  # Inicjalizacja wizualizera
+        parser = LocalLlmReceiptParser()
+        categorizer = ProductCategorizer()
+        visualizer = Visualizer()
     except Exception as e:
-        print(f"❌ Błąd inicjalizacji: {e}")
+        logger.error(f"❌ Błąd inicjalizacji: {e}")
         return
 
-    images = list(RAW_DIR.glob("*.png")) + list(RAW_DIR.glob("*.jpg"))
-    # images = images[:5]
+    # images = list(RAW_DIR.glob("*.png")) + list(RAW_DIR.glob("*.jpg"))
     images = [Path("image.png")]
 
     if not images:
-        print(f"⚠️ Brak zdjęć w {RAW_DIR}")
+        logger.warning(f"⚠️ Brak zdjęć w {RAW_DIR}")
         return
 
     for img_file in images:
-        print(f"\n📄 Przetwarzam: {img_file.name}")
+        if not img_file.exists():
+            logger.warning(f"⚠️ Plik nie istnieje: {img_file}")
+            continue
+            
+        logger.info(f"📄 Przetwarzam: {img_file.name}")
 
-        # 1. YOLO
+        # 1. YOLO (Crop)
         cropped_path = PROCESSED_DIR / img_file.name
         processed_img = detector.process(img_file, output_path=cropped_path)
+        
+        target_path = img_file
+        if processed_img is not None:
+            target_path = cropped_path
+        else:
+            logger.warning("   ⚠️ Nie wykryto paragonu (YOLO). Używam oryginału.")
 
-        if processed_img is None:
-            print("   ⚠️ Nie wykryto paragonu.")
-            continue
+        # 2. Donut (OCR)
+        items = parser.parse(target_path, debug_dir=DEBUG_DIR)
+        
+        # Kopia surowych wyników dla wizualizera
+        raw_items = copy.deepcopy(items)
 
-        # 2. OCR Pipeline
-        items = parser.parse(cropped_path, debug_dir=DEBUG_DIR)
+        # 3. SetFit (Categorization)
+        if items:
+            categorizer.categorize_items(items)
 
-        # Ścieżka do pliku, który wygenerował ReceiptParser w folderze debug
-        # Uwaga: w ReceiptParser.py zapisujemy to jako f"ocr_input_{image_path.name}"
-        debug_img_path = DEBUG_DIR / f"ocr_input_{img_file.name}"
-
-        # 3. GENEROWANIE RAPORTU GRAFICZNEGO
+        # 4. Wizualizacja
         vis_output = VISUAL_DIR / f"report_{img_file.stem}.jpg"
 
         visualizer.create_summary(
             original_path=img_file,
-            cropped_path=cropped_path,
-            items=items,
-            output_path=vis_output
+            cropped_path=cropped_path if target_path == cropped_path else None,
+            raw_items=raw_items,
+            final_items=items,
+            output_path=vis_output,
         )
 
         if items:
-            print(f"   ✅ Znaleziono {len(items)} produktów.")
-            print(f"   📊 Raport graficzny zapisano: {vis_output}")
+            logger.info(f"   ✅ Znaleziono {len(items)} produktów.")
+            logger.info(f"   📊 Raport graficzny zapisano: {vis_output}")
         else:
-            print(f"   ⚠️ Brak produktów. Raport błędu zapisano: {vis_output}")
+            logger.warning(f"   ⚠️ Brak produktów. Raport błędu zapisano: {vis_output}")
 
-    print(f"\n🏁 Zakończono. Otwórz folder: {VISUAL_DIR}")
+    logger.info(f"🏁 Zakończono. Otwórz folder: {VISUAL_DIR}")
 
 
 if __name__ == "__main__":
