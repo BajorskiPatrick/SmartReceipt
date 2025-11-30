@@ -2,8 +2,16 @@ from setfit import SetFitModel, SetFitTrainer
 from datasets import Dataset
 import shutil
 from pathlib import Path
+import sys
+
 # --- POPRAWKA: Importujemy klasę straty ---
 from sentence_transformers.losses import CosineSimilarityLoss
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
+
+from app.utils.logger import get_logger
+logger = get_logger("TrainCategorizer")
 
 # Ścieżka gdzie zapiszemy Twój wytrenowany model
 OUTPUT_DIR = Path("src/nlp/models/my-receipt-categorizer")
@@ -32,7 +40,6 @@ data = [
     ("Sok pomarańczowy 100%", "Groceries"),
     ("Orange Juice", "Groceries"),
     ("Mineral Water", "Groceries"),
-
     # --- ALCOHOL AND STIMULANTS ---
     ("Piwo Tyskie 0.5L", "Alcohol and stimulants"),
     ("Wódka Wyborowa", "Alcohol and stimulants"),
@@ -45,7 +52,6 @@ data = [
     ("Red Wine Cabernet", "Alcohol and stimulants"),
     ("Marlboro Cigarettes", "Alcohol and stimulants"),
     ("Whisky Jameson", "Alcohol and stimulants"),
-
     # --- HOUSEHOLD AND CHEMISTRY ---
     ("Domestos 1L", "Household and chemistry"),
     ("Papier toaletowy 8 rolek", "Household and chemistry"),
@@ -57,7 +63,6 @@ data = [
     ("Laundry Detergent", "Household and chemistry"),
     ("Paper Towels", "Household and chemistry"),
     ("Bleach", "Household and chemistry"),
-
     # --- COSMETICS ---
     ("Szampon Head&Shoulders", "Cosmetics"),
     ("Żel pod prysznic Nivea", "Cosmetics"),
@@ -68,7 +73,6 @@ data = [
     ("Toothpaste", "Cosmetics"),
     ("Deodorant Stick", "Cosmetics"),
     ("Face Cream", "Cosmetics"),
-
     # --- ENTERTAINMENT ---
     ("Bilet do kina", "Entertainment"),
     ("Gra na PS5", "Entertainment"),
@@ -79,7 +83,6 @@ data = [
     ("Book", "Entertainment"),
     ("Netflix Subscription", "Entertainment"),
     ("Concert Ticket", "Entertainment"),
-
     # --- TAXES AND FEES ---
     ("Service Charge", "Taxes and fees"),
     ("Opłata serwisowa", "Taxes and fees"),
@@ -89,7 +92,6 @@ data = [
     ("Tip", "Taxes and fees"),
     ("Tax", "Taxes and fees"),
     ("Service Fee", "Taxes and fees"),
-
     # --- TRANSPORT ---
     ("Bilet autobusowy", "Transport"),
     ("Benzyna PB95", "Transport"),
@@ -100,14 +102,12 @@ data = [
     ("Uber Ride", "Transport"),
     ("Train Ticket", "Transport"),
     ("Parking Fee", "Transport"),
-
     # --- OTHER ---
     ("Torba foliowa", "Other"),
     ("Reklamówka", "Other"),
     ("Plastic Bag", "Other"),
     ("Shopping Bag", "Other"),
     ("Unknown Item", "Other"),
-
     # --- IGNORE / NOISE (Non-products) ---
     ("Suma", "Ignore"),
     ("Suma PLN", "Ignore"),
@@ -135,7 +135,7 @@ data = [
     ("Stolik 5", "Ignore"),
     ("Table 12", "Ignore"),
     ("Paragon fiskalny", "Ignore"),
-    ("Fiscal Receipt", "Ignore")
+    ("Fiscal Receipt", "Ignore"),
 ]
 
 texts = [x[0] for x in data]
@@ -145,12 +145,12 @@ dataset = Dataset.from_dict({"text": texts, "label": labels})
 
 
 def train():
-    print("🚀 Pobieram bazowy model (MiniLM)...")
+    logger.info("🚀 Pobieram bazowy model (MiniLM)...")
     model = SetFitModel.from_pretrained(
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
 
-    print("🏋️ Rozpoczynam trening (Fine-Tuning)...")
+    logger.info("🏋️ Rozpoczynam trening (Fine-Tuning)...")
 
     trainer = SetFitTrainer(
         model=model,
@@ -161,17 +161,17 @@ def train():
         batch_size=16,
         num_iterations=20,
         num_epochs=1,
-        column_mapping={"text": "text", "label": "label"}
+        column_mapping={"text": "text", "label": "label"},
     )
 
     trainer.train()
 
-    print(f"💾 Zapisuję Twój wytrenowany model do: {OUTPUT_DIR}")
+    logger.info(f"💾 Zapisuję Twój wytrenowany model do: {OUTPUT_DIR}")
     if OUTPUT_DIR.exists():
         shutil.rmtree(OUTPUT_DIR)
 
     model.save_pretrained(str(OUTPUT_DIR))
-    print("✅ Gotowe! Możesz używać modelu w categorizer.py")
+    logger.info("✅ Gotowe! Możesz używać modelu w categorizer.py")
 
 
 if __name__ == "__main__":

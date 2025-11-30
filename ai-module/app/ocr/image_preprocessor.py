@@ -24,7 +24,9 @@ class ImagePreprocessor:
 
         # 3. Upscaling (2x)
         # Zwiększamy obraz, bo EasyOCR gubi się na małym druczku
-        scaled = cv2.resize(gray, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LANCZOS4)
+        scaled = cv2.resize(
+            gray, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LANCZOS4
+        )
 
         # 4. Korekcja Gamma (Ratunek dla wyblakłych paragonów)
         # gamma < 1.0 rozjaśnia, gamma > 1.0 przyciemnia.
@@ -32,7 +34,9 @@ class ImagePreprocessor:
         gamma = 0.8  # Eksperymentalne: 0.8 - 1.2
         # Budujemy tablicę lookup table dla szybkości
         invGamma = 1.0 / gamma
-        table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
+        table = np.array(
+            [((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]
+        ).astype("uint8")
         gamma_corrected = cv2.LUT(scaled, table)
 
         # 5. Odszumianie (Bilateral Filter)
@@ -62,7 +66,9 @@ class ImagePreprocessor:
         bitwise_not = cv2.bitwise_not(gray)
 
         # Binaryzacja tylko na potrzeby wykrycia kąta (nie zwracamy tego obrazu)
-        thresh = cv2.threshold(bitwise_not, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        thresh = cv2.threshold(
+            bitwise_not, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+        )[1]
 
         # Pobieramy współrzędne wszystkich pikseli tekstu
         coords = np.column_stack(np.where(thresh > 0))
@@ -87,6 +93,8 @@ class ImagePreprocessor:
         (h, w) = image.shape[:2]
         center = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+        rotated = cv2.warpAffine(
+            image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
+        )
 
         return rotated
