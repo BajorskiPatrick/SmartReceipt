@@ -3,6 +3,7 @@ package com.sp.smartreceipt.category.service;
 import com.sp.smartreceipt.category.config.PredefinedCategories;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
 import com.sp.smartreceipt.category.repository.CategoryRepository;
+import com.sp.smartreceipt.error.exception.CategoryAlreadyExistsException;
 import com.sp.smartreceipt.error.exception.CategoryNotFoundException;
 import com.sp.smartreceipt.error.exception.UserNotFoundException;
 import com.sp.smartreceipt.model.Category;
@@ -10,6 +11,8 @@ import com.sp.smartreceipt.model.NewCategory;
 import com.sp.smartreceipt.user.entity.UserEntity;
 import com.sp.smartreceipt.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -32,6 +36,8 @@ public class CategoryService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
+        log.info("Fetching all active categories for user: {}", userEmail);
+
         return categoryRepository.findAllByUserEmailAndDeletedFalse(userEmail)
                 .stream()
                 .map(this::mapToDto)
@@ -43,21 +49,28 @@ public class CategoryService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
+        log.info("Creating new category: {} for user: {}", newCategory.getName(), userEmail);
+
         CategoryEntity category = mapToEntity(newCategory);
 
         UserEntity currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException(userEmail));
         category.setUser(currentUser);
 
-        CategoryEntity createdCategory = categoryRepository.save(category);
-
-        return mapToDto(createdCategory);
+        try {
+            CategoryEntity createdCategory = categoryRepository.save(category);
+            return mapToDto(createdCategory);
+        } catch (DataIntegrityViolationException e) {
+            throw new CategoryAlreadyExistsException(newCategory.getName(), userEmail);
+        }
     }
 
     @Transactional
     public Category updateCategory(UUID categoryId, NewCategory newCategory) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
+
+        log.info("Updating category with ID: {} for user: {}", categoryId, userEmail);
 
         CategoryEntity category = categoryRepository.findByCategoryIdAndUserEmail(categoryId, userEmail)
                 .orElseThrow(() -> new CategoryNotFoundException(categoryId.toString(), userEmail));
@@ -74,6 +87,8 @@ public class CategoryService {
     public void markCategoryAsDeleted(UUID categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
+
+        log.info("Marking category with ID: {} as deleted for user: {}", categoryId, userEmail);
 
         CategoryEntity category = categoryRepository.findByCategoryIdAndUserEmail(categoryId, userEmail)
                 .orElseThrow(() -> new CategoryNotFoundException(categoryId.toString(), userEmail));

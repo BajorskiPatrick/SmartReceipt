@@ -39,6 +39,8 @@ public class DashboardService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
+        log.info("Fetching dashboard data for {}-{} for user {}", year, month, userEmail);
+
         List<ExpenseEntity> thisMonthExpenses = expenseService.getExpensesForMonth(year, month, true);
 
         List<DashboardTrendItem> previousTrendItems = generateDashboardTrendItems(thisMonthExpenses, year, month);

@@ -5,10 +5,7 @@ import com.sp.smartreceipt.budget.entity.MonthlyBudgetEntity;
 import com.sp.smartreceipt.budget.repository.BudgetRepository;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
 import com.sp.smartreceipt.category.repository.CategoryRepository;
-import com.sp.smartreceipt.error.exception.BudgetNotFoundException;
-import com.sp.smartreceipt.error.exception.BudgetYearAndMonthMismatch;
-import com.sp.smartreceipt.error.exception.CategoryNotFoundException;
-import com.sp.smartreceipt.error.exception.UserNotFoundException;
+import com.sp.smartreceipt.error.exception.*;
 import com.sp.smartreceipt.model.CategoryBudget;
 import com.sp.smartreceipt.model.MonthlyBudget;
 import com.sp.smartreceipt.model.NewCategoryBudget;
@@ -17,6 +14,7 @@ import com.sp.smartreceipt.user.entity.UserEntity;
 import com.sp.smartreceipt.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -66,9 +64,12 @@ public class BudgetService {
 
         categoryBudgetEntities.forEach(monthlyBudget::addCategoryBudget);
 
-        monthlyBudget = budgetRepository.save(monthlyBudget);
-
-        return translateToMonthlyBudgetDto(monthlyBudget);
+        try {
+            monthlyBudget = budgetRepository.save(monthlyBudget);
+            return translateToMonthlyBudgetDto(monthlyBudget);
+        } catch (DataIntegrityViolationException e) {
+            throw new BudgetAlreadyDefinedException(newMonthlyBudget.getYear().toString(), newMonthlyBudget.getMonth().toString(), userEmail);
+        }
     }
 
     @Transactional
