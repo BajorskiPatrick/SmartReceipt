@@ -19,7 +19,8 @@ import TableRow from '@mui/material/TableRow';
 import Collapse from '@mui/material/Collapse';
 import BoxUnstyled from '@mui/material/Box';
 import ExpenseDonut from './ExpenseDonut';
-
+import { useDashboard } from '@/hooks/useDashboard';
+import { useExpanses } from '@/hooks/useExpanses';
 type ExpenseRow = {
   id: string;
   date: string;
@@ -28,26 +29,36 @@ type ExpenseRow = {
   amount: number;
   note?: string;
 };
-
+/*
 const MOCK_EXPENSES: ExpenseRow[] = [
   { id: '1', date: '2025-11-10', description: 'Grocery', category: 'Food', amount: 45.5, note: 'Weekly shopping' },
   { id: '2', date: '2025-11-08', description: 'Train ticket', category: 'Transport', amount: 12.0 },
   { id: '3', date: '2025-11-02', description: 'Coffee', category: 'Food', amount: 4.3 },
   { id: '4', date: '2025-11-01', description: 'Office supplies', category: 'Work', amount: 18.75 },
-];
+];*/
 
 export default function MainGrid() {
-  const [current, setCurrent] = React.useState(() => new Date(2025, 10, 1)); // November 2025
+  const [current, setCurrent] = React.useState(() => new Date()); // November 2025
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
-
+  /*
   const donutData = [
     { label: 'Food', value: 120.8 },
     { label: 'Transport', value: 48.5 },
     { label: 'Work', value: 18.75 },
     { label: 'Other', value: 30.0 },
-  ];
+  ];*/
+  const year = current.getFullYear();
+  const month = current.getMonth() + 1;
 
-  const totalThisMonth = donutData.reduce((s, d) => s + d.value, 0);
+  const { kpi, categorySummary, trendSummary, loading: dashLoading } = useDashboard(year, month);
+  const { data: expenses, page, setPage, totalPages } = useExpanses(year, month, undefined);
+
+  const donutData = (categorySummary || []).map((c) => ({
+    label: c.categoryName,
+    value: c.totalSpendingMonth,
+  }));
+
+  const totalThisMonth = (donutData.reduce((s, d) => s + (d.value || 0), 0) as number) || kpi?.totalSpendingMonth || 0;
 
   function prevMonth() {
     const d = new Date(current);
@@ -108,8 +119,8 @@ export default function MainGrid() {
           <Card>
             <CardContent>
               <Typography variant="caption">This month</Typography>
-              <Typography variant="h6">{totalThisMonth.toFixed(2)} PLN</Typography>
-              <Typography variant="body2" color="text.secondary">vs last month: +12%</Typography>
+              <Typography variant="h6">{(kpi?.totalSpendingMonth ?? totalThisMonth).toFixed(2)} PLN</Typography>
+              <Typography variant="body2" color="text.secondary">Budget: {(kpi?.budget ?? "-") } PLN</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -117,7 +128,7 @@ export default function MainGrid() {
           <Card>
             <CardContent>
               <Typography variant="caption">Remaining budget</Typography>
-              <Typography variant="h6">420.00 PLN</Typography>
+              <Typography variant="h6">{kpi ? Math.max(0, (kpi.budget ?? 0) - (kpi.totalSpendingMonth ?? 0)).toFixed(2) : "—"} PLN</Typography>
               <Typography variant="body2" color="text.secondary">You are within limits</Typography>
             </CardContent>
           </Card>
@@ -126,7 +137,7 @@ export default function MainGrid() {
           <Card>
             <CardContent>
               <Typography variant="caption">Avg per day</Typography>
-              <Typography variant="h6">35.00 PLN</Typography>
+              <Typography variant="h6">{( (kpi?.totalSpendingMonth ?? totalThisMonth) / (new Date().getDate() || 1) ).toFixed(2)} PLN</Typography>
               <Typography variant="body2" color="text.secondary">Projected end of month</Typography>
             </CardContent>
           </Card>
@@ -158,22 +169,22 @@ export default function MainGrid() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {MOCK_EXPENSES.map((row) => (
-                  <React.Fragment key={row.id}>
+                {(expenses || []).map((row: any) => (
+                  <React.Fragment key={row.expenseId}>
                     <TableRow hover>
-                      <TableCell>{row.date}</TableCell>
-                      <TableCell>{row.description}</TableCell>
-                      <TableCell>{row.category}</TableCell>
-                      <TableCell align="right">{row.amount.toFixed(2)} PLN</TableCell>
+                      <TableCell>{new Date(row.transactionDate).toLocaleDateString('pl-PL')}</TableCell>
+                      <TableCell>{row.description || '—'}</TableCell>
+                      <TableCell>{row.categoryName || '—'}</TableCell>
+                      <TableCell align="right">{(row.totalAmount ?? 0).toFixed(2)} PLN</TableCell>
                       <TableCell>
-                        <Button size="small" onClick={() => toggleRow(row.id)}>Details</Button>
+                        <Button size="small" href={`/expenses/${row.expenseId}`}>Details</Button>
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-                        <Collapse in={!!expanded[row.id]} timeout="auto" unmountOnExit>
+                        <Collapse in={!!expanded[row.expenseId]} timeout="auto" unmountOnExit>
                           <BoxUnstyled sx={{ margin: 1 }}>
-                            <Typography variant="body2">Note: {row.note ?? '—'}</Typography>
+                            <Typography variant="body2">Items: {row.itemCount ?? 0}</Typography>
                             <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                               <Button size="small">Edit</Button>
                               <Button size="small">Receipt</Button>

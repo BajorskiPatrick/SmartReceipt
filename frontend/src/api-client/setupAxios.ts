@@ -1,13 +1,10 @@
 // src/api-client/setupAxios.ts
 import axios from "axios";
-import { api } from "./client";
 
-/**
- * Interceptor, który:
- * - przy 401 próbuje wywołać api.userTokenRefresh()
- * - jeśli otrzyma nowy token -> zapisuje go i retry request
- * - zabezpiecza przed wieloma równoległymi refreshami
- */
+const basePath = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1.0";
+
+// zawsze wysyłaj ciasteczka (refreshToken)
+axios.defaults.withCredentials = true;
 
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
@@ -31,18 +28,16 @@ axios.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Avoid infinite loop for refresh endpoint itself
-    if (config.url?.includes("/auth/refresh") || config.url?.includes("/userTokenRefresh")) {
-      // logout fallback
+    // unikamy pętli przy refresh
+    if (config.url?.includes("/auth/refresh")) {
       localStorage.removeItem("accessToken");
+      window.location.href = "/login";
       return Promise.reject(error);
     }
 
-    // If already refreshing, queue the request
     if (isRefreshing) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         addRefreshSubscriber((token: string) => {
-          // set header and retry
           config.headers = config.headers || {};
           config.headers["Authorization"] = `Bearer ${token}`;
           resolve(axios(config));
@@ -52,31 +47,27 @@ axios.interceptors.response.use(
 
     isRefreshing = true;
     try {
-      const refreshRes: any = await api.userTokenRefresh();
-      // Try to be flexible with where token might be:
-      const token =
-        (refreshRes && refreshRes.data && (refreshRes.data.token || refreshRes.data.accessToken)) ||
-        (refreshRes && (refreshRes.token || refreshRes.accessToken)) ||
-        null;
+      const refreshRes = await axios.post(`${basePath}/auth/refresh`, {}, { withCredentials: true });
+      const token = refreshRes?.data?.token;
 
       if (token) {
         localStorage.setItem("accessToken", token);
-        // notify queued requests
         onRefreshed(token);
-        // retry original
+
         config.headers = config.headers || {};
         config.headers["Authorization"] = `Bearer ${token}`;
         isRefreshing = false;
         return axios(config);
       } else {
-        // if backend returned something unexpected, clear storage
         localStorage.removeItem("accessToken");
+        window.location.href = "/login";
         isRefreshing = false;
         return Promise.reject(error);
       }
     } catch (e) {
       isRefreshing = false;
       localStorage.removeItem("accessToken");
+      window.location.href = "/login";
       return Promise.reject(e);
     }
   }
