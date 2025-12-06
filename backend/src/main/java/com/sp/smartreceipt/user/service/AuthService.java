@@ -2,6 +2,7 @@ package com.sp.smartreceipt.user.service;
 
 import com.sp.smartreceipt.category.service.CategoryService;
 import com.sp.smartreceipt.config.util.JwtUtil;
+import com.sp.smartreceipt.error.exception.EmailAlreadyTakenException;
 import com.sp.smartreceipt.error.exception.TokenRefreshException;
 import com.sp.smartreceipt.model.*;
 import com.sp.smartreceipt.user.entity.UserEntity;
@@ -9,6 +10,7 @@ import com.sp.smartreceipt.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,10 +52,14 @@ public class AuthService {
     public AuthResponse registerUser(UserRegistration userRegistration, HttpServletResponse response) {
         log.info("Registering new user: {}", userRegistration.getEmail());
         String rawPassword = userRegistration.getPassword();
-        UserEntity user = userRepository.save(translateToEntity(userRegistration));
-        authenticate(user.getEmail(), rawPassword);
-        categoryService.addPredefinedCategoriesToUser(user);
-        return loginUser(translateToUserLogin(user), response);
+        try {
+            UserEntity user = userRepository.save(translateToEntity(userRegistration));
+            authenticate(user.getEmail(), rawPassword);
+            categoryService.addPredefinedCategoriesToUser(user);
+            return loginUser(translateToUserLogin(user), response);
+        } catch (DataIntegrityViolationException e) {
+            throw new EmailAlreadyTakenException(userRegistration.getEmail());
+        }
     }
 
     @Transactional(readOnly = true)

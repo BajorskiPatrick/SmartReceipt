@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -79,6 +78,13 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         log.error("OCR processing failed: {}", ex.getMessage());
         return createResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleDatabaseIntegrityViolationException(ResourceAlreadyExistsException ex,
+            HttpServletRequest request) {
+        log.error("Resource with provided data already exists: {}", ex.getMessage());
+        return createResponse(HttpStatus.CONFLICT, "Resource with provided data already exists: " + ex.getMessage(), request);
     }
 
 
