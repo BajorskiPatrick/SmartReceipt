@@ -1,7 +1,11 @@
+// src/hooks/useCategorySummary.ts  //// 🆕 NEW
+"use client";
+
 import { useDashboard } from "./useDashboard";
+import type { DashboardCategorySummaryItem } from "@/api-client/models";
 
 export function useCategorySummary(year?: number, month?: number) {
-  const { data } = useDashboard(year, month);
-  // poprawna nazwa to categorySummary
-  return data?.categorySummary ?? [];
+  const { categorySummary, loading, error } = useDashboard(year, month);
+  return { data: categorySummary ?? [], loading, error };
 }
+
