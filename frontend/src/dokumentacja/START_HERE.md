@@ -1,26 +1,26 @@
-# 🎉 Smart Receipt - Integracja Frontend-Backend GOTOWA!
+# Smart Receipt - Integracja Frontend-Backend GOTOWA!
 
-## 📊 Statystyka Pracy
+##  Statystyka Pracy
 
-✅ **12 hooków** - Pełna pokrycie API
-✅ **4 szablony komponentów** - Ready-to-copy przykłady
-✅ **5 plików dokumentacji** - Kompletny przewodnik
-✅ **0 plików .js duplikatów** - Kod oczyszczony
+ **12 hooków** - Pełna pokrycie API
+ **4 szablony komponentów** - Ready-to-copy przykłady
+ **5 plików dokumentacji** - Kompletny przewodnik
+ **0 plików .js duplikatów** - Kod oczyszczony
 
 ---
 
-## 📦 Co Otrzymujesz
+##  Co Otrzymujesz
 
-### 1️⃣ Dokumentacja (5 plików)
+###  Dokumentacja (5 plików)
 
 #### INTEGRATION_GUIDE.md (Obowiązkowe!)
-- ✅ Jak działa API
-- ✅ Pełna dokumentacja 12 hooków
-- ✅ Szablony komponentów
-- ✅ Najczęstsze błędy i rozwiązania
-- ✅ Workflow po widoków
+-  Jak działa API
+-  Pełna dokumentacja 12 hooków
+-  Szablony komponentów
+-  Najczęstsze błędy i rozwiązania
+-  Workflow po widoków
 
-**Czytaj najpierw!** 👈
+**Czytaj najpierw!** 
 
 #### QUICK_START.md
 - Szybkie wprowadzenie
@@ -46,38 +46,38 @@
 
 ---
 
-### 2️⃣ Hooki (12 sztuk)
+### 2️ Hooki (12 sztuk)
 
 #### Istniejące (5)
 ```
-✅ useAuth              - Login, logout, refresh
-✅ useDashboard         - Dane główne
-✅ useExpenses          - Lista wydatków  
-✅ useCategorySummary   - Kategorii
-✅ useExpensesTrend     - Trend
+ useAuth              - Login, logout, refresh
+ useDashboard         - Dane główne
+ useExpenses          - Lista wydatków  
+ useCategorySummary   - Kategorii
+ useExpensesTrend     - Trend
 ```
 
-#### Nowe (7) ✨
+#### Nowe (7) 
 ```
-✨ useShoppingLists         - CRUD dla list
-✨ useShoppingListDetail    - Szczegóły listy
-✨ useBudgets              - Zarządzanie budżetami
-✨ useCategories           - CRUD dla kategorii
-✨ useExpenseDetail        - Szczegóły wydatku
-✨ useReceiptUpload        - OCR paragony
-✨ useExpenseCreate        - Dodawanie wydatku
+ useShoppingLists         - CRUD dla list
+ useShoppingListDetail    - Szczegóły listy
+ useBudgets              - Zarządzanie budżetami
+ useCategories           - CRUD dla kategorii
+ useExpenseDetail        - Szczegóły wydatku
+ useReceiptUpload        - OCR paragony
+ useExpenseCreate        - Dodawanie wydatku
 ```
 
 **Wszystkie hooki mają:**
-- ✅ TypeScript types
-- ✅ Error handling
-- ✅ Loading state
-- ✅ Refetch function
-- ✅ Automatyczny token JWT
+-  TypeScript types
+-  Error handling
+-  Loading state
+-  Refetch function
+-  Automatyczny token JWT
 
 ---
 
-### 3️⃣ Szablony Komponentów (4)
+### 3 Szablony Komponentów (4)
 
 #### DashboardPage.tsx
 ```typescript
@@ -132,7 +132,7 @@ import { useShoppingLists, useShoppingListDetail } from "@/hooks";
 
 ---
 
-## 🚀 Jak Zacząć (3 minuty)
+##  Jak Zacząć (3 minuty)
 
 ### Krok 1: Przeczytaj
 ```bash
@@ -164,7 +164,7 @@ npm run dev
 
 ---
 
-## 📋 Zadania Które Masz Teraz
+##  Zadania Które Masz Teraz
 
 - [ ] Przeczytaj INTEGRATION_GUIDE.md (20 min)
 - [ ] Skonfiguruj .env.local (2 min)
@@ -179,14 +179,14 @@ npm run dev
 
 ---
 
-## 💾 Struktura Plików
+##  Struktura Plików
 
 ```
 frontend/
-├── 📘 INTEGRATION_GUIDE.md       ← Czytaj najpierw!
-├── 🚀 QUICK_START.md             ← Tutorial
-├── 📚 README_INTEGRATION.md      ← Podsumowanie
-├── 📋 CHEAT_SHEET.md             ← Szybki dostęp
+├──  INTEGRATION_GUIDE.md       ← Czytaj najpierw!
+├──  QUICK_START.md             ← Tutorial
+├──  README_INTEGRATION.md      ← Podsumowanie
+├──  CHEAT_SHEET.md             ← Szybki dostęp
 ├── .env.local                    ← Zmienne (stwórz!)
 ├── src/
 │   ├── hooks/                    ← 12 hooków
@@ -222,9 +222,9 @@ frontend/
 
 ---
 
-## ✨ Najlepsze Praktyki
+##  Najlepsze Praktyki
 
-### ✅ Rób tak
+###  Rób tak
 ```typescript
 // 1. Zawsze sprawdzaj stany
 const { data, isLoading, error } = useMyHook();
