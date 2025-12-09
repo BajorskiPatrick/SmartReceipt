@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/api-client/client";
 import type { ExpenseSummary } from "@/api-client/models";
 
-export function useExpanses(year?: number, month?: number, categoryId?: string, initialPage = 0, initialSize = 20) {
+export function useExpanses(year?: number, month?: number, categoryId?: string, refreshTrigger: number = 0, initialPage = 0, initialSize = 20) {
   const now = new Date();
   const y = year ?? now.getFullYear();
   const m = month ?? now.getMonth() + 1;
@@ -36,7 +36,7 @@ export function useExpanses(year?: number, month?: number, categoryId?: string, 
     }
     load();
     return () => { mounted = false; };
-  }, [y, m, categoryId, page, size]);
+  }, [y, m, categoryId, page, size, refreshTrigger]);
 
   return { data, page, setPage, size, totalPages, loading, error };
 }
