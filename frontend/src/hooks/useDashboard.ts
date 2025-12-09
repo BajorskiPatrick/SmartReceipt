@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/api-client/client";
 import type { DashboardData, DashboardKpi, DashboardCategorySummaryItem, DashboardTrendItem } from "@/api-client/models";
 
-export function useDashboard(year?: number, month?: number) {
+export function useDashboard(year?: number, month?: number, refreshTrigger: number = 0) {
   const now = new Date();
   const y = year ?? now.getFullYear();
   const m = month ?? now.getMonth() + 1;
@@ -39,7 +39,7 @@ export function useDashboard(year?: number, month?: number) {
     }
     load();
     return () => { mounted = false; };
-  }, [y, m]);
+  }, [y, m, refreshTrigger]);
 
   return { data, kpi, categorySummary, trendSummary, loading, error, year: y, month: m };
 }
