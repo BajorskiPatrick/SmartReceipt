@@ -46,28 +46,32 @@ class LocalLlmReceiptParser:
         raw_text = self.extract_text(image_path)
         if not raw_text:
             return []
+        logger.info(f"OCR Text:\n{raw_text}")
 
         # 2. Prompt - ZMODYFIKOWANY DLA LEPSZEJ SKUTECZNOŚCI
         system_prompt = "Jesteś parserem paragonów. Zwracaj TYLKO JSON."
         
         # Dodajemy przykłady (Few-Shot), żeby nauczyć go radzić sobie ze sklejonym tekstem
         user_prompt = f"""
-        Twoim zadaniem jest wyciągnięcie produktów z brudnego tekstu OCR.
+        Analizujesz tekst OCR z polskiego paragonu.
         
-        ZASADY:
-        1. Zwróć obiekt JSON z kluczem "items".
-        2. Format: {{ "items": [ {{ "product_name": "...", "price": 12.99 }} ] }}
-        3. Ignoruj: NIP, daty, sumy (SUMA PLN, PTU).
-        4. Naprawiaj sklejone ceny. Np. "1x8,508,50B" to cena 8.50. "FRYTKIS.." to "FRYTKI".
+        TWOJE ZADANIE:
+        Wyciągnij produkty TYLKO z sekcji "TEKST DO ANALIZY" poniżej.
+        NIE WOLNO Ci przepisywać przykładów podanych poniżej!
+        
+        --- POCZĄTEK PRZYKŁADÓW TRENINGOWYCH (NIE KOPIUJ TEGO!) ---
+        Input: "Danie barowe B 1szt.*16.00" -> {{"items": [{{"product_name": "Danie barowe", "price": 16.00}}]}}
+        Input: "Woda Min. 2 x 5,00" -> {{"items": [{{"product_name": "Woda Min.", "price": 5.00}}]}}
+        --- KONIEC PRZYKŁADÓW ---
 
-        TEKST PARAGONU:
+        TEKST DO ANALIZY (Tylko stąd bierz dane!):
         '''
         {raw_text}
         '''
         
-        WYNIK JSON:
+        Zwróć JSON z kluczem "items".
         """
-
+        
         try:
             # 3. Inferencja
             response = self.llm.create_chat_completion(
@@ -81,6 +85,7 @@ class LocalLlmReceiptParser:
             )
             
             content = response["choices"][0]["message"]["content"]
+            
             
             # 4. Parsowanie
             start = content.find('{')
