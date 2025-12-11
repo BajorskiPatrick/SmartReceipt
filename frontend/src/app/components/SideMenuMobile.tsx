@@ -62,7 +62,15 @@ export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobilePro
         </Stack>
         <CardAlert />
         <Stack sx={{ p: 2 }}>
-          <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />}>
+          <Button
+            variant="outlined"
+            fullWidth
+            startIcon={<LogoutRoundedIcon />}
+            onClick={() => {
+              localStorage.removeItem("accessToken");
+              window.location.href = "/login"; // albo router.push("/login") jeśli używasz Next.js routera
+            }}
+          >
             Logout
           </Button>
         </Stack>
