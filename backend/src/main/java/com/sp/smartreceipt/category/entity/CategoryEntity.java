@@ -10,7 +10,12 @@ import java.util.UUID;
 import com.sp.smartreceipt.user.entity.UserEntity;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "unique_name_for_user",
+                columnNames = {"category_id", "user_id"}
+        )
+})
 @Builder
 @Data
 @AllArgsConstructor
@@ -23,7 +28,6 @@ public class CategoryEntity {
     @Column(unique = true)
     private UUID categoryId;
 
-    @Column(unique = true)
     private String name;
 
     private String description;
