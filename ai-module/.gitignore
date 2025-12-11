@@ -1,2 +1,25 @@
-app/ocr/models
-app/nlp/models
+# --- PYTHON ---
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# AI models
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+checkpoints/
+
+# Small models for specific applications
+!app/nlp/models/my-receipt-categorizer/*.safetensors
+!app/nlp/models/my-receipt-categorizer/*.json
+!app/nlp/models/my-receipt-categorizer/*.bin
+
+# --- DOCKER ---
+.dockerignore
+
+# --- DANE ---
+data/
+debug_visualizations/
