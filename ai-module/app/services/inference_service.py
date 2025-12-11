@@ -81,11 +81,12 @@ class InferenceService:
             #     else:
             #         logger.warning(f"[{request_id}] YOLO failed to detect receipt. Using original.")
 
-            # 3. Donut OCR
-            logger.info(f"[{request_id}] Running Donut on {orig_path.name}...")
+            # 3. OCR parsing
+
+            logger.info(f"[{request_id}] Running OCR on {orig_path.name}... using {self.parser.__class__.__name__}")
 
             if self.parser is None:
-                raise RuntimeError("Donut parser not initialized.")
+                raise RuntimeError("Parser not initialized.")
             
             items = self.parser.parse(orig_path)
             

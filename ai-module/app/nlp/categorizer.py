@@ -1,6 +1,11 @@
 from setfit import SetFitModel
 from pathlib import Path
 import torch
+import sys
+
+# Add project root to sys.path to allow running this script directly
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+
 from app.utils.logger import get_logger
 
 logger = get_logger("ProductCategorizer")
@@ -88,7 +93,9 @@ if __name__ == "__main__":
         "NIP 525-123-45-67",
         "Total USD",
         "Reszta",
-    ]
+        "Devolay",
+        "Frytki"
+    ] 
 
     logger.info(f"\n{'PRODUKT':<25} | {'KATEGORIA':<25} | {'PEWNOŚĆ'}")
     logger.info("-" * 65)
