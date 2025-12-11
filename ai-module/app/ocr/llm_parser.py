@@ -9,7 +9,25 @@ logger = get_logger("LocalLlmParser")
 
 MODEL_PATH = "app/ocr/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
 
-class LocalLlmReceiptParser:
+
+def _post_process(items: list[dict]) -> list[dict]:
+    """Dodatkowe zabezpieczenie typów danych"""
+    clean_items = []
+    for item in items:
+        name = item.get("product_name", "Nieznany")
+        price = item.get("price", 0.0)
+
+        if isinstance(price, str):
+            try:
+                price = float(price.replace(',', '.').replace('zł', '').strip())
+            except ValueError:
+                price = 0.0
+
+        clean_items.append({"product_name": name, "price": price})
+    return clean_items
+
+
+class LLMReceiptParser:
     def __init__(self):
         # OCR na CPU (use_gpu=False naprawia konflikt bibliotek)
         logger.info("⏳ Loading PaddleOCR (CPU mode)...")
@@ -48,10 +66,10 @@ class LocalLlmReceiptParser:
             return []
         logger.info(f"OCR Text:\n{raw_text}")
 
-        # 2. Prompt - ZMODYFIKOWANY DLA LEPSZEJ SKUTECZNOŚCI
+        # 2. Prompt
         system_prompt = "Jesteś parserem paragonów. Zwracaj TYLKO JSON."
         
-        # Dodajemy przykłady (Few-Shot), żeby nauczyć go radzić sobie ze sklejonym tekstem
+        # Few shot examples w promptach
         user_prompt = f"""
         Analizujesz tekst OCR z polskiego paragonu.
         
@@ -86,7 +104,7 @@ class LocalLlmReceiptParser:
             
             content = response["choices"][0]["message"]["content"]
             
-            
+            logger.info(f"OCR Text:\n{content}")
             # 4. Parsowanie
             start = content.find('{')
             end = content.rfind('}') + 1
@@ -97,7 +115,7 @@ class LocalLlmReceiptParser:
                 items = json_obj.get("items", [])
                 
                 # Szybkie czyszczenie w Pythonie (na wszelki wypadek)
-                return self._post_process(items)
+                return _post_process(items)
             else:
                 logger.warning(f"LLM returned invalid format: {content}")
                 return []
@@ -106,19 +124,3 @@ class LocalLlmReceiptParser:
             logger.error(f"LLM Processing error: {e}")
             return []
 
-    def _post_process(self, items: list[dict]) -> list[dict]:
-        """Dodatkowe zabezpieczenie typów danych"""
-        clean_items = []
-        for item in items:
-            name = item.get("product_name", "Nieznany")
-            price = item.get("price", 0.0)
-            
-            # Konwersja ceny jeśli LLM zwrócił stringa
-            if isinstance(price, str):
-                try:
-                    price = float(price.replace(',', '.').replace('zł', '').strip())
-                except:
-                    price = 0.0
-            
-            clean_items.append({"product_name": name, "price": price})
-        return clean_items
