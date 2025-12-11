@@ -3,14 +3,9 @@ import shutil
 import sys
 import copy
 
-# Dodajemy ścieżkę do projektu
-BASE_DIR = Path(__file__).parent
-sys.path.append(str(BASE_DIR))
-
 from app.ocr.receipt_detector import ReceiptDetector
-from app.ocr.donut_parser import DonutReceiptParser
 from app.nlp.categorizer import ProductCategorizer
-from app.ocr.LocalLlmReceiptParser import LocalLlmReceiptParser
+from app.ocr.llm_parser import LLMReceiptParser
 from app.utils.visualizer import Visualizer
 
 from app.utils.logger import get_logger
@@ -18,6 +13,9 @@ from app.utils.logger import get_logger
 logger = get_logger("TestModels")
 
 # Konfiguracja ścieżek
+BASE_DIR = Path(__file__).parent
+sys.path.append(str(BASE_DIR))
+
 RAW_DIR = BASE_DIR / "data/cord/train"
 PROCESSED_DIR = BASE_DIR / "data/processed/train"
 RESULTS_DIR = BASE_DIR / "data/detections/train"
@@ -39,7 +37,7 @@ def main():
 
     try:
         detector = ReceiptDetector()
-        parser = LocalLlmReceiptParser()
+        parser = LLMReceiptParser()
         categorizer = ProductCategorizer()
         visualizer = Visualizer()
     except Exception as e:
