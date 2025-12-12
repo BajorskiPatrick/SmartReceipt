@@ -1,5 +1,5 @@
 import json
-import re
+import signal
 from pathlib import Path
 from llama_cpp import Llama
 from paddleocr import PaddleOCR
@@ -7,15 +7,21 @@ from app.utils.logger import get_logger
 
 logger = get_logger("LocalLlmParser")
 
-MODEL_PATH = "app/ocr/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+MODEL_PATH = "app/ocr/models/Meta-Llama-3-8B.Q4_K_M.gguf"
 
+try:
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+except Exception:
+    pass
 
 def _post_process(items: list[dict]) -> list[dict]:
     """Dodatkowe zabezpieczenie typów danych"""
     clean_items = []
     for item in items:
-        name = item.get("product_name", "Nieznany")
+        name = item.get("productName", "Nieznany")
         price = item.get("price", 0.0)
+        quantity = item.get("quantity", 1)
 
         if isinstance(price, str):
             try:
@@ -23,7 +29,7 @@ def _post_process(items: list[dict]) -> list[dict]:
             except ValueError:
                 price = 0.0
 
-        clean_items.append({"product_name": name, "price": price})
+        clean_items.append({"productName": name, "price": price, "quantity": quantity})
     return clean_items
 
 
@@ -71,24 +77,48 @@ class LLMReceiptParser:
         
         # Few shot examples w promptach
         user_prompt = f"""
-        Analizujesz tekst OCR z polskiego paragonu.
-        
-        TWOJE ZADANIE:
-        Wyciągnij produkty TYLKO z sekcji "TEKST DO ANALIZY" poniżej.
-        NIE WOLNO Ci przepisywać przykładów podanych poniżej!
-        
-        --- POCZĄTEK PRZYKŁADÓW TRENINGOWYCH (NIE KOPIUJ TEGO!) ---
-        Input: "Danie barowe B 1szt.*16.00" -> {{"items": [{{"product_name": "Danie barowe", "price": 16.00}}]}}
-        Input: "Woda Min. 2 x 5,00" -> {{"items": [{{"product_name": "Woda Min.", "price": 5.00}}]}}
-        --- KONIEC PRZYKŁADÓW ---
+                Jesteś zaawansowanym asystentem AI do ekstrakcji danych strukturalnych z OCR.
 
-        TEKST DO ANALIZY (Tylko stąd bierz dane!):
-        '''
-        {raw_text}
-        '''
-        
-        Zwróć JSON z kluczem "items".
-        """
+                ### KONTEKST
+                Otrzymujesz surowy tekst z polskiego paragonu fiskalnego. Tekst może zawierać błędy OCR, nagłówki sklepu, stopki podatkowe i reklamy.
+
+                ### CEL
+                Twoim jedynym zadaniem jest wyodrębnienie listy zakupionych produktów i ich cen końcowych.
+
+                ### INSTRUKCJA ANALIZY
+                1. Przeanalizuj każdą linię tekstu.
+                2. Zidentyfikuj linie reprezentujące produkty (zazwyczaj zawierają nazwę i cenę).
+                3. Odrzuć sekcje metadanych:
+                   - Nagłówki (Nazwa sklepu, Adres, NIP).
+                   - Stopki (Suma, Sprzedaż opodatkowana, PTU, Rozliczenie płatności).
+                4. Znormalizuj ceny (zamień przecinki na kropki).
+
+                ### FORMAT DANYCH (JSON)
+                Zwróć obiekt JSON w formacie:
+                {{
+                  "items": [
+                    {{ "productName": "Nazwa Produktu", "price": 10.50, "quantity": 1.0 }}
+                  ]
+                }}
+
+                ### PRZYKŁAD (Few-Shot)
+                Input:
+                "PIZZA DOMINO
+                Ul. Prosta 1
+                Pizza Capricciosa ... 32,00
+                Sos czosnkowy 1x 3.50
+                Suma PLN: 35.50"
+
+                Output:
+                {{ "items": [ {{ "productName": "Pizza Capricciosa", "price": 32.00, "quantity": 1.0 }}, {{ "productName": "Sos czosnkowy", "price": 3.50, "quantity": 1.0 }} ] }}
+
+                ### DANE WEJŚCIOWE
+                '''
+                {raw_text}
+                '''
+
+                JSON OUTPUT:
+                """
         
         try:
             # 3. Inferencja

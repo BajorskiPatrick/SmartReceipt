@@ -44,8 +44,8 @@ RUN pip3 install huggingface_hub
 
 # Pobieramy model PROSTO do obrazu.
 # Dzięki temu kolega nie musi go mieć na dysku.
-RUN huggingface-cli download bartowski/Llama-3.2-3B-Instruct-GGUF \
-    Llama-3.2-3B-Instruct-Q4_K_M.gguf \
+RUN huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF \
+    Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf \
     --local-dir /app/app/ocr/models \
     --local-dir-use-symlinks False
 # ------------------------------------------
