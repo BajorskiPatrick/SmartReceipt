@@ -66,4 +66,4 @@ ENV LD_LIBRARY_PATH=/app/.venv/lib/python3.10/site-packages/nvidia/cuda_runtime/
 # 10. Start
 # UWAGA: Dla kolegi (wersja produkcyjna) usuń "--reload".
 # "--reload" jest super dla Ciebie, ale na prodzie zjada zasoby.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
