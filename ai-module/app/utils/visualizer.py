@@ -63,7 +63,7 @@ class Visualizer:
         if final_items:
             lines = [f"{'PRODUCT':<20} | {'PRICE':>6} | {'CATEGORY'}", "-" * 50]
             for item in final_items:
-                name = item.get('product_name', '??')
+                name = item.get('productName', '??')
                 name = (name[:18] + '..') if len(name) > 18 else name
                 price = item.get('price', 0.0)
                 cat = item.get('category', 'None')
