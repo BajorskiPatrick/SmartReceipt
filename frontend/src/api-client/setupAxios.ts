@@ -6,6 +6,16 @@ const basePath = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v
 // zawsze wysyłaj ciasteczka (refreshToken)
 axios.defaults.withCredentials = true;
 
+axios.interceptors.request.use((config) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers["Authorization"] = `Bearer ${token}`;
+    console.log("Request interceptor: doklejono Authorization", config.headers["Authorization"]);
+  }
+  return config;
+});
+
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
 
