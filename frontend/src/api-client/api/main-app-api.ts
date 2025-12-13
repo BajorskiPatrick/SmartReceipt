@@ -46,6 +46,8 @@ import { NewExpenseItem } from '../models';
 // @ts-ignore
 import { NewMonthlyBudget } from '../models';
 // @ts-ignore
+import { NewOcrExpense } from '../models';
+// @ts-ignore
 import { NewShoppingList } from '../models';
 // @ts-ignore
 import { NewShoppingListItems } from '../models';
@@ -987,10 +989,11 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
          * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
          * @summary Upload receipt image for processing
          * @param {File} [image] Receipt image file
+         * @param {NewOcrExpense} [data] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadReceipt: async (image?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadReceipt: async (image?: File, data?: NewOcrExpense, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/expenses/upload`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1011,6 +1014,10 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
 
             if (image !== undefined) { 
                 localVarFormParams.append('image', image as any);
+            }
+    
+            if (data !== undefined) { 
+                localVarFormParams.append('data', new Blob([JSON.stringify(data)], { type: "application/json", }));
             }
     
     
@@ -1367,11 +1374,12 @@ export const MainAppApiFp = function(configuration?: Configuration) {
          * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
          * @summary Upload receipt image for processing
          * @param {File} [image] Receipt image file
+         * @param {NewOcrExpense} [data] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadReceipt(image?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OcrExpense>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadReceipt(image, options);
+        async uploadReceipt(image?: File, data?: NewOcrExpense, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OcrExpense>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadReceipt(image, data, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MainAppApi.uploadReceipt']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1633,11 +1641,12 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
          * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
          * @summary Upload receipt image for processing
          * @param {File} [image] Receipt image file
+         * @param {NewOcrExpense} [data] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadReceipt(image?: File, options?: any): AxiosPromise<OcrExpense> {
-            return localVarFp.uploadReceipt(image, options).then((request) => request(axios, basePath));
+        uploadReceipt(image?: File, data?: NewOcrExpense, options?: any): AxiosPromise<OcrExpense> {
+            return localVarFp.uploadReceipt(image, data, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1937,12 +1946,13 @@ export class MainAppApi extends BaseAPI {
      * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
      * @summary Upload receipt image for processing
      * @param {File} [image] Receipt image file
+     * @param {NewOcrExpense} [data] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MainAppApi
      */
-    public uploadReceipt(image?: File, options?: RawAxiosRequestConfig) {
-        return MainAppApiFp(this.configuration).uploadReceipt(image, options).then((request) => request(this.axios, this.basePath));
+    public uploadReceipt(image?: File, data?: NewOcrExpense, options?: RawAxiosRequestConfig) {
+        return MainAppApiFp(this.configuration).uploadReceipt(image, data, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
