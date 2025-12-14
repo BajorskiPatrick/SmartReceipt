@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
 
 from app.utils.logger import get_logger
+
 logger = get_logger("EvaluateModel")
 
 MODEL_PATH = BASE_DIR / "src/ocr/models/receipt_yolo_best.pt"
@@ -34,7 +35,9 @@ def evaluate():
         metrics = model.val(data=str(DATASET_YAML))
         logger.info(f"✅ mAP50 (Precyzja ogólna): {metrics.box.map50:.2%}")
         logger.info(f"✅ mAP50-95 (Precyzja dokładna): {metrics.box.map:.2%}")
-        logger.info("(Im bliżej 100%, tym lepiej. Dla paragonów mAP50 > 90% to super wynik)")
+        logger.info(
+            "(Im bliżej 100%, tym lepiej. Dla paragonów mAP50 > 90% to super wynik)"
+        )
     else:
         logger.warning("⚠️ Pomijam metryki (brak pliku data.yaml)")
 

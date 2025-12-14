@@ -2,8 +2,14 @@ import json
 import signal
 from pathlib import Path
 from llama_cpp import Llama
+from llama_cpp.llama_types import (
+    ChatCompletionRequestSystemMessage,
+    ChatCompletionRequestUserMessage,
+    ChatCompletionRequestResponseFormat,
+)
 from paddleocr import PaddleOCR
 from app.utils.logger import get_logger
+from app.services.interfaces import BaseParser
 
 logger = get_logger("LocalLlmParser")
 
@@ -15,6 +21,7 @@ try:
 except Exception:
     pass
 
+
 def _post_process(items: list[dict]) -> list[dict]:
     """Dodatkowe zabezpieczenie typów danych"""
     clean_items = []
@@ -25,7 +32,7 @@ def _post_process(items: list[dict]) -> list[dict]:
 
         if isinstance(price, str):
             try:
-                price = float(price.replace(',', '.').replace('zł', '').strip())
+                price = float(price.replace(",", ".").replace("zł", "").strip())
             except ValueError:
                 price = 0.0
 
@@ -33,27 +40,26 @@ def _post_process(items: list[dict]) -> list[dict]:
     return clean_items
 
 
-class LLMReceiptParser:
+class LLMReceiptParser(BaseParser):
     def __init__(self):
-        # OCR na CPU (use_gpu=False naprawia konflikt bibliotek)
-        logger.info("⏳ Loading PaddleOCR (CPU mode)...")
-        self.ocr = PaddleOCR(use_angle_cls=True, lang='pl', show_log=False, use_gpu=False)
+        # OCR na CPU
+        logger.info("Loading PaddleOCR (CPU mode)...")
+        self.ocr = PaddleOCR(
+            use_angle_cls=True, lang="pl", show_log=False, use_gpu=False
+        )
 
         # LLM na GPU
-        logger.info(f"⏳ Loading Llama 3B from {MODEL_PATH}...")
+        logger.info(f"Loading Llama model from {MODEL_PATH}...")
         try:
             self.llm = Llama(
-                model_path=MODEL_PATH,
-                n_ctx=4096,
-                n_gpu_layers=-1, 
-                verbose=False
+                model_path=MODEL_PATH, n_ctx=4096, n_gpu_layers=-1, verbose=False
             )
-            logger.info("✅ Llama 3B loaded on GPU.")
+            logger.info("Llama model loaded on GPU.")
         except Exception as e:
-            logger.error(f"❌ Failed to load Llama model: {e}")
+            logger.error(f"Failed to load Llama model: {e}")
             raise e
 
-    def extract_text(self, image_path: Path) -> str:
+    def _extract_text(self, image_path: Path) -> str:
         try:
             result = self.ocr.ocr(str(image_path), cls=True)
             raw_lines = []
@@ -66,15 +72,15 @@ class LLMReceiptParser:
             return ""
 
     def parse(self, image_path: Path) -> list[dict]:
-        # 1. OCR
-        raw_text = self.extract_text(image_path)
+        # OCR
+        raw_text = self._extract_text(image_path)
         if not raw_text:
             return []
-        logger.info(f"OCR Text:\n{raw_text}")
+        logger.info(f"OCR Text:\n{raw_text[:1000]}...")
 
         # 2. Prompt
         system_prompt = "Jesteś parserem paragonów. Zwracaj TYLKO JSON."
-        
+
         # Few shot examples w promptach
         user_prompt = f"""
                 Jesteś zaawansowanym asystentem AI do ekstrakcji danych strukturalnych z OCR.
@@ -119,38 +125,37 @@ class LLMReceiptParser:
 
                 JSON OUTPUT:
                 """
-        
+
         try:
-            # 3. Inferencja
+            # Inference
             response = self.llm.create_chat_completion(
                 messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
+                    ChatCompletionRequestSystemMessage(
+                        role="system", content=system_prompt
+                    ),
+                    ChatCompletionRequestUserMessage(role="user", content=user_prompt),
                 ],
                 temperature=0.1,
                 max_tokens=1024,
-                response_format={"type": "json_object"} # To wymaga formatu {...} a nie [...]
+                response_format=ChatCompletionRequestResponseFormat(type="json_object"),
             )
-            
+
             content = response["choices"][0]["message"]["content"]
-            
+
             logger.info(f"OCR Text:\n{content}")
-            # 4. Parsowanie
-            start = content.find('{')
-            end = content.rfind('}') + 1
+            # Parsing LLM output
+            start = content.find("{")
+            end = content.rfind("}") + 1
             if start != -1 and end != -1:
                 json_obj = json.loads(content[start:end])
-                
-                # Kluczowa zmiana: pobieramy listę z klucza 'items'
+
                 items = json_obj.get("items", [])
-                
-                # Szybkie czyszczenie w Pythonie (na wszelki wypadek)
+
                 return _post_process(items)
             else:
                 logger.warning(f"LLM returned invalid format: {content}")
                 return []
-                
+
         except Exception as e:
             logger.error(f"LLM Processing error: {e}")
             return []
-

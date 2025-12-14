@@ -53,15 +53,14 @@ def main():
         if not img_file.exists():
             logger.warning(f"⚠️ Plik nie istnieje: {img_file}")
             continue
-            
-        logger.info(f"📄 Przetwarzam: {img_file.name}")
 
+        logger.info(f"📄 Przetwarzam: {img_file.name}")
 
         target_path = img_file
 
         # 2. Donut (OCR)
         items = parser.parse(target_path, debug_dir=DEBUG_DIR)
-        
+
         # Kopia surowych wyników dla wizualizera
         raw_items = copy.deepcopy(items)
 
