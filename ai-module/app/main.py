@@ -3,9 +3,13 @@ from app.api.v1.endpoints import ocr
 from app.services.inference_service import inference_service
 from contextlib import asynccontextmanager
 from app.utils.logger import get_logger
+import warnings
 
 logger = get_logger("Main")
 
+
+warnings.filterwarnings("ignore", message="builtin type SwigPyPacked has no __module__ attribute")
+warnings.filterwarnings("ignore", message="builtin type SwigPyObject has no __module__ attribute")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

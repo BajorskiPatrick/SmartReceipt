@@ -3,7 +3,6 @@ import shutil
 import sys
 import copy
 
-from app.ocr.receipt_detector import ReceiptDetector
 from app.nlp.categorizer import ProductCategorizer
 from app.ocr.llm_parser import LLMReceiptParser
 from app.utils.visualizer import Visualizer
@@ -36,7 +35,6 @@ def main():
     logger.info("--- SmartReceipt Pipeline + Visualization ---")
 
     try:
-        detector = ReceiptDetector()
         parser = LLMReceiptParser()
         categorizer = ProductCategorizer()
         visualizer = Visualizer()
@@ -58,15 +56,8 @@ def main():
             
         logger.info(f"📄 Przetwarzam: {img_file.name}")
 
-        # 1. YOLO (Crop)
-        cropped_path = PROCESSED_DIR / img_file.name
-        processed_img = detector.process(img_file, output_path=cropped_path)
-        
+
         target_path = img_file
-        if processed_img is not None:
-            target_path = cropped_path
-        else:
-            logger.warning("   ⚠️ Nie wykryto paragonu (YOLO). Używam oryginału.")
 
         # 2. Donut (OCR)
         items = parser.parse(target_path, debug_dir=DEBUG_DIR)
@@ -83,7 +74,7 @@ def main():
 
         visualizer.create_summary(
             original_path=img_file,
-            cropped_path=cropped_path if target_path == cropped_path else None,
+            cropped_path=None,
             raw_items=raw_items,
             final_items=items,
             output_path=vis_output,

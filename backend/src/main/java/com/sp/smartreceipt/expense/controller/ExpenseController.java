@@ -84,8 +84,7 @@ public class ExpenseController {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public OcrExpense uploadReceipt(@RequestPart("file") MultipartFile file,
-            @RequestPart("data") NewOcrExpense ocrExpense) {
+    public OcrExpense uploadReceipt(@RequestPart("image") MultipartFile file,  @RequestPart("data") NewOcrExpense ocrExpense) {
         log.info("Uploading receipt file: {}", file.getOriginalFilename());
         if (file.isEmpty()) {
             throw new EmptyFileException();

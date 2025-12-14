@@ -10,10 +10,10 @@ except ImportError:
 
 
 class OcrExpenseItem(BaseModel):
-    name: Optional[str] = Field(None, alias="product_name")
+    productName: Optional[str] = Field(None)
     price: Optional[float] = None
+    quantity: Optional[int] = 1
     category: Optional[str] = None
-    confidence: Optional[float] = Field(None, alias="category_conf")
 
     model_config = {"populate_by_name": True}
 
