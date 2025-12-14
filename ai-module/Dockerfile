@@ -1,69 +1,79 @@
-# 1. Baza: Oficjalny obraz NVIDIA
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+# ==========================
+# Stage 1: Builder / Training
+# ==========================
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS builder
 
-# 2. Konfiguracja środowiska
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# 3. Instalacja zależności systemowych
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# 4. Instalacja 'uv'
-RUN pip3 install uv
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    MODEL_DIR=/app/models/my-receipt-categorizer \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-# 5. Kopiujemy konfigurację
+# System libs
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv libgl1 libglib2.0-0 git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Creating virtualenv with uv
+RUN pip3 install uv && uv venv $VIRTUAL_ENV
+
+# Copying and installing dependencies
 COPY pyproject.toml .
-# COPY uv.lock .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -r pyproject.toml
 
-# 6. Konfiguracja Venv
-ENV VIRTUAL_ENV=/app/.venv
-RUN uv venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Installing llama-cpp-python with CUDA support
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install \
+    llama-cpp-python "numpy<2.0.0" \
+    --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
 
-# 7. Instalacja zależności
-RUN uv pip install -r pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install "huggingface-hub>=0.34.0,<0.35.0" hf_transfer
 
-RUN uv pip install \
-    llama-cpp-python \
-    "numpy<2.0.0" \
-    --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124 \
-    --force-reinstall
-
-# --- NOWOŚĆ: TO JEST TA BRAKUJĄCA CZĘŚĆ ---
-# 7.5 Pobieranie modelu Llama (Cache'owane!)
-# Instalujemy huggingface_hub (jeśli nie ma w pyproject.toml)
-RUN pip3 install huggingface_hub
-
-# Pobieramy model PROSTO do obrazu.
-# Dzięki temu kolega nie musi go mieć na dysku.
-RUN huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF \
+# Installing models
+RUN mkdir -p /app/app/ocr/models
+RUN --mount=type=cache,target=/root/.cache/huggingface \
+    hf download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF \
     Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf \
-    --local-dir /app/app/ocr/models \
-    --local-dir-use-symlinks False
-# ------------------------------------------
+    --local-dir /app/app/ocr/models
 
+# Copying data and scripts
 COPY data ./data
 COPY scripts ./scripts
-# Musimy stworzyć strukturę folderów dla outputu
-RUN mkdir -p app/nlp/models
-
-RUN python3 scripts/train_categorizer.py
-
-# 8. Kopiujemy kod aplikacji
 COPY app ./app
 
-# 9. FIX OSTATECZNY: Naprawiamy ścieżki bibliotek
-ENV LD_LIBRARY_PATH=/app/.venv/lib/python3.10/site-packages/nvidia/cuda_runtime/lib:/app/.venv/lib/python3.10/site-packages/nvidia/cublas/lib:/app/.venv/lib/python3.10/site-packages/nvidia/cudnn/lib:/app/.venv/lib/python3.10/site-packages/nvidia/cufft/lib:/app/.venv/lib/python3.10/site-packages/nvidia/curand/lib:/app/.venv/lib/python3.10/site-packages/nvidia/cusolver/lib:/app/.venv/lib/python3.10/site-packages/nvidia/cusparse/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+# Training categorizer (optional)
+RUN python3 scripts/train_categorizer.py
 
-# 10. Start
-# UWAGA: Dla kolegi (wersja produkcyjna) usuń "--reload".
-# "--reload" jest super dla Ciebie, ale na prodzie zjada zasoby.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ==========================
+# Stage 2: Runtime / Serve
+# ==========================
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    LLAMA_CUBLAS=1 \
+    LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64 \
+    FORCE_COLOR=1
+
+WORKDIR /app
+
+# System libs
+RUN apt-get update && apt-get install -y \
+    python3 libgl1 libglib2.0-0 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# COPY --from=builder:
+COPY --from=builder /app/.venv /app/.venv
+
+# Copying models
+COPY --from=builder /app/app ./app
+COPY --from=builder /app/models ./models
+
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

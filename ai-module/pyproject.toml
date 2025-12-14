@@ -19,6 +19,7 @@ dependencies = [
     "python-doctr[torch]>=0.9.0",
     "python-multipart>=0.0.12",
     "rich>=14.2.0",
+    "ruff>=0.14.9",
     "scikit-learn>=1.5.0",
     "sentence-transformers>=3.0.0",
     "sentencepiece>=0.2.0",

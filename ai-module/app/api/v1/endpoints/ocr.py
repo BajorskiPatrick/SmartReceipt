@@ -1,5 +1,5 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.services.inference_service import inference_service
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from app.services.inference_service import InferenceService, get_inference_service
 from app.schemas.ocr import OcrResult, OcrExpenseItem
 from app.utils.logger import get_logger
 
@@ -9,13 +9,15 @@ router = APIRouter()
 
 
 @router.post("/process", response_model=OcrResult)
-async def process_receipt(image: UploadFile = File(...)):
+async def process_receipt(
+    image: UploadFile = File(...),
+    service: InferenceService = Depends(get_inference_service),
+):
 
     try:
-        result = await inference_service.process_receipt(image)
+        result = await service.process_receipt(image)
         expense_items = [OcrExpenseItem.from_dict(item) for item in result]
         return OcrResult(expenses=expense_items)
     except Exception as e:
-        # Log the error properly in production
         logger.error(f"Error processing receipt: {e}")
         raise HTTPException(status_code=500, detail=str(e))
