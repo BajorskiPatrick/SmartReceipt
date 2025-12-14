@@ -31,7 +31,11 @@ export default function ReceiptUploadDialog({ open, onClose, onUploaded }: Props
     console.log("Uploading file:", file);
 
     // poprawne wywołanie
-    const { data: ocr } = await api.uploadReceipt(file);
+    const { data: ocr } = await api.uploadReceipt(file, {
+      transactionDate: new Date().toISOString()
+    });
+
+
 
     console.log("OCR response:", ocr);
 
