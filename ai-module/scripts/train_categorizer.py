@@ -96,6 +96,10 @@ def train():
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(str(MODEL_DIR))
 
+    repo_id = "Johnyyy123/smart-receipt-categorizer-v1"
+    logger.info(f"📤 Pushing model to Hugging Face Hub: {repo_id}")
+    model.push_to_hub(repo_id=repo_id, commit_message="Initial commit")
+
     logger.info(f"✅ Model saved to {MODEL_DIR}")
 
 
