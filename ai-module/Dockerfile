@@ -40,22 +40,25 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install "huggingface-hub>=0.34.0,<0.35.0" hf_transfer
 
 # Installing models
+
+# Install Llama model
 RUN mkdir -p /app/app/ocr/models
 RUN --mount=type=cache,target=/root/.cache/huggingface \
     hf download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF \
     Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf \
     --local-dir /app/app/ocr/models
 
+# Install receipt categorizer model
+RUN mkdir -p /app/app/nlp/models/my-receipt-categorizer
+RUN hf download Johnyyy123/smart-receipt-categorizer-v1 \
+    --local-dir /app/app/nlp/models/my-receipt-categorizer
+
 # Installing paddle OCR and downloading OCR models
 RUN python3 -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=True, lang='pl', use_gpu=False, show_log=False)"
 
 # Copying data and scripts
 COPY data ./data
-COPY scripts ./scripts
 COPY app ./app
-
-# Training categorizer (optional)
-RUN python3 scripts/train_categorizer.py
 
 # ==========================
 # Stage 2: Runtime / Serve
@@ -69,7 +72,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     LLAMA_CUBLAS=1 \
     LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64 \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility \
-    FORCE_COLOR=1
+    FORCE_COLOR=1 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    SR_GPU_LAYERS=15
 
 WORKDIR /app
 
@@ -83,11 +89,9 @@ COPY --from=builder /app/.venv /app/.venv
 
 # Copying models
 COPY --from=builder /app/app ./app
-COPY --from=builder /app/models ./models
 
 COPY --from=builder /root/.paddleocr /root/.paddleocr
 
 # Setting GPU layers for Llama model
-ENV SR_GPU_LAYERS=15
 
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
