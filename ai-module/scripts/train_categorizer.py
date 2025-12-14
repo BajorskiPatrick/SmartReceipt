@@ -1,50 +1,82 @@
 import json
 import shutil
 import sys
+import os
+import random
 from pathlib import Path
+
+import numpy as np
+import torch
 from setfit import SetFitModel, SetFitTrainer
 from datasets import Dataset
 from sentence_transformers.losses import CosineSimilarityLoss
 import logging
 
-# Setup ścieżek
+# ======================
+# CONFIG
+# ======================
+SEED = 42
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
 
+DATA_PATH = BASE_DIR / "data" / "set_fit_few_shot" / "dataset.json"
+MODEL_DIR = Path(os.environ.get(
+    "MODEL_DIR",
+    BASE_DIR / "models" / "my-receipt-categorizer"
+))
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# ======================
+# LOGGING
+# ======================
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger("TrainCategorizer")
 
-# Konfiguracja
-DATA_PATH = BASE_DIR / "data" / "set_fit_few_shot" / "dataset.json"  # json data
-OUTPUT_DIR = BASE_DIR / "app" / "nlp" / "models" / "my-receipt-categorizer"
+# ======================
+# REPRODUCIBILITY
+# ======================
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
 
-
+# ======================
+# DATA
+# ======================
 def load_data():
-    """Wczytuje dane z pliku JSON i tworzy Dataset."""
     if not DATA_PATH.exists():
-        logger.error(f"❌ Nie znaleziono pliku z danymi: {DATA_PATH}")
+        logger.error(f"Dataset not found: {DATA_PATH}")
         sys.exit(1)
 
-    logger.info(f"📂 Wczytuję dane z: {DATA_PATH}")
+    logger.info(f"Loading dataset: {DATA_PATH}")
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         data_json = json.load(f)
 
     dataset = Dataset.from_list(data_json)
-
-    logger.info(f"✅ Wczytano {len(dataset)} przykładów.")
+    logger.info(f"Loaded {len(dataset)} samples")
     return dataset
 
 
+# ======================
+# TRAINING
+# ======================
 def train():
     dataset = load_data()
 
-    logger.info("🚀 Pobieram bazowy model (MiniLM)...")
-    model = SetFitModel.from_pretrained(
-        "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-    )
+    if MODEL_DIR.exists():
+        logger.info(f"⚠️ Model already exists at {MODEL_DIR}, overwriting")
+        shutil.rmtree(MODEL_DIR)
 
-    logger.info("🏋️ Rozpoczynam trening (Fine-Tuning)...")
+    logger.info(f"🚀 Loading base model on {DEVICE}")
+    model = SetFitModel.from_pretrained(
+        "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+        device=DEVICE
+    )
 
     trainer = SetFitTrainer(
         model=model,
@@ -55,16 +87,16 @@ def train():
         num_iterations=5,
         num_epochs=1,
         column_mapping={"text": "text", "label": "label"},
+        seed=SEED,
     )
 
+    logger.info("SetFit training started")
     trainer.train()
 
-    logger.info(f"💾 Zapisuję model do: {OUTPUT_DIR}")
-    if OUTPUT_DIR.exists():
-        shutil.rmtree(OUTPUT_DIR)
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    model.save_pretrained(str(MODEL_DIR))
 
-    model.save_pretrained(str(OUTPUT_DIR))
-    logger.info("✅ Gotowe! Model zaktualizowany.")
+    logger.info(f"✅ Model saved to {MODEL_DIR}")
 
 
 if __name__ == "__main__":

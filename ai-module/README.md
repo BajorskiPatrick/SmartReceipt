@@ -16,7 +16,7 @@ Projekt jest w pełni skonteneryzowany. Nie musisz instalować Pythona ani model
 To potrwa kilka minut, ponieważ Docker musi pobrać model Llama (~2.5 GB) z HuggingFace.
 
 ```bash
-docker build -t ai-module .
+docker pull ghcr.io/janbanasik/ai_module:latest
 ```
 
 ### 2. Uruchamianie
@@ -25,14 +25,14 @@ Wybierz opcję w zależności od swojego sprzętu:
 ✅ Opcja A: Masz kartę NVIDIA (Zalecane)
 
 ```bash
-docker run --gpus all -p 8080:8080 ai-module
+docker run --rm --gpus all -p 8000:8000 --name receipt_ai ghcr.io/janbanasik/ai_module:latest
 ```
 Czas przetwarzania paragonu: ~2-3 sekundy.
 
 🐢 Opcja B: Nie masz karty NVIDIA (Tryb CPU)
 
 ```bash
-docker run -p 8080:8080 ai-module
+docker run --rm -p 8000:8000 --name receipt_ai ghcr.io/janbanasik/ai_module:latest
 ```
 Czas przetwarzania paragonu: ~30-60 sekund.
 
@@ -41,7 +41,7 @@ Czas przetwarzania paragonu: ~30-60 sekund.
 📡 Dokumentacja API
 Po uruchomieniu serwera, pełna dokumentacja Swagger UI jest dostępna pod adresem:
 ```bash
-http://localhost:8080/docs
+http://localhost:8000/docs
 ```
 
 Główny Endpoint:
