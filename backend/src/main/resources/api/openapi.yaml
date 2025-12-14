@@ -150,9 +150,8 @@ paths:
                   type: string
                   format: binary
                   description: "Receipt image file"
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewOcrExpense'
+                data:
+                  $ref: '#/components/schemas/NewOcrExpense'
       responses:
         '200':
           description: "Receipt processed successfully"

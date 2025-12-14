@@ -47,7 +47,7 @@ public class AiOcrService {
             body.add("image", fileResource);
 
             OcrResult aiResponse = restClient.post()
-                    .uri(aiServiceUrl + "/analyze")
+                    .uri(aiServiceUrl + "/ai/ocr/process")
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(body)
                     .retrieve()
