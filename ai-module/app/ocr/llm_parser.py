@@ -1,6 +1,5 @@
 import json
 import signal
-from pathlib import Path
 from llama_cpp import Llama
 from llama_cpp.llama_types import (
     ChatCompletionRequestSystemMessage,
@@ -11,10 +10,11 @@ from paddleocr import PaddleOCR
 from app.utils.logger import get_logger
 from app.services.interfaces import BaseParser
 import os
+from pathlib import Path
 
 logger = get_logger("LocalLlmParser")
 
-MODEL_PATH = "app/ocr/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
+
 
 try:
     signal.signal(signal.SIGINT, signal.default_int_handler)
@@ -48,17 +48,22 @@ class LLMReceiptParser(BaseParser):
         self.ocr = PaddleOCR(
             use_angle_cls=True, lang="pl", show_log=False, use_gpu=False
         )
-
+        # Find model path
+        MODEL_DIRECTORY_PATH = "app/ocr/models"
+        model_files = Path(MODEL_DIRECTORY_PATH).glob("*.gguf")
+        if not model_files:
+            raise FileNotFoundError(f"No model files found in {MODEL_DIRECTORY_PATH}")
+        MODEL_PATH = str(next(model_files))
         # Hybrid LLM
 
         gpu_layers = int(os.getenv("SR_GPU_LAYERS", 15))
-        logger.info(f"Loading Llama model from {MODEL_PATH} on GPU with {gpu_layers} GPU layers...")
+        logger.info(f"Loading model from {MODEL_PATH} on GPU with {gpu_layers} GPU layers...")
 
         try:
             self.llm = Llama(
                 model_path=MODEL_PATH, n_ctx=4096, n_gpu_layers=gpu_layers, verbose=False
             )
-            logger.info("Llama model loaded.")
+            logger.info("Model loaded.")
         except Exception as e:
             logger.error(f"Failed to load Llama model: {e}")
             raise e
