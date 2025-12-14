@@ -10,6 +10,7 @@ from llama_cpp.llama_types import (
 from paddleocr import PaddleOCR
 from app.utils.logger import get_logger
 from app.services.interfaces import BaseParser
+import os
 
 logger = get_logger("LocalLlmParser")
 
@@ -48,13 +49,16 @@ class LLMReceiptParser(BaseParser):
             use_angle_cls=True, lang="pl", show_log=False, use_gpu=False
         )
 
-        # LLM na GPU
-        logger.info(f"Loading Llama model from {MODEL_PATH}...")
+        # Hybrid LLM
+
+        gpu_layers = int(os.getenv("SR_GPU_LAYERS", 15))
+        logger.info(f"Loading Llama model from {MODEL_PATH} on GPU with {gpu_layers} GPU layers...")
+
         try:
             self.llm = Llama(
-                model_path=MODEL_PATH, n_ctx=4096, n_gpu_layers=-1, verbose=False
+                model_path=MODEL_PATH, n_ctx=4096, n_gpu_layers=gpu_layers, verbose=False
             )
-            logger.info("Llama model loaded on GPU.")
+            logger.info("Llama model loaded.")
         except Exception as e:
             logger.error(f"Failed to load Llama model: {e}")
             raise e
