@@ -8,6 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
 
 from app.utils.logger import get_logger
+
 logger = get_logger("TrainDetector")
 
 DATASET_YAML = BASE_DIR / "data/yolo_dataset/data.yaml"

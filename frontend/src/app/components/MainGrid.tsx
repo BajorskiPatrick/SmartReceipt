@@ -21,6 +21,8 @@ import TableRow from '@mui/material/TableRow';
 import TablePagination from '@mui/material/TablePagination';
 import Collapse from '@mui/material/Collapse';
 import BoxUnstyled from '@mui/material/Box';
+import ReceiptUploadDialog from "../components/dialogs/ReceiptUploadDialog";
+import { mapOcrToExpenseForm } from "@/hooks/useOcrMapping";
 
 import ExpenseDonut from '../components/ExpenseDonut'; 
 import { useDashboard } from '@/hooks/useDashboard';
@@ -41,7 +43,8 @@ export default function MainGrid() {
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
   const [categories, setCategories] = React.useState<Category[]>([]);
-  
+  const [isReceiptDialogOpen, setIsReceiptDialogOpen] = React.useState(false);
+
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [isBudgetOpen, setIsBudgetOpen] = React.useState(false);
   const [editingExpense, setEditingExpense] = React.useState<ExpenseFormData | null>(null);
@@ -239,6 +242,16 @@ export default function MainGrid() {
         initialData={editingExpense}
         categories={categories.map(c => ({ id: c.categoryId || (c as any).id, name: c.name! }))} 
       />
+      <ReceiptUploadDialog
+        open={isReceiptDialogOpen}
+        onClose={() => setIsReceiptDialogOpen(false)}
+        onUploaded={(ocr) => {
+          const mapped = mapOcrToExpenseForm(ocr);
+          setEditingExpense(mapped);
+          setIsFormOpen(true);
+        }}
+      />
+
       <ConfirmDialog
         open={!!deleteId} 
         title="Delete Expense"
@@ -331,7 +344,10 @@ export default function MainGrid() {
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Stack direction="row" spacing={1} sx={{ height: '100%' }} alignItems="center">
             <Button variant="contained" onClick={handleAddClick}>Add expense</Button>
-            <Button variant="outlined">Add from receipt</Button>
+            <Button variant="outlined" onClick={() => setIsReceiptDialogOpen(true)}>
+              Add from receipt
+            </Button>
+
           </Stack>
         </Grid>
       </Grid>
