@@ -14,7 +14,7 @@ import os
 
 logger = get_logger("LocalLlmParser")
 
-MODEL_PATH = "app/ocr/models/Meta-Llama-3-8B.Q4_K_M.gguf"
+MODEL_PATH = "app/ocr/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
 try:
     signal.signal(signal.SIGINT, signal.default_int_handler)
