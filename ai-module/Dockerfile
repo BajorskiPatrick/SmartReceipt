@@ -56,8 +56,6 @@ RUN hf download Johnyyy123/smart-receipt-categorizer-v1 \
 # Installing paddle OCR and downloading OCR models
 RUN python3 -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=True, lang='pl', use_gpu=False, show_log=False)"
 
-# Copying data and scripts
-COPY data ./data
 COPY app ./app
 
 # ==========================
