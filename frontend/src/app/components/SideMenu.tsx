@@ -11,7 +11,8 @@ import SelectContent from './SelectContent';
 import MenuContent from './MenuContent';
 import CardAlert from './CardAlert';
 import OptionsMenu from './OptionsMenu';
-
+import Button from '@mui/material/Button';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 const drawerWidth = 240;
 
 const Drawer = styled(MuiDrawer)({
@@ -81,7 +82,20 @@ export default function SideMenu() {
           </Typography>
         </Box>
         <OptionsMenu />
-      </Stack>
+            </Stack>
+            <Stack sx={{ p: 2 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<LogoutRoundedIcon />}
+                onClick={() => {
+                  localStorage.removeItem("accessToken");
+                  window.location.href = "/login";
+                }}
+              >
+                Logout
+              </Button>
+            </Stack>
     </Drawer>
   );
 }
