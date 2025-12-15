@@ -11,6 +11,7 @@ import {
   Box,
   Typography
 } from "@mui/material";
+import { CloudUpload } from "@mui/icons-material";
 import { api } from "@/api-client/client";
 
 type Props = {
@@ -23,50 +24,52 @@ export default function ReceiptUploadDialog({ open, onClose, onUploaded }: Props
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
- const handleUpload = async () => {
-  if (!file) return;
+  const handleUpload = async () => {
+    if (!file) return;
 
-  setLoading(true);
-  try {
-    console.log("Uploading file:", file);
-
-    // poprawne wywołanie
-    const { data: ocr } = await api.uploadReceipt(file, {
-      transactionDate: new Date().toISOString()
-    });
-
-
-
-    console.log("OCR response:", ocr);
-
-    onUploaded(ocr);
-    onClose();
-  } catch (error) {
-    console.error("Upload failed:", error);
-    alert("OCR failed");
-  } finally {
-    setLoading(false);
-  }
-};
-
+    setLoading(true);
+    try {
+      const { data: ocr } = await api.uploadReceipt(file, {
+        transactionDate: new Date().toISOString()
+      });
+      onUploaded(ocr);
+      onClose();
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("OCR failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Upload receipt</DialogTitle>
       <DialogContent>
-        <Box mt={1}>
+        <Box mt={2} display="flex" flexDirection="column" alignItems="center">
           <input
             type="file"
             accept="image/*"
+            style={{ display: "none" }}
+            id="receipt-file"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
-        </Box>
+          <label htmlFor="receipt-file">
+            <Button
+              variant="outlined"
+              component="span"
+              startIcon={<CloudUpload />}
+            >
+              Choose receipt
+            </Button>
+          </label>
 
-        {loading && (
-          <Box display="flex" justifyContent="center" mt={2}>
-            <CircularProgress />
-          </Box>
-        )}
+          {file && (
+            <Typography variant="body2" mt={1}>
+              Selected: {file.name}
+            </Typography>
+          )}
+        </Box>
       </DialogContent>
 
       <DialogActions>
@@ -75,8 +78,9 @@ export default function ReceiptUploadDialog({ open, onClose, onUploaded }: Props
           variant="contained"
           disabled={!file || loading}
           onClick={handleUpload}
+          startIcon={loading ? <CircularProgress size={20} /> : <CloudUpload />}
         >
-          Upload
+          {loading ? "Uploading..." : "Upload"}
         </Button>
       </DialogActions>
     </Dialog>
