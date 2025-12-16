@@ -37,12 +37,6 @@ export interface UserResponse {
     'email'?: string;
     /**
      * 
-     * @type {string}
-     * @memberof UserResponse
-     */
-    'password'?: string;
-    /**
-     * 
      * @type {Role}
      * @memberof UserResponse
      */
