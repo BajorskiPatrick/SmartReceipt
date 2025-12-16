@@ -72,7 +72,7 @@ public class ExpenseService {
         public ExpenseDetails searchExpenseDetails(UUID expenseId, UUID categoryId) {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 String userEmail = authentication.getName();
-                log.debug("Searching details for expense ID: {}", expenseId);
+                log.info("Searching details for expense ID: {}", expenseId);
 
                 ExpenseEntity expense = expenseRepository.findByExpenseIdAndUserEmailAndFetchItems(expenseId, userEmail)
                                 .orElseThrow(() -> new ExpenseNotFoundException(expenseId.toString(), userEmail));
@@ -91,7 +91,7 @@ public class ExpenseService {
         public ExpenseSummaryPage searchExpenses(ExpenseFilterRequest parameters) {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 String userEmail = authentication.getName();
-                log.debug("Searching expenses for user: {} with params: {}", userEmail, parameters);
+                log.info("Searching expenses for user: {} with params: {}", userEmail, parameters);
 
                 Pageable pageable = PageRequest.of(
                                 parameters.getPage(),

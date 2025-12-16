@@ -32,7 +32,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Role getUserRole(String email) {
-        log.debug("Fetching role for user: {}", email);
+        log.info("Fetching role for user: {}", email);
         return userRepository.findByEmail(email)
                 .map(UserEntity::getRole)
                 .orElseThrow(() -> new UserNotFoundException(email));
@@ -40,7 +40,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
-        log.debug("Fetching all users");
+        log.info("Fetching all users");
         return userRepository.findAll().stream()
                 .map(this::translateToUserResponse)
                 .toList();
@@ -76,7 +76,7 @@ public class UserService {
 
     @Transactional
     public void deleteUserById(UUID id) {
-        log.debug("Deleting user with ID: {}", id);
+        log.info("Deleting user with ID: {}", id);
         if (!userRepository.existsByUserId(id)) {
             throw new UserNotFoundException(id.toString());
         }
