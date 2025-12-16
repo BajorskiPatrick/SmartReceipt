@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts
 "use client";
 
 import { useState } from "react";
@@ -22,7 +21,17 @@ export function useAuth() {
       const token = res?.data?.token;
       if (!token) throw new Error("Brak tokenu w odpowiedzi");
 
+      // Zapisujemy token i dane użytkownika
       localStorage.setItem("accessToken", token);
+      
+      // Jeśli backend nie zwraca emaila, bierzemy ten z formularza
+      const userEmail = res?.data?.email || data.email;
+      localStorage.setItem("userEmail", userEmail);
+      
+      // Tworzymy nazwę użytkownika z maila (część przed @)
+      const userName = userEmail.split('@')[0];
+      localStorage.setItem("userName", userName);
+
       return true;
     } catch (e: any) {
       setError(e.message || "Błąd logowania");
@@ -53,7 +62,10 @@ export function useAuth() {
     } catch (e) {
       console.warn("Logout request failed", e);
     }
+    // Czyścimy wszystko przy wylogowaniu
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     window.location.href = "/login";
   }
 

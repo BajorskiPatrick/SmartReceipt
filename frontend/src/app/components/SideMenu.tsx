@@ -7,12 +7,12 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import SelectContent from './SelectContent';
 import MenuContent from './MenuContent';
-import CardAlert from './CardAlert';
 import OptionsMenu from './OptionsMenu';
 import Button from '@mui/material/Button';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'; // Ikona paragonu
+
 const drawerWidth = 240;
 
 const Drawer = styled(MuiDrawer)({
@@ -27,6 +27,15 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
+  const [userData, setUserData] = React.useState({ email: '', name: '' });
+
+  React.useEffect(() => {
+    // Pobieranie danych po załadowaniu komponentu
+    const email = localStorage.getItem("userEmail") || "Nie zalogowano";
+    const name = localStorage.getItem("userName") || "Użytkownik";
+    setUserData({ email, name });
+  }, []);
+
   return (
     <Drawer
       variant="permanent"
@@ -37,26 +46,21 @@ export default function SideMenu() {
         },
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          mt: 'calc(var(--template-frame-height, 0px) + 4px)',
-          p: 1.5,
-        }}
-      >
-        
+      {/* NAGŁÓWEK Z TYTUŁEM PROJEKTU */}
+      <Box sx={{ p: 2, mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ReceiptLongIcon color="primary" />
+        <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1 }}>
+          Smart Receipt
+        </Typography>
       </Box>
-      <Divider />
-      <Box
-        sx={{
-          overflow: 'auto',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      
+      <Divider sx={{ my: 1 }} />
+      
+      <Box sx={{ overflow: 'auto', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <MenuContent />
       </Box>
+
+      {/* PROFIL UŻYTKOWNIKA */}
       <Stack
         direction="row"
         sx={{
@@ -69,33 +73,39 @@ export default function SideMenu() {
       >
         <Avatar
           sizes="small"
-          alt="Riley Carter"
-          src="/static/images/avatar/7.jpg"
-          sx={{ width: 36, height: 36 }}
-        />
-        <Box sx={{ mr: 'auto' }}>
+          alt={userData.name}
+          sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: '1rem' }}
+        >
+          {userData.name.charAt(0).toUpperCase()}
+        </Avatar>
+        <Box sx={{ mr: 'auto', overflow: 'hidden' }}>
           <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
-            Riley Carter
+            {userData.name}
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            riley@email.com
+          <Typography 
+            variant="caption" 
+            sx={{ color: 'text.secondary', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          >
+            {userData.email}
           </Typography>
         </Box>
         <OptionsMenu />
-            </Stack>
-            <Stack sx={{ p: 2 }}>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<LogoutRoundedIcon />}
-                onClick={() => {
-                  localStorage.removeItem("accessToken");
-                  window.location.href = "/login";
-                }}
-              >
-                Logout
-              </Button>
-            </Stack>
+      </Stack>
+
+      {/* PRZYCISK WYLOGUJ */}
+      <Stack sx={{ p: 2 }}>
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={<LogoutRoundedIcon />}
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = "/login";
+          }}
+        >
+          Logout
+        </Button>
+      </Stack>
     </Drawer>
   );
 }
