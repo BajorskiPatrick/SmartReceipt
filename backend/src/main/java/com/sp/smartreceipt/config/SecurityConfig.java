@@ -45,16 +45,18 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/auth/register",
-                                "/auth/login",
-                                "/auth/refresh"
+                                "/auth/login"
                         ).permitAll()
                         .requestMatchers(
-                                "/auth/logout"
+                                "/auth/logout",
+                                "/auth/refresh"
                         ).authenticated()
+                        .requestMatchers(
+                                "/admin/**"
+                        ).hasAuthority(Role.ADMIN.getValue())
                         .requestMatchers(
                                 "/dashboard",
                                 "/expenses/**",
-                                "/shopping-lists/**",
                                 "/categories"
                         ).hasAuthority(Role.USER.getValue())
                         .anyRequest()
