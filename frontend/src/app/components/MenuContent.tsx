@@ -18,11 +18,11 @@ import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 
 const mainListItems = [
-  { text: 'Home', icon: <HomeRoundedIcon />, href: '/' },
-  { text: 'Statystyki', icon: <AnalyticsRoundedIcon />, href: '/statistics' },
-  { text: 'Paragony', icon: <ReceiptLongIcon />, href: '/receipts' },
-  { text: 'Listy zakupów', icon: <ShoppingCartIcon />, href: '/shopping-lists' },
-  { text: 'Wydatki', icon: <PaymentsRoundedIcon />, href: '/expenses' },
+    { text: 'Home', icon: <HomeRoundedIcon />, href: '/' },
+    { text: 'Statystyki', icon: <AnalyticsRoundedIcon />, href: '/statistics' },
+    { text: 'Paragony', icon: <ReceiptLongIcon />, href: '/receipts' },
+    // { text: 'Listy zakupów', icon: <ShoppingCartIcon />, href: '/shopping-lists' },
+    { text: 'Wydatki', icon: <PaymentsRoundedIcon />, href: '/expenses' },
 ];
 
 
@@ -30,25 +30,25 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function MenuContent() {
-  const pathname = usePathname() || '/';
+    const pathname = usePathname() || '/';
 
-  return (
-    <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
-      <List dense>
-        {mainListItems.map((item, index) => {
-          const selected = item.href ? pathname === item.href : false;
-          return (
-            <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton component={Link} href={item.href || '#'} selected={selected}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
-      <List dense>
-      </List>
-    </Stack>
-  );
+    return (
+        <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
+            <List dense>
+                {mainListItems.map((item, index) => {
+                    const selected = item.href ? pathname === item.href : false;
+                    return (
+                        <ListItem key={index} disablePadding sx={{ display: 'block' }}>
+                            <ListItemButton component={Link} href={item.href || '#'} selected={selected}>
+                                <ListItemIcon>{item.icon}</ListItemIcon>
+                                <ListItemText primary={item.text} />
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
+            </List>
+            <List dense>
+            </List>
+        </Stack>
+    );
 }
