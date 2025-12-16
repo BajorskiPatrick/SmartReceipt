@@ -845,12 +845,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserResponse'
-        '403':
-          description: "Access denied"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: "Internal server error"
           content:
@@ -883,12 +877,6 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
-          '403':
-            description: "Access denied"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
           '500':
             description: "Internal server error"
             content:
@@ -916,12 +904,6 @@ paths:
       responses:
         '204':
           description: "User deleted successfully"
-        '403':
-          description: "Access denied"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: "User not found"
           content:
@@ -965,12 +947,6 @@ paths:
                 $ref: '#/components/schemas/UserResponse'
         '400':
           description: "Invalid input data"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: "Access denied"
           content:
             application/json:
               schema:
@@ -1538,10 +1514,6 @@ components:
           type: string
           format: email
           example: "john.doe@gmail.com"
-        password:
-          type: string
-          format: password
-          example: "super_secret_password"
         role:
           $ref: "#/components/schemas/Role"
 
