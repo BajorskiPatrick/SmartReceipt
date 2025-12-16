@@ -48,71 +48,23 @@ import { NewMonthlyBudget } from '../models';
 // @ts-ignore
 import { NewOcrExpense } from '../models';
 // @ts-ignore
-import { NewShoppingList } from '../models';
-// @ts-ignore
-import { NewShoppingListItems } from '../models';
+import { NewUserByAdmin } from '../models';
 // @ts-ignore
 import { OcrExpense } from '../models';
 // @ts-ignore
 import { RefreshedToken } from '../models';
 // @ts-ignore
-import { ShoppingList } from '../models';
-// @ts-ignore
-import { ShoppingListItem } from '../models';
-// @ts-ignore
 import { UserLogin } from '../models';
 // @ts-ignore
 import { UserRegistration } from '../models';
+// @ts-ignore
+import { UserResponse } from '../models';
 /**
  * MainAppApi - axios parameter creator
  * @export
  */
 export const MainAppApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
-        /**
-         * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
-         * @summary Add list of products to shopping list
-         * @param {string} shoppingListId ID of the shopping list
-         * @param {NewShoppingListItems} newShoppingListItems 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        addItemsToShoppingList: async (shoppingListId: string, newShoppingListItems: NewShoppingListItems, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'shoppingListId' is not null or undefined
-            assertParamExists('addItemsToShoppingList', 'shoppingListId', shoppingListId)
-            // verify required parameter 'newShoppingListItems' is not null or undefined
-            assertParamExists('addItemsToShoppingList', 'newShoppingListItems', newShoppingListItems)
-            const localVarPath = `/shopping-lists/{shoppingListId}/items`
-                .replace(`{${"shoppingListId"}}`, encodeURIComponent(String(shoppingListId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(newShoppingListItems, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
         /**
          * 
          * @summary Manually add expense
@@ -195,46 +147,6 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @summary Create new shopping list
-         * @param {NewShoppingList} newShoppingList 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createShoppingList: async (newShoppingList: NewShoppingList, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'newShoppingList' is not null or undefined
-            assertParamExists('createShoppingList', 'newShoppingList', newShoppingList)
-            const localVarPath = `/shopping-lists`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(newShoppingList, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary Create new user budget
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
@@ -267,6 +179,46 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(newMonthlyBudget, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Create new user (admin only)
+         * @param {NewUserByAdmin} newUserByAdmin 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createUserByAdmin: async (newUserByAdmin: NewUserByAdmin, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'newUserByAdmin' is not null or undefined
+            assertParamExists('createUserByAdmin', 'newUserByAdmin', newUserByAdmin)
+            const localVarPath = `/admin/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(newUserByAdmin, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -373,6 +325,78 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             }
 
             const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Delete user (admin only)
+         * @param {string} userId ID of the user to delete
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteUserByAdmin: async (userId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('deleteUserByAdmin', 'userId', userId)
+            const localVarPath = `/admin/users/{userId}`
+                .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get all users (admin only)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllUsers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/admin/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -567,78 +591,6 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             if (size !== undefined) {
                 localVarQueryParameter['size'] = size;
             }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
-         * @summary Get full shopping list details
-         * @param {string} shoppingListId ID of the shopping list to fetch details for
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getShoppingListDetails: async (shoppingListId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'shoppingListId' is not null or undefined
-            assertParamExists('getShoppingListDetails', 'shoppingListId', shoppingListId)
-            const localVarPath = `/shopping-lists/{shoppingListId}`
-                .replace(`{${"shoppingListId"}}`, encodeURIComponent(String(shoppingListId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Get user shopping lists
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getShoppingLists: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/shopping-lists`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
 
     
@@ -986,6 +938,50 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * 
+         * @summary Update user details (admin only)
+         * @param {string} userId ID of the user to update
+         * @param {NewUserByAdmin} newUserByAdmin 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateUserByAdmin: async (userId: string, newUserByAdmin: NewUserByAdmin, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('updateUserByAdmin', 'userId', userId)
+            // verify required parameter 'newUserByAdmin' is not null or undefined
+            assertParamExists('updateUserByAdmin', 'newUserByAdmin', newUserByAdmin)
+            const localVarPath = `/admin/users/{userId}`
+                .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(newUserByAdmin, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
          * @summary Upload receipt image for processing
          * @param {File} [image] Receipt image file
@@ -1074,20 +1070,6 @@ export const MainAppApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = MainAppApiAxiosParamCreator(configuration)
     return {
         /**
-         * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
-         * @summary Add list of products to shopping list
-         * @param {string} shoppingListId ID of the shopping list
-         * @param {NewShoppingListItems} newShoppingListItems 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async addItemsToShoppingList(shoppingListId: string, newShoppingListItems: NewShoppingListItems, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ShoppingListItem>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addItemsToShoppingList(shoppingListId, newShoppingListItems, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MainAppApi.addItemsToShoppingList']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
          * 
          * @summary Manually add expense
          * @param {NewExpense} newExpense 
@@ -1115,19 +1097,6 @@ export const MainAppApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Create new shopping list
-         * @param {NewShoppingList} newShoppingList 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createShoppingList(newShoppingList: NewShoppingList, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ShoppingList>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createShoppingList(newShoppingList, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MainAppApi.createShoppingList']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary Create new user budget
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
@@ -1137,6 +1106,19 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createUserBudget(newMonthlyBudget, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MainAppApi.createUserBudget']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Create new user (admin only)
+         * @param {NewUserByAdmin} newUserByAdmin 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createUserByAdmin(newUserByAdmin: NewUserByAdmin, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createUserByAdmin(newUserByAdmin, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MainAppApi.createUserByAdmin']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1177,6 +1159,31 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.deleteExpenseItem(expenseId, itemId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MainAppApi.deleteExpenseItem']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Delete user (admin only)
+         * @param {string} userId ID of the user to delete
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteUserByAdmin(userId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteUserByAdmin(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MainAppApi.deleteUserByAdmin']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get all users (admin only)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllUsers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<UserResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllUsers(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MainAppApi.getAllUsers']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1234,31 +1241,6 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getExpensesList(year, month, categoryId, page, size, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MainAppApi.getExpensesList']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
-         * @summary Get full shopping list details
-         * @param {string} shoppingListId ID of the shopping list to fetch details for
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getShoppingListDetails(shoppingListId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ShoppingList>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getShoppingListDetails(shoppingListId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MainAppApi.getShoppingListDetails']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary Get user shopping lists
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getShoppingLists(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ShoppingList>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getShoppingLists(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MainAppApi.getShoppingLists']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1371,6 +1353,20 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @summary Update user details (admin only)
+         * @param {string} userId ID of the user to update
+         * @param {NewUserByAdmin} newUserByAdmin 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateUserByAdmin(userId: string, newUserByAdmin: NewUserByAdmin, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateUserByAdmin(userId, newUserByAdmin, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MainAppApi.updateUserByAdmin']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
          * @summary Upload receipt image for processing
          * @param {File} [image] Receipt image file
@@ -1407,17 +1403,6 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = MainAppApiFp(configuration)
     return {
         /**
-         * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
-         * @summary Add list of products to shopping list
-         * @param {string} shoppingListId ID of the shopping list
-         * @param {NewShoppingListItems} newShoppingListItems 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        addItemsToShoppingList(shoppingListId: string, newShoppingListItems: NewShoppingListItems, options?: any): AxiosPromise<ShoppingListItem> {
-            return localVarFp.addItemsToShoppingList(shoppingListId, newShoppingListItems, options).then((request) => request(axios, basePath));
-        },
-        /**
          * 
          * @summary Manually add expense
          * @param {NewExpense} newExpense 
@@ -1439,16 +1424,6 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @summary Create new shopping list
-         * @param {NewShoppingList} newShoppingList 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createShoppingList(newShoppingList: NewShoppingList, options?: any): AxiosPromise<ShoppingList> {
-            return localVarFp.createShoppingList(newShoppingList, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary Create new user budget
          * @param {NewMonthlyBudget} newMonthlyBudget 
          * @param {*} [options] Override http request option.
@@ -1456,6 +1431,16 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
          */
         createUserBudget(newMonthlyBudget: NewMonthlyBudget, options?: any): AxiosPromise<MonthlyBudget> {
             return localVarFp.createUserBudget(newMonthlyBudget, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Create new user (admin only)
+         * @param {NewUserByAdmin} newUserByAdmin 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createUserByAdmin(newUserByAdmin: NewUserByAdmin, options?: any): AxiosPromise<UserResponse> {
+            return localVarFp.createUserByAdmin(newUserByAdmin, options).then((request) => request(axios, basePath));
         },
         /**
          * Deletes a category. Sets the \'deleted\' flag to true so it is not returned as an available choice, but old expenses do not lose their category.
@@ -1487,6 +1472,25 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
          */
         deleteExpenseItem(expenseId: string, itemId: string, options?: any): AxiosPromise<void> {
             return localVarFp.deleteExpenseItem(expenseId, itemId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Delete user (admin only)
+         * @param {string} userId ID of the user to delete
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteUserByAdmin(userId: string, options?: any): AxiosPromise<void> {
+            return localVarFp.deleteUserByAdmin(userId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get all users (admin only)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllUsers(options?: any): AxiosPromise<Array<UserResponse>> {
+            return localVarFp.getAllUsers(options).then((request) => request(axios, basePath));
         },
         /**
          * Returns a list of user-defined expense categories (e.g., for the dropdown when manually adding an expense or filtering).
@@ -1532,25 +1536,6 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
          */
         getExpensesList(year: number, month: number, categoryId?: string, page?: number, size?: number, options?: any): AxiosPromise<ExpenseSummaryPage> {
             return localVarFp.getExpensesList(year, month, categoryId, page, size, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
-         * @summary Get full shopping list details
-         * @param {string} shoppingListId ID of the shopping list to fetch details for
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getShoppingListDetails(shoppingListId: string, options?: any): AxiosPromise<ShoppingList> {
-            return localVarFp.getShoppingListDetails(shoppingListId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Get user shopping lists
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getShoppingLists(options?: any): AxiosPromise<Array<ShoppingList>> {
-            return localVarFp.getShoppingLists(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1638,6 +1623,17 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.updateUserBudget(budgetId, newMonthlyBudget, options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @summary Update user details (admin only)
+         * @param {string} userId ID of the user to update
+         * @param {NewUserByAdmin} newUserByAdmin 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateUserByAdmin(userId: string, newUserByAdmin: NewUserByAdmin, options?: any): AxiosPromise<UserResponse> {
+            return localVarFp.updateUserByAdmin(userId, newUserByAdmin, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Endpoint accepts a receipt image. The backend sends it to the AI module for data extraction (OCR) and categorization, then returns an expense ready for the user to accept and add.
          * @summary Upload receipt image for processing
          * @param {File} [image] Receipt image file
@@ -1668,19 +1664,6 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
  */
 export class MainAppApi extends BaseAPI {
     /**
-     * Adds a full list of products to the given shopping list. The frontend sends a bulk request for all items added by the user in a single action.
-     * @summary Add list of products to shopping list
-     * @param {string} shoppingListId ID of the shopping list
-     * @param {NewShoppingListItems} newShoppingListItems 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MainAppApi
-     */
-    public addItemsToShoppingList(shoppingListId: string, newShoppingListItems: NewShoppingListItems, options?: RawAxiosRequestConfig) {
-        return MainAppApiFp(this.configuration).addItemsToShoppingList(shoppingListId, newShoppingListItems, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * 
      * @summary Manually add expense
      * @param {NewExpense} newExpense 
@@ -1706,18 +1689,6 @@ export class MainAppApi extends BaseAPI {
 
     /**
      * 
-     * @summary Create new shopping list
-     * @param {NewShoppingList} newShoppingList 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MainAppApi
-     */
-    public createShoppingList(newShoppingList: NewShoppingList, options?: RawAxiosRequestConfig) {
-        return MainAppApiFp(this.configuration).createShoppingList(newShoppingList, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary Create new user budget
      * @param {NewMonthlyBudget} newMonthlyBudget 
      * @param {*} [options] Override http request option.
@@ -1726,6 +1697,18 @@ export class MainAppApi extends BaseAPI {
      */
     public createUserBudget(newMonthlyBudget: NewMonthlyBudget, options?: RawAxiosRequestConfig) {
         return MainAppApiFp(this.configuration).createUserBudget(newMonthlyBudget, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Create new user (admin only)
+     * @param {NewUserByAdmin} newUserByAdmin 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MainAppApi
+     */
+    public createUserByAdmin(newUserByAdmin: NewUserByAdmin, options?: RawAxiosRequestConfig) {
+        return MainAppApiFp(this.configuration).createUserByAdmin(newUserByAdmin, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1763,6 +1746,29 @@ export class MainAppApi extends BaseAPI {
      */
     public deleteExpenseItem(expenseId: string, itemId: string, options?: RawAxiosRequestConfig) {
         return MainAppApiFp(this.configuration).deleteExpenseItem(expenseId, itemId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Delete user (admin only)
+     * @param {string} userId ID of the user to delete
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MainAppApi
+     */
+    public deleteUserByAdmin(userId: string, options?: RawAxiosRequestConfig) {
+        return MainAppApiFp(this.configuration).deleteUserByAdmin(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all users (admin only)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MainAppApi
+     */
+    public getAllUsers(options?: RawAxiosRequestConfig) {
+        return MainAppApiFp(this.configuration).getAllUsers(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1816,29 +1822,6 @@ export class MainAppApi extends BaseAPI {
      */
     public getExpensesList(year: number, month: number, categoryId?: string, page?: number, size?: number, options?: RawAxiosRequestConfig) {
         return MainAppApiFp(this.configuration).getExpensesList(year, month, categoryId, page, size, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Fetches the full shopping list object, including a list of all its items. Used when the user clicks \'Details\' on the list.
-     * @summary Get full shopping list details
-     * @param {string} shoppingListId ID of the shopping list to fetch details for
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MainAppApi
-     */
-    public getShoppingListDetails(shoppingListId: string, options?: RawAxiosRequestConfig) {
-        return MainAppApiFp(this.configuration).getShoppingListDetails(shoppingListId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Get user shopping lists
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MainAppApi
-     */
-    public getShoppingLists(options?: RawAxiosRequestConfig) {
-        return MainAppApiFp(this.configuration).getShoppingLists(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1940,6 +1923,19 @@ export class MainAppApi extends BaseAPI {
      */
     public updateUserBudget(budgetId: string, newMonthlyBudget: NewMonthlyBudget, options?: RawAxiosRequestConfig) {
         return MainAppApiFp(this.configuration).updateUserBudget(budgetId, newMonthlyBudget, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Update user details (admin only)
+     * @param {string} userId ID of the user to update
+     * @param {NewUserByAdmin} newUserByAdmin 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MainAppApi
+     */
+    public updateUserByAdmin(userId: string, newUserByAdmin: NewUserByAdmin, options?: RawAxiosRequestConfig) {
+        return MainAppApiFp(this.configuration).updateUserByAdmin(userId, newUserByAdmin, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
