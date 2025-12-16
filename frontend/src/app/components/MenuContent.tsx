@@ -25,9 +25,6 @@ const mainListItems = [
   { text: 'Wydatki', icon: <PaymentsRoundedIcon />, href: '/expenses' },
 ];
 
-const secondaryListItems = [
-  { text: 'Ustawienia', icon: <SettingsRoundedIcon />, href: '/settings' },
-];
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -51,17 +48,6 @@ export default function MenuContent() {
         })}
       </List>
       <List dense>
-        {secondaryListItems.map((item, index) => {
-          const selected = item.href ? pathname === item.href : false;
-          return (
-            <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton component={item.href ? Link : 'button'} href={item.href || undefined} selected={selected}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
       </List>
     </Stack>
   );
