@@ -1,0 +1,12 @@
+{
+  "labels": [
+    "Alcohol and stimulants",
+    "Cosmetics",
+    "Entertainment",
+    "Groceries",
+    "Household and chemistry",
+    "Ignore",
+    "Transport"
+  ],
+  "normalize_embeddings": false
+}

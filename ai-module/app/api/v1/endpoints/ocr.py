@@ -15,8 +15,8 @@ async def process_receipt(
 ):
 
     try:
-        result = await service.process_receipt(image)
-        expense_items = [OcrExpenseItem.from_dict(item) for item in result]
+        items = await service.process_receipt(image)
+        expense_items = [OcrExpenseItem.from_dict(item) for item in items]
         return OcrResult(expenses=expense_items)
     except Exception as e:
         logger.error(f"Error processing receipt: {e}")

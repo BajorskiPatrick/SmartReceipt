@@ -57,8 +57,8 @@ class InferenceService:
             if self.parser is None:
                 raise RuntimeError("Parser not initialized.")
 
-            items = await run_in_threadpool(self.parser.parse, target_path)
-
+            parsed_result = await run_in_threadpool(self.parser.parse, target_path)
+            items = parsed_result.get("items", [])
             # Copy for visualization
             raw_items_copy = copy.deepcopy(items)
 
