@@ -32,23 +32,23 @@ import { usePathname } from 'next/navigation';
 export default function MenuContent() {
     const pathname = usePathname() || '/';
 
-    return (
-        <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
-            <List dense>
-                {mainListItems.map((item, index) => {
-                    const selected = item.href ? pathname === item.href : false;
-                    return (
-                        <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-                            <ListItemButton component={Link} href={item.href || '#'} selected={selected}>
-                                <ListItemIcon>{item.icon}</ListItemIcon>
-                                <ListItemText primary={item.text} />
-                            </ListItemButton>
-                        </ListItem>
-                    );
-                })}
-            </List>
-            <List dense>
-            </List>
-        </Stack>
-    );
+  return (
+    <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
+      <List dense>
+        {mainListItems.map((item, index) => {
+          const selected = item.href ? pathname === item.href : false;
+          return (
+            <ListItem key={index} disablePadding sx={{ display: 'block' }}>
+              <ListItemButton component={Link} href={item.href || '#'} selected={selected}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+      <List dense>
+      </List>
+    </Stack>
+  );
 }
