@@ -21,7 +21,15 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const ok = await login(form);
-    if (ok) router.push("/");
+    if (ok) {
+  const role = localStorage.getItem("userRole");
+  if (role === "ROLE_ADMIN") {
+    router.push("/admin");
+  } else {
+    router.push("/");
+  }
+}
+
   }
 
   return (

@@ -31,6 +31,8 @@ export function useAuth() {
       // Tworzymy nazwę użytkownika z maila (część przed @)
       const userName = userEmail.split('@')[0];
       localStorage.setItem("userName", userName);
+      const userRole = res?.data?.role || "ROLE_USER";
+      localStorage.setItem("userRole", userRole);
 
       return true;
     } catch (e: any) {
