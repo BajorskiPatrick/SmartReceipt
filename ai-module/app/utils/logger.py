@@ -26,6 +26,7 @@ def configure_logging():
         logger.handlers = []
         logger.propagate = True
 
+
 def get_logger(name: str = "SmartReceipt"):
     """
     Configures a logger using Rich for beautiful, structured output.

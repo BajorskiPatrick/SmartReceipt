@@ -45,6 +45,7 @@ np.random.seed(SEED)
 torch.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
+
 # ======================
 # DATA
 # ======================
@@ -74,7 +75,7 @@ def train():
 
     logger.info(f"🚀 Loading base model on {DEVICE}")
     model = SetFitModel.from_pretrained(
-        "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         device=DEVICE
     )
 
@@ -84,7 +85,7 @@ def train():
         loss_class=CosineSimilarityLoss,
         metric="accuracy",
         batch_size=16,
-        num_iterations=5,
+        num_iterations=10,
         num_epochs=1,
         column_mapping={"text": "text", "label": "label"},
         seed=SEED,
@@ -98,7 +99,7 @@ def train():
 
     repo_id = "Johnyyy123/smart-receipt-categorizer-v1"
     logger.info(f"📤 Pushing model to Hugging Face Hub: {repo_id}")
-    model.push_to_hub(repo_id=repo_id, commit_message="Initial commit")
+    model.push_to_hub(repo_id=repo_id, commit_message="New model version")
 
     logger.info(f"✅ Model saved to {MODEL_DIR}")
 
