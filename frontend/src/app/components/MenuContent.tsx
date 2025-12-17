@@ -20,7 +20,7 @@ import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 const mainListItems = [
     { text: 'Home', icon: <HomeRoundedIcon />, href: '/' },
     { text: 'Statystyki', icon: <AnalyticsRoundedIcon />, href: '/statistics' },
-    { text: 'Paragony', icon: <ReceiptLongIcon />, href: '/receipts' },
+    //{ text: 'Paragony', icon: <ReceiptLongIcon />, href: '/receipts' },
     // { text: 'Listy zakupów', icon: <ShoppingCartIcon />, href: '/shopping-lists' },
     { text: 'Wydatki', icon: <PaymentsRoundedIcon />, href: '/expenses' },
 ];
