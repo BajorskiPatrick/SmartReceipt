@@ -44,7 +44,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public void authenticate(String email, String password) {
-        log.debug("Authenticating user: {}", email);
+        log.info("Authenticating user: {}", email);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
 
@@ -112,7 +112,7 @@ public class AuthService {
         }
 
         String email = jwtUtil.extractUsernameFromRefreshToken(refreshToken);
-        log.debug("Refreshing token for user: {}", email);
+        log.info("Refreshing token for user: {}", email);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
         if (!jwtUtil.validateRefreshToken(refreshToken, userDetails)) {

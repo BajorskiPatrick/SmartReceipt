@@ -7,14 +7,14 @@ import Dashboard from "./Dashboard";
 import "@/api-client/setupAxios";
 
 export default function DashboardPage() {
-  const router = useRouter();
+    const router = useRouter();
 
-  useEffect(() => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    useEffect(() => {
+        const token =
+            typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-    if (!token) router.push("/login");
-  }, [router]);
+        if (!token) router.push("/login");
+    }, [router]);
 
-  return <Dashboard />;
+    return <Dashboard />;
 }

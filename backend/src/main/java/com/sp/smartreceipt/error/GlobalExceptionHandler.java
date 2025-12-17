@@ -34,6 +34,12 @@ public class GlobalExceptionHandler {
     }
 
     // LEVEL 2 - framework / validation exceptions
+    @ExceptionHandler(DataValidationException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(DataValidationException ex, HttpServletRequest request) {
+        log.warn("Bad Request: {}", ex.getMessage());
+        return createResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex,
             HttpServletRequest request) {
