@@ -13,7 +13,7 @@ class OcrExpenseItem(BaseModel):
     productName: Optional[str] = Field(None)
     price: Optional[float] = None
     quantity: Optional[float] = 1.0
-    category: Optional[str] = None
+    categoryName: Optional[str] = None
 
     model_config = {"populate_by_name": True}
 
