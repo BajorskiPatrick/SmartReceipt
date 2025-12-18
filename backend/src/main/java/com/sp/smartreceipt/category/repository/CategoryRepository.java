@@ -11,5 +11,7 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
 
     Optional<CategoryEntity> findByCategoryIdAndUserEmail(UUID categoryId, String userEmail);
 
+    Optional<CategoryEntity> findByNameAndUserEmail(String categoryName, String userEmail);
+
     List<CategoryEntity> findAllByUserEmailAndDeletedFalse(String userEmail);
 }
