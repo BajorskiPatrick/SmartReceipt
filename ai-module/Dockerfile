@@ -36,8 +36,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install "paddlepaddle>=2.6.0" "paddleocr>=2.7.0" "numpy<2.0.0" "protobuf<4.0.0"
 
 # 3. LLAMA-CPP-PYTHON (Wersja SZYBKA - Wheel dla CUDA 12.4)
-# Zmieniliśmy URL na .../whl/cu124
-# Używamy --index-strategy unsafe-best-match, żeby uv poszukał w extra-index
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install "llama-cpp-python" \
     --index-strategy unsafe-best-match \

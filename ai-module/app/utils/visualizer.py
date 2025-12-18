@@ -62,7 +62,7 @@ class Visualizer(BaseVisualizer):
                 name = item.get("productName", "??")
                 name = (name[:18] + "..") if len(name) > 18 else name
                 price = item.get("price", 0.0)
-                cat = item.get("category", "None")
+                cat = item.get("categoryName", "None")
                 lines.append(f"{name:<20} | {price:>6.2f} | {cat}")
 
             text_content = "\n".join(lines)

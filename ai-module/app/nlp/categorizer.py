@@ -157,14 +157,13 @@ class ProductCategorizer(BaseCategorizer):
         """
         Klasyfikuje pojedynczy produkt (wrapper dla spójności)
         """
-        # Używamy logiki z categorize_items dla pojedynczego elementu
+
         items = [{"productName": productName}]
         result = self.categorize_items(items)
         item = result[0]
-        # Zwracamy w starym formacie oczekiwanym przez metodę categorize
+
         return {
-            "category": item["category"],
-            "confidence": 1.0 if item["category"] else 0.0,
+            "categoryName": item["category"],
         }
 
     def categorize_items(self, items: list) -> list:
@@ -183,24 +182,16 @@ class ProductCategorizer(BaseCategorizer):
             conf = probs[i].max().item()
             name = item["productName"]
 
-            # 1. Najpierw SPRAWDŹ SŁOWNIK (Priorytet nad AI dla pewniaków)
-            # Dzięki temu "BUKA" zawsze wpadnie do Groceries, nieważne co myśli AI
             keyword_category = self._check_keywords(name)
 
             if keyword_category:
-                item["category"] = keyword_category
-                item["confidence"] = 1.0
-                # Opcjonalnie: loguj, jeśli AI się myliło
-                # if ai_category != keyword_category:
-                #     logger.info(f"Fixed AI error: {name} | AI: {ai_category} -> KW: {keyword_category}")
+                item["categoryName"] = keyword_category
                 continue
 
-            # 2. Jeśli słownik milczy, ufamy AI (ale tylko jeśli pewne)
-            if ai_category != "Ignore" and conf >= self.CONFIDENCE_THRESHOLD:
-                item["category"] = ai_category
+            if conf >= self.CONFIDENCE_THRESHOLD:
+                item["categoryName"] = ai_category
             else:
-                item["category"] = None  # Brak w słowniku i słabe AI
+                item["categoryName"] = "Other"
 
-            item["confidence"] = conf
-
+        print(items)
         return items
