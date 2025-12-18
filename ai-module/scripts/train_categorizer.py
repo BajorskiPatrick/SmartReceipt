@@ -21,10 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
 
 DATA_PATH = BASE_DIR / "data" / "set_fit_few_shot" / "dataset.json"
-MODEL_DIR = Path(os.environ.get(
-    "MODEL_DIR",
-    BASE_DIR / "models" / "my-receipt-categorizer"
-))
+MODEL_DIR = Path(
+    os.environ.get("MODEL_DIR", BASE_DIR / "app" / "nlp" / "models" / "my-receipt-categorizer")
+)
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -32,8 +31,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # LOGGING
 # ======================
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("TrainCategorizer")
 
@@ -75,8 +73,7 @@ def train():
 
     logger.info(f"🚀 Loading base model on {DEVICE}")
     model = SetFitModel.from_pretrained(
-        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-        device=DEVICE
+        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", device=DEVICE
     )
 
     trainer = SetFitTrainer(
@@ -85,8 +82,8 @@ def train():
         loss_class=CosineSimilarityLoss,
         metric="accuracy",
         batch_size=16,
-        num_iterations=10,
-        num_epochs=1,
+        num_iterations=40,
+        num_epochs=2,
         column_mapping={"text": "text", "label": "label"},
         seed=SEED,
     )

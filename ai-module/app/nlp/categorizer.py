@@ -1,6 +1,5 @@
 from setfit import SetFitModel
 from pathlib import Path
-import torch
 from app.utils.logger import get_logger
 from app.services.interfaces import BaseCategorizer
 
@@ -14,37 +13,121 @@ class ProductCategorizer(BaseCategorizer):
 
     KEYWORDS = {
         "Alcohol and stimulants": [
-            "PIWO", "WÓDKA", "WODKA", "WINO", "WHISKY", "SPIRYTUS", "LIKIER",
-            "PAPIEROSY", "TYTOŃ", "TYTON", "L&M", "MARLBORO", "CAMEL", "HEETS", "VUSE"
+            "PIWO",
+            "WÓDKA",
+            "WODKA",
+            "WINO",
+            "WHISKY",
+            "SPIRYTUS",
+            "LIKIER",
+            "PAPIEROSY",
+            "TYTOŃ",
+            "TYTON",
+            "L&M",
+            "MARLBORO",
+            "CAMEL",
+            "HEETS",
+            "VUSE",
         ],
         "Groceries": [
             # Pieczywo
-            "BUŁKA", "BULKA", "BUKA", "CHLEB", "KAIZERKA", "ROGAL", "BAGIETKA", "TORTILLA",
+            "BUŁKA",
+            "BULKA",
+            "BUKA",
+            "CHLEB",
+            "KAIZERKA",
+            "ROGAL",
+            "BAGIETKA",
+            "TORTILLA",
             # Nabiał (Tutaj naprawiamy LACIATE i TWAROZEK)
-            "MLEKO", "LACIATE", "ŁACIATE", "SER", "JOGURT", "KEFIR", "MASŁO", "MASLO",
-            "TWARÓG", "TWAROG", "TWAROZEK", "ŚMIETANA", "SMIETANA", "DAN CAKE",
+            "MLEKO",
+            "LACIATE",
+            "ŁACIATE",
+            "SER",
+            "JOGURT",
+            "KEFIR",
+            "MASŁO",
+            "MASLO",
+            "TWARÓG",
+            "TWAROG",
+            "TWAROZEK",
+            "ŚMIETANA",
+            "SMIETANA",
+            "DAN CAKE",
             # Jaja (Naprawiamy Transport Jaj xD)
-            "JAJA", "JAJKA", "ZIELONONOZKA", "ZIELONONÓŻKA",
+            "JAJA",
+            "JAJKA",
+            "ZIELONONOZKA",
+            "ZIELONONÓŻKA",
             # Mięso i wędliny (Naprawiamy OPATKA i MIERNIK PIECZEN)
-            "SZYNKA", "SCHAB", "KIEŁBASA", "KIELBASA", "PIERŚ", "KURCZAK", "INDYK",
-            "MIESO", "MIĘSO", "ŁOPATKA", "LOPATKA", "OPATKA", "PIECZEŃ", "PIECZEN", "ZRAZOWA",
+            "SZYNKA",
+            "SCHAB",
+            "KIEŁBASA",
+            "KIELBASA",
+            "PIERŚ",
+            "KURCZAK",
+            "INDYK",
+            "MIESO",
+            "MIĘSO",
+            "ŁOPATKA",
+            "LOPATKA",
+            "OPATKA",
+            "PIECZEŃ",
+            "PIECZEN",
+            "ZRAZOWA",
             # Warzywa i Przetwory (Naprawiamy Passatę i Knorra)
-            "POMIDOR", "OGÓREK", "ZIEMNIAK", "MARCHEW", "PASSATA", "PRZECIER",
-            "ROSÓŁ", "ROSOL", "KNORR", "WINIARY", "PRZYPRAWA", "KAMIS", "SOS",
+            "POMIDOR",
+            "OGÓREK",
+            "ZIEMNIAK",
+            "MARCHEW",
+            "PASSATA",
+            "PRZECIER",
+            "ROSÓŁ",
+            "ROSOL",
+            "KNORR",
+            "WINIARY",
+            "PRZYPRAWA",
+            "KAMIS",
+            "SOS",
             # Napoje
-            "WODA", "NAPÓJ", "SOK", "NEKTAR", "PEPSI", "COLA", "SPRITE"
+            "WODA",
+            "NAPÓJ",
+            "SOK",
+            "NEKTAR",
+            "PEPSI",
+            "COLA",
+            "SPRITE",
         ],
         "Household and chemistry": [
-            "DOMESTOS", "PŁYN", "PLYN", "PROSZEK", "KAPSUŁKI", "KAPSULKI",
-            "BATERIE", "WORKI", "PAPIER TOALETOWY", "RECZNIK", "CHUSTECZKI", "MYDŁO",
-            "TORBA", "REKLAMÓWKA", "SIATKA"
+            "DOMESTOS",
+            "PŁYN",
+            "PLYN",
+            "PROSZEK",
+            "KAPSUŁKI",
+            "KAPSULKI",
+            "BATERIE",
+            "WORKI",
+            "PAPIER TOALETOWY",
+            "RECZNIK",
+            "CHUSTECZKI",
+            "MYDŁO",
+            "TORBA",
+            "REKLAMÓWKA",
+            "SIATKA",
         ],
         "Transport": [
-            "BILET", "PALIWO", "PB95", "ON", "UBER", "BOLT", "PARKING", "MPK", "PKP"
-        ]
+            "BILET",
+            "PALIWO",
+            "PB95",
+            "ON",
+            "UBER",
+            "BOLT",
+            "PARKING",
+            "MPK",
+            "PKP",
+        ],
         # Torby papierowe możesz dodać do Ignore albo zostawić w Household
     }
-
 
     def __init__(self):
         self.model_path = Path(__file__).parent / "models/my-receipt-categorizer"
@@ -79,7 +162,10 @@ class ProductCategorizer(BaseCategorizer):
         result = self.categorize_items(items)
         item = result[0]
         # Zwracamy w starym formacie oczekiwanym przez metodę categorize
-        return {"category": item["category"], "confidence": 1.0 if item["category"] else 0.0}
+        return {
+            "category": item["category"],
+            "confidence": 1.0 if item["category"] else 0.0,
+        }
 
     def categorize_items(self, items: list) -> list:
         if not items:

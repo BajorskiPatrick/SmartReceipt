@@ -11,7 +11,7 @@ def configure_logging():
         level=logging.INFO,
         format="%(message)s",
         datefmt="[%X]",
-        handlers=[RichHandler(rich_tracebacks=True)]
+        handlers=[RichHandler(rich_tracebacks=True)],
     )
 
     # Uciszamy/podmieniamy handlery Uvicorna, żeby nie dublował logów

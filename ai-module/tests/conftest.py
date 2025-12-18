@@ -21,11 +21,13 @@ from app.utils.visualizer import Visualizer
 
 # --- 3. FIXTURES ---
 
+
 @pytest.fixture(scope="module")
 def categorizer():
     """Inicjalizuje sam model kategoryzacji (lekki)."""
     print("\n⏳ [Fixture] Ładowanie ProductCategorizer...")
     return ProductCategorizer()
+
 
 @pytest.fixture(scope="module")
 def inference_service():
@@ -33,20 +35,21 @@ def inference_service():
     Inicjalizuje CAŁY serwis (OCR + NLP + Visualizer).
     To jest ciężka operacja, więc robimy to raz na moduł (scope="module").
     """
-    print("\n⏳ [Fixture] Ładowanie InferenceService (OCR + NLP)... to może chwilę potrwać.")
+    print(
+        "\n⏳ [Fixture] Ładowanie InferenceService (OCR + NLP)... to może chwilę potrwać."
+    )
     try:
         parser = LLMReceiptParser()
         categorizer = ProductCategorizer()
         visualizer = Visualizer()
 
         service = InferenceService(
-            parser=parser,
-            categorizer=categorizer,
-            visualizer=visualizer
+            parser=parser, categorizer=categorizer, visualizer=visualizer
         )
         return service
     except Exception as e:
         pytest.fail(f"Nie udało się zainicjalizować serwisu: {e}")
+
 
 @pytest.fixture(scope="session")
 def event_loop():

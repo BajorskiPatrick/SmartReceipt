@@ -12,7 +12,7 @@ dependencies = [
     "numpy<2.0.0", # ZMIANA: Paddle wymaga NumPy 1.x
     "opencv-python-headless>=4.10.0.84", # ZMIANA: Wersja z PyPI zamiast Gita
     "paddleocr==2.7.0.2",
-    "paddlepaddle-gpu==2.6.1", # ZMIANA: Sztywna wersja, która na pewno działa
+    "paddlepaddle>=2.6.0",
     "protobuf>=3.20.2,<4.0.0", # DODATEK: Częsty wymóg dla Paddle
     "pydantic>=2.9.0",
     "pytesseract>=0.3.13",
