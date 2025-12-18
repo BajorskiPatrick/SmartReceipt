@@ -1193,17 +1193,17 @@ components:
           minimum: 0.00
           description: "Price per unit, cannot be negative"
           example: 3.50
-        categoryId:
-          type: string
-          format: uuid
-          description: "Category ID (optional, as OCR might not recognize it)"
-          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     ExpenseItem:
       allOf:
         - $ref: '#/components/schemas/ExpenseItemBase'
         - type: object
           properties:
+            categoryId:
+              type: string
+              format: uuid
+              description: "Category ID (optional, as OCR might not recognize it)"
+              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
             expenseItemId:
               type: string
               format: uuid
@@ -1215,10 +1215,33 @@ components:
     NewExpenseItem:
       allOf:
         - $ref: '#/components/schemas/ExpenseItemBase'
+        - type: object
+          properties:
+            categoryId:
+              type: string
+              format: uuid
+              description: "Category ID (optional, as OCR might not recognize it)"
+              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+
+    OcrResultExpenseItem:
+      allOf:
+        - $ref: '#/components/schemas/ExpenseItemBase'
+        - type: object
+          properties:
+            categoryName:
+              type: string
+              example: "Food"
 
     OcrExpenseItem:
       allOf:
         - $ref: '#/components/schemas/ExpenseItemBase'
+        - type: object
+          properties:
+            categoryId:
+              type: string
+              format: uuid
+              description: "Category ID (optional, as OCR might not recognize it)"
+              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     DashboardData:
       type: object
@@ -1404,7 +1427,7 @@ components:
         expenses:
           type: array
           items:
-            $ref: '#/components/schemas/OcrExpenseItem'
+            $ref: '#/components/schemas/OcrResultExpenseItem'
 
     Role:
       type: string
