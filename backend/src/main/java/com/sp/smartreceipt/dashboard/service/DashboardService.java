@@ -4,12 +4,10 @@ import com.sp.smartreceipt.budget.entity.MonthlyCategoryBudgetEntity;
 import com.sp.smartreceipt.budget.entity.MonthlyBudgetEntity;
 import com.sp.smartreceipt.budget.repository.BudgetRepository;
 import com.sp.smartreceipt.category.entity.CategoryEntity;
+import com.sp.smartreceipt.error.exception.DataValidationException;
 import com.sp.smartreceipt.expense.entity.ExpenseEntity;
 import com.sp.smartreceipt.expense.service.ExpenseService;
-import com.sp.smartreceipt.model.DashboardCategorySummaryItem;
-import com.sp.smartreceipt.model.DashboardData;
-import com.sp.smartreceipt.model.DashboardKpi;
-import com.sp.smartreceipt.model.DashboardTrendItem;
+import com.sp.smartreceipt.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +34,47 @@ public class DashboardService {
     private final BudgetRepository budgetRepository;
 
     @Transactional
+    public YearlySpendingSummary getYearlySpendingSummary(Integer year) {
+        if (LocalDate.now().getYear() < year) {
+            throw new DataValidationException("Requested year cannot be in the future");
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+
+        log.info("Fetching yearly spending summary for {} for user {}", year, userEmail);
+
+        List<MonthlySpendingSummaryItem> monthlySummaries = new ArrayList<>();
+
+        Stream.iterate(YearMonth.of(year, 1), date -> date.plusMonths(1))
+            .limit(12)
+            .forEach(ym -> {
+                List<ExpenseEntity> monthlyExpenses = expenseService.getExpensesForMonth(ym.getYear(), ym.getMonthValue(), false);
+                DashboardTrendItem trendItem = buildDashboardTrendItem(monthlyExpenses, ym.getYear(), ym.getMonthValue());
+                BigDecimal monthlyBudget = budgetRepository.findByYearAndMonthAndUserEmail(ym.getYear(), ym.getMonthValue(), userEmail)
+                    .map(MonthlyBudgetEntity::getBudget)
+                    .orElse(BigDecimal.ZERO);
+
+                MonthlySpendingSummaryItem summaryItem = MonthlySpendingSummaryItem.builder()
+                    .month(ym.getMonthValue())
+                    .totalSpending(trendItem.getTotalAmount())
+                    .budget(monthlyBudget)
+                    .build();
+                monthlySummaries.add(summaryItem);
+        });
+
+        return YearlySpendingSummary.builder()
+            .year(year)
+            .monthlySummaries(monthlySummaries)
+            .build();
+    }
+
+    @Transactional
     public DashboardData getDashboardData(Integer year, Integer month) {
+        if (LocalDate.now().getYear() < year || (LocalDate.now().getYear() == year && LocalDate.now().getMonthValue() < month)) {
+            throw new DataValidationException("Requested month cannot be in the future");
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
