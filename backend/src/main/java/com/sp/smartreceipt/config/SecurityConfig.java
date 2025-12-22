@@ -48,13 +48,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/auth/register",
-                                "/auth/login"
+                                "/auth/**"
                         ).permitAll()
-                        .requestMatchers(
-                                "/auth/logout",
-                                "/auth/refresh"
-                        ).authenticated()
                         .requestMatchers(
                                 "/admin/**"
                         ).hasAuthority(Role.ADMIN.getValue())
