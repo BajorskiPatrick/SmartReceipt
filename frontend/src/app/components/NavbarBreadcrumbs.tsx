@@ -24,11 +24,8 @@ export default function NavbarBreadcrumbs() {
   const segments = pathname.split('/').filter(Boolean);
 
   const labelMap: Record<string, string> = {
-    statistics: 'Statystyki',
-    receipts: 'Bank Paragonów',
-    expenses: 'Wydatki',
-    'shopping-lists': 'Listy zakupów',
-    settings: 'Ustawienia',
+    statistics: 'Statistics',
+    expenses: 'Expenses',
     // fallback labels can be added here
   };
 
