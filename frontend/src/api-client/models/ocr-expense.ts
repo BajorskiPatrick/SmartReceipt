@@ -15,15 +15,43 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { ExpenseBase } from './expense-base';
-// May contain unused imports in some cases
-// @ts-ignore
 import { OcrExpenseItem } from './ocr-expense-item';
 
 /**
- * @type OcrExpense
+ * 
  * @export
+ * @interface OcrExpense
  */
-export type OcrExpense = ExpenseBase;
-
+export interface OcrExpense {
+    /**
+     * 
+     * @type {string}
+     * @memberof OcrExpense
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OcrExpense
+     */
+    'transactionDate': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof OcrExpense
+     */
+    'totalAmount': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof OcrExpense
+     */
+    'itemCount': number;
+    /**
+     * 
+     * @type {Array<OcrExpenseItem>}
+     * @memberof OcrExpense
+     */
+    'items': Array<OcrExpenseItem>;
+}
 

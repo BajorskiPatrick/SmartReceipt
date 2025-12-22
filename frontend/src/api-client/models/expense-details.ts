@@ -15,15 +15,49 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import { ExpenseBase } from './expense-base';
-// May contain unused imports in some cases
-// @ts-ignore
 import { ExpenseItem } from './expense-item';
 
 /**
- * @type ExpenseDetails
+ * 
  * @export
+ * @interface ExpenseDetails
  */
-export type ExpenseDetails = ExpenseBase;
-
+export interface ExpenseDetails {
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpenseDetails
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpenseDetails
+     */
+    'transactionDate': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpenseDetails
+     */
+    'totalAmount': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpenseDetails
+     */
+    'itemCount': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpenseDetails
+     */
+    'expenseId': string;
+    /**
+     * 
+     * @type {Array<ExpenseItem>}
+     * @memberof ExpenseDetails
+     */
+    'items': Array<ExpenseItem>;
+}
 

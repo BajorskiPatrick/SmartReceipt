@@ -13,14 +13,36 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import { ExpenseItemBase } from './expense-item-base';
 
 /**
- * @type NewExpenseItem
+ * 
  * @export
+ * @interface NewExpenseItem
  */
-export type NewExpenseItem = ExpenseItemBase;
-
+export interface NewExpenseItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof NewExpenseItem
+     */
+    'productName': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof NewExpenseItem
+     */
+    'quantity': number;
+    /**
+     * Price per unit, cannot be negative
+     * @type {number}
+     * @memberof NewExpenseItem
+     */
+    'price': number;
+    /**
+     * Category ID (optional, as OCR might not recognize it)
+     * @type {string}
+     * @memberof NewExpenseItem
+     */
+    'categoryId': string;
+}
 
