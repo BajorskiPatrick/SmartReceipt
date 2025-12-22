@@ -1089,11 +1089,14 @@ components:
         role:
           $ref: "#/components/schemas/Role"
 
-    ExpenseBase:
+    ExpenseDetails:
       type: object
       required:
         - transactionDate
         - totalAmount
+        - itemCount
+        - expenseId
+        - items
       properties:
         description:
           type: string
@@ -1112,40 +1115,74 @@ components:
           type: integer
           minimum: 0
           example: 5
-
-    ExpenseDetails:
-      allOf:
-        - $ref: "#/components/schemas/ExpenseBase"
-        - type: object
-          properties:
-            expenseId:
-              type: string
-              format: uuid
-              example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
-            items:
-              type: array
-              items:
-                $ref: '#/components/schemas/ExpenseItem'
+        expenseId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpenseItem'
 
     ExpenseSummary:
-      allOf:
-        - $ref: "#/components/schemas/ExpenseBase"
-        - type: object
-          properties:
-            expenseId:
-              type: string
-              format: uuid
-              example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+      type: object
+      required:
+        - transactionDate
+        - totalAmount
+        - itemCount
+        - expenseId
+      properties:
+        description:
+          type: string
+          maxLength: 255
+          example: "Weekly grocery shopping in Lidl"
+        transactionDate:
+          type: string
+          format: date-time
+          example: "2025-11-15T14:30:00Z"
+        totalAmount:
+          type: number
+          format: float
+          minimum: 0.00
+          example: 125.50
+        itemCount:
+          type: integer
+          minimum: 0
+          example: 5
+        expenseId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
     OcrExpense:
-      allOf:
-        - $ref: '#/components/schemas/ExpenseBase'
-        - type: object
-          properties:
-            items:
-              type: array
-              items:
-                $ref: '#/components/schemas/OcrExpenseItem'
+      type: object
+      required:
+        - transactionDate
+        - totalAmount
+        - itemCount
+        - items
+      properties:
+        description:
+          type: string
+          maxLength: 255
+          example: "Weekly grocery shopping in Lidl"
+        transactionDate:
+          type: string
+          format: date-time
+          example: "2025-11-15T14:30:00Z"
+        totalAmount:
+          type: number
+          format: float
+          minimum: 0.00
+          example: 125.50
+        itemCount:
+          type: integer
+          minimum: 0
+          example: 5
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OcrExpenseItem'
 
 
     ExpenseSummaryPage:
@@ -1206,12 +1243,51 @@ components:
           format: date-time
           example: "2025-11-15T10:00:00Z"
 
-    ExpenseItemBase:
+    ExpenseItem:
       type: object
       required:
         - productName
-        - price
         - quantity
+        - price
+        - categoryId
+        - expenseItemId
+        - categoryName
+      properties:
+        productName:
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "Milk 2%"
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+          example: 2
+        price:
+          type: number
+          format: float
+          minimum: 0.00
+          description: "Price per unit, cannot be negative"
+          example: 3.50
+        categoryId:
+          type: string
+          format: uuid
+          description: "Category ID (optional, as OCR might not recognize it)"
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        expenseItemId:
+          type: string
+          format: uuid
+          example: "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
+        categoryName:
+          type: string
+          example: "Food"
+
+    NewExpenseItem:
+      type: object
+      required:
+        - productName
+        - quantity
+        - price
         - categoryId
       properties:
         productName:
@@ -1230,55 +1306,69 @@ components:
           minimum: 0.00
           description: "Price per unit, cannot be negative"
           example: 3.50
-
-    ExpenseItem:
-      allOf:
-        - $ref: '#/components/schemas/ExpenseItemBase'
-        - type: object
-          properties:
-            categoryId:
-              type: string
-              format: uuid
-              description: "Category ID (optional, as OCR might not recognize it)"
-              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-            expenseItemId:
-              type: string
-              format: uuid
-              example: "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
-            categoryName:
-              type: string
-              example: "Food"
-
-    NewExpenseItem:
-      allOf:
-        - $ref: '#/components/schemas/ExpenseItemBase'
-        - type: object
-          properties:
-            categoryId:
-              type: string
-              format: uuid
-              description: "Category ID (optional, as OCR might not recognize it)"
-              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        categoryId:
+          type: string
+          format: uuid
+          description: "Category ID (optional, as OCR might not recognize it)"
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     OcrResultExpenseItem:
-      allOf:
-        - $ref: '#/components/schemas/ExpenseItemBase'
-        - type: object
-          properties:
-            categoryName:
-              type: string
-              example: "Food"
+      type: object
+      required:
+        - productName
+        - quantity
+        - price
+        - categoryName
+      properties:
+        productName:
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "Milk 2%"
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+          example: 2
+        price:
+          type: number
+          format: float
+          minimum: 0.00
+          description: "Price per unit, cannot be negative"
+          example: 3.50
+        categoryName:
+          type: string
+          example: "Food"
 
     OcrExpenseItem:
-      allOf:
-        - $ref: '#/components/schemas/ExpenseItemBase'
-        - type: object
-          properties:
-            categoryId:
-              type: string
-              format: uuid
-              description: "Category ID (optional, as OCR might not recognize it)"
-              example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+      type: object
+      required:
+        - productName
+        - quantity
+        - price
+        - categoryId
+      properties:
+        productName:
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "Milk 2%"
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+          example: 2
+        price:
+          type: number
+          format: float
+          minimum: 0.00
+          description: "Price per unit, cannot be negative"
+          example: 3.50
+        categoryId:
+          type: string
+          format: uuid
+          description: "Category ID (optional, as OCR might not recognize it)"
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
     DashboardData:
       type: object

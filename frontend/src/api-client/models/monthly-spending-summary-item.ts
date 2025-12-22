@@ -17,32 +17,26 @@
 /**
  * 
  * @export
- * @interface NewExpenseItem
+ * @interface MonthlySpendingSummaryItem
  */
-export interface NewExpenseItem {
-    /**
-     * 
-     * @type {string}
-     * @memberof NewExpenseItem
-     */
-    'productName': string;
+export interface MonthlySpendingSummaryItem {
     /**
      * 
      * @type {number}
-     * @memberof NewExpenseItem
+     * @memberof MonthlySpendingSummaryItem
      */
-    'quantity': number;
+    'month'?: number;
     /**
-     * Price per unit, cannot be negative
+     * 
      * @type {number}
-     * @memberof NewExpenseItem
+     * @memberof MonthlySpendingSummaryItem
      */
-    'price': number;
+    'totalSpending'?: number;
     /**
-     * Category ID (optional, as OCR might not recognize it)
-     * @type {string}
-     * @memberof NewExpenseItem
+     * 
+     * @type {number}
+     * @memberof MonthlySpendingSummaryItem
      */
-    'categoryId': string;
+    'budget'?: number;
 }
 
