@@ -1,59 +1,145 @@
 "use client";
 import * as React from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import Button from '@mui/material/Button';
+import TablePagination from '@mui/material/TablePagination';
+import CircularProgress from '@mui/material/CircularProgress';
+
+// --- KOMPONENTY Z MAINGRID ---
+import ExpenseDialog, { ExpenseFormData } from '../components/dialogs/ExpenseDialog';
+import ConfirmDialog from '../components/dialogs/ConfirmDialog';
+import ReceiptUploadDialog from "../components/dialogs/ReceiptUploadDialog";
+import LottieLoader from '../components/common/LottieLoader';
+
+// --- IKONY ---
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 
-type ExpenseRow = {
-  id: string;
-  date: string;
-  description: string;
-  category: string;
-  amount: number;
-  notes?: string;
-};
-
-const MOCK_EXPENSES: ExpenseRow[] = [
-  { id: 'e1', date: '2025-11-10', description: 'Weekly groceries', category: 'Food', amount: 129.45 },
-  { id: 'e2', date: '2025-11-08', description: 'Fuel', category: 'Transport', amount: 185.0, notes: 'Partial fill' },
-  { id: 'e3', date: '2025-11-02', description: 'Conference ticket', category: 'Work', amount: 420.0 },
-  { id: 'e4', date: '2025-10-28', description: 'Cinema', category: 'Entertainment', amount: 48.5 },
-];
+// --- API I HOOKI ---
+import { useExpanses } from '@/hooks/useExpanses';
+import { api } from '@/api-client/client';
+import { mapOcrToExpenseForm } from "@/hooks/useOcrMapping";
+import { Category, NewExpense, NewExpenseItem } from '@/api-client/models';
 
 export default function ExpensesGrid() {
   const now = new Date();
-  const [current, setCurrent] = React.useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
-  const [query, setQuery] = React.useState('');
-  const [category, setCategory] = React.useState<string>('all');
-  const [sort, setSort] = React.useState<string>('date_desc');
-  const [page, setPage] = React.useState(0);
-  const itemsPerPage = 10;
+  const [current, setCurrent] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  // --- POBIERANIE DANYCH ---
+  const year = current.getFullYear();
+  const month = current.getMonth() + 1;
+  const { data: expenses, loading } = useExpanses(year, month, undefined, refreshTrigger);
+
+
+  // --- STANY UI ---
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<ExpenseFormData | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Filtry
+  const [query, setQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [sort, setSort] = useState<string>('date_desc');
+  
+  // Paginacja
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // --- HANDLERY ---
+  const handleAddClick = () => { 
+      setEditingExpense(null); 
+      setIsFormOpen(true); 
+  };
+
+  const handleEditClick = async (expenseRow: any) => {
+    try {
+        const response = await api.getExpenseDetails(expenseRow.expenseId);
+        const details = (response as any).data || response;
+        const formattedDate = new Date(details.transactionDate).toISOString().slice(0, 16);
+        
+        const formFormat: ExpenseFormData = {
+            id: details.expenseId,
+            description: details.description,
+            transactionDate: formattedDate,
+            items: details.items.map((item: any) => ({
+                expenseItemId: item.expenseItemId,
+                productName: item.productName,
+                price: item.price,
+                quantity: item.quantity,
+                categoryId: item.categoryId || "" 
+            }))
+        };
+        setEditingExpense(formFormat);
+        setIsFormOpen(true);
+    } catch (error) { 
+        console.error("Błąd edycji", error); 
+    }
+  };
+
+  const handleDeleteClick = (id: string) => setDeleteId(id);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+        await api.deleteExpense(deleteId);
+        setRefreshTrigger(prev => prev + 1);
+    } catch (error) { 
+        console.error(error); 
+    } finally { 
+        setDeleteId(null); 
+    }
+  };
+
+  const handleFormSubmit = async (data: ExpenseFormData) => {
+    try {
+        const expensePayload: NewExpense = {
+            description: data.description,
+            transactionDate: new Date(data.transactionDate).toISOString(),
+            items: data.items.map(item => ({
+                productName: item.productName,
+                price: Number(item.price),
+                quantity: Number(item.quantity),
+                categoryId: item.categoryId
+            } as NewExpenseItem))
+        };
+        
+        if (data.id) { await api.updateExpense(data.id, expensePayload); } 
+        else { await api.addManualExpense(expensePayload); }
+        
+        setIsFormOpen(false);
+        setRefreshTrigger(prev => prev + 1);
+    } catch (error) { 
+        console.error(error); 
+        alert("Error saving expense"); 
+    }
+  };
+
+  // --- LOGIKA WIDOKU ---
   function prevMonth() {
     const d = new Date(current);
     d.setMonth(d.getMonth() - 1);
@@ -68,126 +154,202 @@ export default function ExpensesGrid() {
     setPage(0);
   }
 
-  const monthLabel = current.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+  const monthLabel = current.toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
-  const filtered = MOCK_EXPENSES.filter((e) => {
-    const q = query.trim().toLowerCase();
-    const matchesQ = !q || e.description.toLowerCase().includes(q) || e.amount.toString().includes(q);
-    const matchesCategory = category === 'all' || e.category === category;
-    return matchesQ && matchesCategory;
-  });
+  // FILTROWANIE I SORTOWANIE
+  const filtered = useMemo(() => {
+    if (!expenses) return [];
+    return expenses.filter((e: any) => {
+      const q = query.trim().toLowerCase();
+      const matchesQ = !q || 
+        (e.description && e.description.toLowerCase().includes(q)) || 
+        (e.totalAmount && e.totalAmount.toString().includes(q));
+      
+      // Dopasowanie kategorii po nazwie
+      const matchesCategory = categoryFilter === 'all' || e.categoryName === categoryFilter;
+      return matchesQ && matchesCategory;
+    });
+  }, [expenses, query, categoryFilter]);
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (sort === 'date_desc') return new Date(b.date).getTime() - new Date(a.date).getTime();
-    if (sort === 'date_asc') return new Date(a.date).getTime() - new Date(b.date).getTime();
-    if (sort === 'amount_desc') return b.amount - a.amount;
-    if (sort === 'amount_asc') return a.amount - b.amount;
-    return 0;
-  });
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a: any, b: any) => {
+      const dateA = new Date(a.transactionDate).getTime();
+      const dateB = new Date(b.transactionDate).getTime();
+      const amountA = a.totalAmount || 0;
+      const amountB = b.totalAmount || 0;
 
-  const paginatedSorted = sorted.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
-  const totalPages = Math.ceil(sorted.length / itemsPerPage);
+      if (sort === 'date_desc') return dateB - dateA;
+      if (sort === 'date_asc') return dateA - dateB;
+      if (sort === 'amount_desc') return amountB - amountA;
+      if (sort === 'amount_asc') return amountA - amountB;
+      return 0;
+    });
+  }, [filtered, sort]);
+
+  const paginatedSorted = sorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // --- LOADER ---
+  if (!isMounted || (loading && (!expenses || expenses.length === 0))) {
+    return (
+        <Box sx={{ width: '100%', height: '50vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            <LottieLoader size={200} />
+            <Typography variant="h6" sx={{ mt: 2, color: 'text.secondary' }}>Loading expenses...</Typography>
+        </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1200px' } }}>
-      <Box sx={{ position: 'relative', mb: 2 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Wydatki</Typography>
-          <Box />
-        </Stack>
+      
+      {/* --- DIALOGI --- */}
+      <ExpenseDialog
+        open={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        initialData={editingExpense}
+      />
+      <ReceiptUploadDialog
+        open={isReceiptDialogOpen}
+        onClose={() => setIsReceiptDialogOpen(false)}
+        onUploaded={(ocr) => {
+            const mapped = mapOcrToExpenseForm(ocr);
+            setEditingExpense(mapped);
+            setIsFormOpen(true);
+        }}
+      />
+      <ConfirmDialog
+        open={!!deleteId}
+        title="Confirm Deletion"
+        content="Are you sure you want to delete this expense? This action cannot be undone."
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+      />
 
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          sx={{
-            position: { xs: 'static', md: 'absolute' },
-            left: { md: '50%' },
-            transform: { md: 'translateX(-50%)' },
-            top: { md: 0 },
-            width: { xs: '100%', md: 'auto' },
-            justifyContent: 'center',
-            mt: { xs: 1, md: 0 },
-            flexWrap: 'wrap',
-          }}
-        >
-          <IconButton aria-label="previous month" onClick={prevMonth}>
-            <ArrowBackIosNewIcon fontSize="small" />
-          </IconButton>
-          <Paper sx={{ px: 2, py: 0.5, textAlign: 'center', minWidth: 120 }}>{monthLabel}</Paper>
-          <IconButton aria-label="next month" onClick={nextMonth}>
-            <ArrowForwardIosIcon fontSize="small" />
-          </IconButton>
-          <TextField
-            size="small"
-            placeholder="Szukaj (opis, kwota)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
-          />
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel id="category-select-label">Kategoria</InputLabel>
-            <Select labelId="category-select-label" value={category} label="Kategoria" onChange={(e) => setCategory(String(e.target.value))}>
-              <MenuItem value="all">Wszystkie</MenuItem>
-              <MenuItem value="Food">Food</MenuItem>
-              <MenuItem value="Transport">Transport</MenuItem>
-              <MenuItem value="Work">Work</MenuItem>
-              <MenuItem value="Entertainment">Entertainment</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel id="sort-select-label">Sortuj</InputLabel>
-            <Select labelId="sort-select-label" value={sort} label="Sortuj" onChange={(e) => setSort(String(e.target.value))}>
-              <MenuItem value="date_desc">Data (najnowsze)</MenuItem>
-              <MenuItem value="date_asc">Data (najstarsze)</MenuItem>
-              <MenuItem value="amount_desc">Kwota (malejąco)</MenuItem>
-              <MenuItem value="amount_asc">Kwota (rosnąco)</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
+      {/* --- PRZYCISKI DODAWANIA --- */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
+          <Button variant="contained" onClick={handleAddClick}>Add Expense</Button>
+          <Button variant="outlined" onClick={() => setIsReceiptDialogOpen(true)}>From Receipt</Button>
       </Box>
 
-      <Paper>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Data</TableCell>
-              <TableCell>Opis</TableCell>
-              <TableCell>Kategoria</TableCell>
-              <TableCell align="right">Kwota</TableCell>
-              <TableCell align="center">Akcje</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedSorted.map((row) => (
-              <TableRow key={row.id} hover>
-                <TableCell>{new Date(row.date).toLocaleDateString('pl-PL')}</TableCell>
-                <TableCell>{row.description}</TableCell>
-                <TableCell>{row.category}</TableCell>
-                <TableCell align="right">{row.amount.toFixed(2)} zł</TableCell>
-                <TableCell align="center">
-                  <Stack direction="row" spacing={1} justifyContent="center">
-                    <IconButton size="small" aria-label="view"><VisibilityIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" aria-label="edit"><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" aria-label="delete"><DeleteIcon fontSize="small" /></IconButton>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+      {/* --- NAGŁÓWEK I FILTRY --- */}
+      <Stack 
+        direction={{ xs: 'column', md: 'row' }} 
+        justifyContent="space-between" 
+        alignItems={{ xs: 'stretch', md: 'center' }}
+        spacing={2}
+        sx={{ mb: 2 }}
+      >
+        <Stack direction="row" alignItems="center" spacing={2} justifyContent={{ xs: 'space-between', md: 'flex-start' }}>
+            <Typography variant="h6">Expenses</Typography>
+            {loading && expenses && expenses.length > 0 && <CircularProgress size={20} />}
+            
+            <Stack direction="row" alignItems="center" spacing={1}>
+                <IconButton onClick={prevMonth} size="small">
+                    <ArrowBackIosNewIcon fontSize="inherit" />
+                </IconButton>
+                <Paper sx={{ px: 2, py: 0.5, textTransform: 'capitalize', minWidth: 140, textAlign: 'center' }}>
+                    {monthLabel}
+                </Paper>
+                <IconButton onClick={nextMonth} size="small">
+                    <ArrowForwardIosIcon fontSize="inherit" />
+                </IconButton>
+            </Stack>
+        </Stack>
 
-      {/* Pagination Controls */}
-      <Stack direction="row" justifyContent="center" alignItems="center" spacing={1} sx={{ mt: 2 }}>
-        <IconButton size="small" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
-          <ArrowBackIosNewIcon fontSize="small" />
-        </IconButton>
-        <Typography variant="body2">Strona {page + 1} z {totalPages}</Typography>
-        <IconButton size="small" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
-          <ArrowForwardIosIcon fontSize="small" />
-        </IconButton>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+             <TextField
+                size="small"
+                placeholder="Search..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
+                sx={{ minWidth: 200 }}
+              />
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel id="sort-select-label">Sort</InputLabel>
+                <Select labelId="sort-select-label" value={sort} label="Sort" onChange={(e) => setSort(String(e.target.value))}>
+                  <MenuItem value="date_desc">Date (newest)</MenuItem>
+                  <MenuItem value="date_asc">Date (oldest)</MenuItem>
+                  <MenuItem value="amount_desc">Amount (descending)</MenuItem>
+                  <MenuItem value="amount_asc">Amount (ascending)</MenuItem>
+                </Select>
+              </FormControl>
+        </Stack>
       </Stack>
+
+      {/* --- TABELA --- */}
+      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+        <TableContainer sx={{ maxHeight: '70vh' }}>
+            <Table stickyHeader size="small">
+            <TableHead>
+                <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell align="right">Amount</TableCell>
+                <TableCell align="center">Actions</TableCell>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {paginatedSorted.length === 0 ? (
+                    <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                            No expenses match the criteria.
+                        </TableCell>
+                    </TableRow>
+                ) : (
+                    paginatedSorted.map((row: any) => (
+                    <TableRow key={row.expenseId} hover>
+                        <TableCell>{new Date(row.transactionDate).toLocaleDateString('pl-PL')}</TableCell>
+                        <TableCell>{row.description || '—'}</TableCell>
+                        <TableCell align="right">{(row.totalAmount || 0).toFixed(2)} zł</TableCell>
+                        <TableCell align="center">
+                            <Stack direction="row" spacing={1} justifyContent="center">
+                                <Button 
+                                    size="small" 
+                                    variant="outlined"
+                                    onClick={() => handleEditClick(row)}
+                                    sx={{ minWidth: 'auto' }}
+                                >
+                                    Edit
+                                </Button>
+                                <Button 
+                                    size="small" 
+                                    variant="outlined" 
+                                    color="error"
+                                    onClick={() => handleDeleteClick(row.expenseId)}
+                                    sx={{ minWidth: 'auto' }}
+                                >
+                                    Delete
+                                </Button>
+                            </Stack>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
+            </TableBody>
+            </Table>
+        </TableContainer>
+
+        <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filtered.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Rows per page:"
+        />
+      </Paper>
     </Box>
   );
 }
