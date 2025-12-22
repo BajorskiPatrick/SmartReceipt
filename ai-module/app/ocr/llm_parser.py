@@ -2,6 +2,8 @@ import json
 import signal
 import os
 from pathlib import Path
+
+import llama_cpp
 from llama_cpp import Llama
 from llama_cpp.llama_types import (
     ChatCompletionRequestSystemMessage,
@@ -18,7 +20,7 @@ logger = get_logger("LocalLlmParser")
 try:
     signal.signal(signal.SIGINT, signal.default_int_handler)
     signal.signal(signal.SIGTERM, signal.SIG_DFL)
-except Exception:
+except (ValueError, OSError):
     pass
 
 
@@ -39,7 +41,12 @@ class LLMReceiptParser(BaseParser):
         logger.info(
             f"Loading model from {MODEL_PATH} on GPU with {gpu_layers} GPU layers..."
         )
-
+        if not llama_cpp.llama_supports_gpu_offload():
+            logger.warning(
+                "Llama CPP does not support GPU offload. Using CPU only regardless of previous settings."
+            )
+        else:
+            logger.info("Llama CPP supports GPU offload.")
         try:
             self.llm = Llama(
                 model_path=MODEL_PATH,
@@ -47,7 +54,7 @@ class LLMReceiptParser(BaseParser):
                 n_gpu_layers=gpu_layers,
                 n_batch=1024,
                 flash_attn=True,
-                verbose=True,
+                verbose=False,
             )
             logger.info("Model loaded.")
         except Exception as e:
@@ -58,7 +65,7 @@ class LLMReceiptParser(BaseParser):
                     n_ctx=4096,
                     n_gpu_layers=gpu_layers,
                     n_batch=1024,
-                    verbose=True,
+                    verbose=False,
                 )
                 logger.info("Model loaded (fallback mode).")
             except Exception as e2:

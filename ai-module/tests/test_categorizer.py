@@ -1,14 +1,12 @@
-
-
 def test_model_is_real(categorizer):
-    """Sprawdza, czy model załadował się poprawnie i nie jest atrapą."""
+    """Checks if the model loaded correctly and is not a dummy."""
     assert categorizer.model is not None
-    # Upewniamy się, że to nie jest MagicMock (jeśli używasz mocków w innych miejscach)
+    # Ensure it is not a MagicMock (if you use mocks elsewhere)
     assert "MagicMock" not in str(type(categorizer.model))
 
 
 def test_dictionary_items(categorizer):
-    """Testuje produkty, które powinny być wyłapane przez słownik (szybkie sprawdzenie)."""
+    """Tests products that should be caught by the dictionary (quick check)."""
     items = [
         {"productName": "FRANCZAK BUKA"},
         {"productName": "LACIATEHEKOBUTELKA2PEC"},
@@ -17,16 +15,16 @@ def test_dictionary_items(categorizer):
     results = categorizer.categorize_items(items)
 
     assert len(results) == 2
-    # Sprawdzamy czy kategoria została przydzielona
+    # Check if category was assigned
     assert results[0]["category"] is not None
     assert results[1]["category"] is not None
 
-    # Opcjonalnie: sprawdź czy confidence jest wysokie (słownik to zazwyczaj 1.0 lub pewniak)
+    # Optional: check if confidence is high (dictionary is usually 1.0 or certain)
     # assert results[0]['confidence'] > 0.9
 
 
 def test_ai_prediction_items(categorizer):
-    """Testuje produkty wymagające predykcji AI (spoza słownika)."""
+    """Tests products requiring AI prediction (outside dictionary)."""
     items = [
         {"productName": "WÓDKA WYBOROWA 0.7"},
         {"productName": "JOGURT NATURALNY EKO"},
@@ -40,21 +38,21 @@ def test_ai_prediction_items(categorizer):
 
 
 def test_low_confidence_handling(categorizer):
-    """Testuje, czy system radzi sobie z bzdurnymi danymi."""
+    """Tests if the system handles nonsense data."""
     items = [{"productName": "TOTALNA BZDURA XYZ 123"}]
 
     results = categorizer.categorize_items(items)
 
-    # Sprawdzamy strukturę odpowiedzi
+    # Check response structure
     assert "category" in results[0]
     assert "confidence" in results[0]
 
-    # Jeśli Twoja logika zwraca None dla niskiego score, odkomentuj:
+    # If your logic returns None for low score, uncomment:
     # assert results[0]['category'] is None
 
 
 def test_batch_processing(categorizer):
-    """Sprawdza czy funkcja radzi sobie z listą mieszaną."""
+    """Checks if the function handles a mixed list."""
     products = ["CHLEB", "MASLO", "MLEKO", "WODA", "PIWO"]
     items = [{"productName": p} for p in products]
 
