@@ -22,7 +22,9 @@ sys.path.append(str(BASE_DIR))
 
 DATA_PATH = BASE_DIR / "data" / "set_fit_few_shot" / "dataset.json"
 MODEL_DIR = Path(
-    os.environ.get("MODEL_DIR", BASE_DIR / "app" / "nlp" / "models" / "my-receipt-categorizer")
+    os.environ.get(
+        "MODEL_DIR", BASE_DIR / "app" / "nlp" / "models" / "my-receipt-categorizer"
+    )
 )
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"

@@ -23,10 +23,6 @@ RUN pip3 install uv && uv venv $VIRTUAL_ENV
 COPY pyproject.toml .
 RUN uv pip install pip setuptools wheel
 
-# ---------------------------------------------------------------------------
-# STRATEGIA: KASKADA
-# ---------------------------------------------------------------------------
-
 # 1. PyTorch
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 "numpy<2.0.0"
