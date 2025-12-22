@@ -89,7 +89,6 @@ export default function SideMenu() {
             {userData.email}
           </Typography>
         </Box>
-        <OptionsMenu />
       </Stack>
 
       {/* PRZYCISK WYLOGUJ */}

@@ -209,7 +209,7 @@ export default function MainGrid() {
     };
 
     const monthLabel = isMounted
-        ? selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })
+        ? selectedMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })
         : "...";
 
     const budgetValue = currentBudget?.budget ?? kpi?.budget ?? 0;
@@ -296,7 +296,7 @@ export default function MainGrid() {
                             <Typography variant="caption">Total Spending This Month</Typography>
                             <Typography variant="h6">{totalSpending.toFixed(2)} PLN</Typography>
                             <Typography variant="body2" color="text.secondary">
-                                {isMounted && selectedMonth.toLocaleString('default', { month: 'long' })}
+                                {isMounted && selectedMonth.toLocaleString('en-US', { month: 'long' })}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -335,19 +335,48 @@ export default function MainGrid() {
                             <Typography variant="caption">Avg per day</Typography>
                             <Typography variant="h6">{avgPerDay.toFixed(2)} PLN</Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Uśrednione dla {daysToAverage} dni
+                                Average over {daysToAverage} days
                             </Typography>
                         </CardContent>
                     </Card>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Stack direction="row" spacing={1} sx={{ height: '100%' }} alignItems="center">
-                        <Button variant="contained" onClick={handleAddClick}>Add expense</Button>
-                        <Button variant="outlined" onClick={() => setIsReceiptDialogOpen(true)}>
+                    <Stack 
+                        direction="row" 
+                        spacing={1} 
+                        sx={{ 
+                            height: '100%', 
+                            width: '100%',
+                            alignItems: 'stretch'
+                        }} 
+                    >
+                        <Button 
+                            variant="contained" 
+                            onClick={handleAddClick}
+                            sx={{ 
+                                flex: 1,
+                                whiteSpace: 'normal',
+                                textAlign: 'center',
+                                lineHeight: 1.2,
+                                px: 1
+                            }}
+                        >
+                            Add expense
+                        </Button>
+                        <Button 
+                            variant="outlined" 
+                            onClick={() => setIsReceiptDialogOpen(true)}
+                            sx={{ 
+                                flex: 1,
+                                whiteSpace: 'normal',
+                                textAlign: 'center',
+                                lineHeight: 1.2,
+                                px: 1
+                            }}
+                        >
                             Add from receipt
                         </Button>
-
                     </Stack>
                 </Grid>
             </Grid>
@@ -385,12 +414,10 @@ export default function MainGrid() {
                                                 <Collapse in={!!expanded[row.expenseId]} timeout="auto" unmountOnExit>
                                                     <BoxUnstyled sx={{ margin: 1, py: 2 }}>
                                                         <Typography variant="body2" sx={{mb: 1}}>Items count: {row.itemCount ?? 0}</Typography>
-                                                        <Typography variant="body2" sx={{mb: 1, color: 'text.secondary'}}>Category: {row.categoryName || '—'}</Typography>
 
                                                         <Stack direction="row" spacing={1}>
-                                                            <Button size="small" variant="outlined" onClick={() => handleEditClick(row)}>Edit items</Button>
+                                                            <Button size="small" variant="outlined" onClick={() => handleEditClick(row)}>Details</Button>
                                                             <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteClick(row.expenseId)}>Delete</Button>
-                                                            <Button size="small" href={`/expenses/${row.expenseId}`}>Full Details</Button>
                                                         </Stack>
                                                     </BoxUnstyled>
                                                 </Collapse>
