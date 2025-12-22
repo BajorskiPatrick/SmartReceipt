@@ -59,6 +59,8 @@ import { UserLogin } from '../models';
 import { UserRegistration } from '../models';
 // @ts-ignore
 import { UserResponse } from '../models';
+// @ts-ignore
+import { YearlySpendingSummary } from '../models';
 /**
  * MainAppApi - axios parameter creator
  * @export
@@ -638,6 +640,47 @@ export const MainAppApiAxiosParamCreator = function (configuration?: Configurati
 
             if (month !== undefined) {
                 localVarQueryParameter['month'] = month;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Returns aggregated budget and spending data for the entire year, used in the yearly spending summary view on the dashboard.
+         * @summary Get yearly spending summary data
+         * @param {number} year Year for which the summary is fetched
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getYearlySpendingSummary: async (year: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'year' is not null or undefined
+            assertParamExists('getYearlySpendingSummary', 'year', year)
+            const localVarPath = `/dashboard/yearly-spending-summary`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (year !== undefined) {
+                localVarQueryParameter['year'] = year;
             }
 
 
@@ -1258,6 +1301,19 @@ export const MainAppApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Returns aggregated budget and spending data for the entire year, used in the yearly spending summary view on the dashboard.
+         * @summary Get yearly spending summary data
+         * @param {number} year Year for which the summary is fetched
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getYearlySpendingSummary(year: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<YearlySpendingSummary>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getYearlySpendingSummary(year, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MainAppApi.getYearlySpendingSummary']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 
          * @summary User login
          * @param {UserLogin} userLogin 
@@ -1549,6 +1605,16 @@ export const MainAppApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getUserBudget(year, month, options).then((request) => request(axios, basePath));
         },
         /**
+         * Returns aggregated budget and spending data for the entire year, used in the yearly spending summary view on the dashboard.
+         * @summary Get yearly spending summary data
+         * @param {number} year Year for which the summary is fetched
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getYearlySpendingSummary(year: number, options?: any): AxiosPromise<YearlySpendingSummary> {
+            return localVarFp.getYearlySpendingSummary(year, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @summary User login
          * @param {UserLogin} userLogin 
@@ -1835,6 +1901,18 @@ export class MainAppApi extends BaseAPI {
      */
     public getUserBudget(year: number, month: number, options?: RawAxiosRequestConfig) {
         return MainAppApiFp(this.configuration).getUserBudget(year, month, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Returns aggregated budget and spending data for the entire year, used in the yearly spending summary view on the dashboard.
+     * @summary Get yearly spending summary data
+     * @param {number} year Year for which the summary is fetched
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MainAppApi
+     */
+    public getYearlySpendingSummary(year: number, options?: RawAxiosRequestConfig) {
+        return MainAppApiFp(this.configuration).getYearlySpendingSummary(year, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
