@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Dashboard from "./Dashboard";
-import "@/api-client/setupAxios";
+//import "@/api-client/setupAxios";
 
 export default function DashboardPage() {
     const router = useRouter();
