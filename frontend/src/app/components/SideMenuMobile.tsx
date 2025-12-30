@@ -10,6 +10,7 @@ import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 import MenuButton from './MenuButton';
 import MenuContent from './MenuContent';
 import CardAlert from './CardAlert';
+import Box from '@mui/material/Box';
 
 interface SideMenuMobileProps {
   open: boolean | undefined;
@@ -17,6 +18,14 @@ interface SideMenuMobileProps {
 }
 
 export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobileProps) {
+  const [userData, setUserData] = React.useState({ email: '', name: '' });
+  
+  React.useEffect(() => {
+    // Pobieranie danych po załadowaniu komponentu
+    const email = localStorage.getItem("userEmail") || "Nie zalogowano";
+    const name = localStorage.getItem("userName") || "Użytkownik";
+    setUserData({ email, name });
+  }, []);
   return (
     <Drawer
       anchor="right"
@@ -41,15 +50,24 @@ export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobilePro
             direction="row"
             sx={{ gap: 1, alignItems: 'center', flexGrow: 1, p: 1 }}
           >
-            <Avatar
-              sizes="small"
-              alt="Riley Carter"
-              src="/static/images/avatar/7.jpg"
-              sx={{ width: 24, height: 24 }}
-            />
-            <Typography component="p" variant="h6">
-              Riley Carter
+          <Avatar
+            sizes="small"
+            alt={userData.name}
+            sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: '1rem' }}
+          >
+            {userData.name.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box sx={{ mr: 'auto', overflow: 'hidden' }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
+              {userData.name}
             </Typography>
+            <Typography 
+              variant="caption" 
+              sx={{ color: 'text.secondary', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              {userData.email}
+            </Typography>
+          </Box>
           </Stack>
           <MenuButton showBadge>
             <NotificationsRoundedIcon />
@@ -60,14 +78,14 @@ export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobilePro
           <MenuContent />
           <Divider />
         </Stack>
-        <CardAlert />
+        
         <Stack sx={{ p: 2 }}>
           <Button
             variant="outlined"
             fullWidth
             startIcon={<LogoutRoundedIcon />}
             onClick={() => {
-              localStorage.removeItem("accessToken");
+              localStorage.clear();
               window.location.href = "/login"; // albo router.push("/login") jeśli używasz Next.js routera
             }}
           >
