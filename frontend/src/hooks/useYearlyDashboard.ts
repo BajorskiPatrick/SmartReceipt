@@ -1,89 +1,81 @@
-// src/hooks/useYearlyDashboard.ts
 "use client";
 
 import { useEffect, useState } from "react";
 import { api } from "@/api-client/client";
-import type { DashboardKpi } from "@/api-client/models"; // Używamy DashboardKpi dla struktury
-import { MainAppApi } from "../api-client/MainAppApi"; // Importujemy klasę API (lub po prostu używamy 'api')
 
-
-// Definicja typu, który będzie zwracany przez hooka dla wykresu rocznego
+/**
+ * Dane pod wykres roczny (BarChart)
+ */
 export interface MonthlyKpi {
-    month: string; // Skrót miesiąca
-    spent: number;
-    budget: number;
+  month: string;   // Sty, Lut, ...
+  spent: number;
+  budget: number;
 }
 
-const MONTHS_LABELS = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
-
-// --- FUNKCJA POBIERAJĄCA PRAWDZIWE DANE ROCZNE (12 wywołań API) ---
-const getRealYearlyDataFromApi = async (year: number): Promise<MonthlyKpi[]> => {
-    // Tworzymy tablicę 12 Promise'ów (po jednym dla każdego miesiąca)
-    const promises = MONTHS_LABELS.map((_, index) => {
-        const month = index + 1;
-        // Wywołujemy istniejący endpoint dla każdego miesiąca
-        return api.getDashboardData(year, month);
-    });
-
-    // Czekamy na wszystkie odpowiedzi
-    const results = await Promise.allSettled(promises);
-    
-    // Przetwarzamy odpowiedzi
-    return results.map((result, index) => {
-        let spent = 0;
-        let budget = 0;
-        
-        if (result.status === 'fulfilled') {
-            // Przetwarzamy obiekt DashboardData
-            const dashboardData = (result.value && (result.value as any).data) ? (result.value as any).data : result.value;
-            
-            spent = dashboardData?.kpi?.totalSpendingMonth ?? 0;
-            // Zakładamy, że budżet też jest w DashboardData lub MonthlyBudget. 
-            // Ponieważ go nie mamy, musimy to założyć, ale użyjemy też wartości z trendSummary, jeśli istnieje:
-            budget = dashboardData?.kpi?.budget ?? 6000; // Używamy 6000 jako fallback
-
-            // Próbujemy znaleźć budżet z trendu, jeśli jest dostępny (często jest to w trendSummary)
-            const trendItem = dashboardData?.trendSummary?.find((t: any) => t.month === index + 1);
-            if (trendItem?.budget) {
-                 budget = trendItem.budget;
-            }
-        } 
-        
-        return {
-            month: MONTHS_LABELS[index],
-            spent: spent,
-            budget: budget,
-        };
-    });
-}
-// --------------------------------------------------------
+const MONTHS_LABELS = [
+  "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze",
+  "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"
+];
 
 export function useYearlyDashboard(year: number) {
-    const [data, setData] = useState<MonthlyKpi[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<MonthlyKpi[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        let mounted = true;
-        async function load() {
-            setLoading(true);
-            setError(null);
-            
-            try {
-                const yearlyData = await getRealYearlyDataFromApi(year); 
-                
-                if (!mounted) return;
+  useEffect(() => {
+    let mounted = true;
 
-                setData(yearlyData);
-            } catch (e: any) {
-                setError(e?.message ?? "Błąd ładowania danych rocznych (12x API call)");
-            } finally {
-                if (mounted) setLoading(false);
-            }
+    async function load() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        /**
+         * ✅ JEDEN REQUEST NA CAŁY ROK
+         * Endpoint backendowy (przykład):
+         * GET /api/v1.0/statistics/yearly?year=2025
+         */
+        const response = await api.getYearlySpendingSummary(year);
+
+        const yearly = (response as any)?.data ?? response;
+
+        /**
+         * yearly.monthlySummaries = [
+         *   { month: 1, totalSpent: 1200, totalBudget: 2000 },
+         *   ...
+         * ]
+         */
+        const monthlyMap = new Map<number, any>(
+          (yearly?.monthlySummaries ?? []).map((m: any) => [m.month, m])
+        );
+
+        const result: MonthlyKpi[] = MONTHS_LABELS.map((label, index) => {
+          const monthNumber = index + 1;
+          const item = monthlyMap.get(monthNumber);
+
+          return {
+            month: label,
+            spent: item?.totalSpending ?? 0,    // ← sprawdź nazwę pola
+            budget: item?.budget ?? 0,  // ← sprawdź nazwę pola
+          };
+        });
+
+        if (mounted) setData(result);
+      } catch (e: any) {
+        if (mounted) {
+          setError(e?.message ?? "Błąd ładowania danych rocznych");
+          setData(null);
         }
-        load();
-        return () => { mounted = false; };
-    }, [year]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
 
-    return { data, loading, error, year };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [year]);
+
+  return { data, loading, error };
 }
