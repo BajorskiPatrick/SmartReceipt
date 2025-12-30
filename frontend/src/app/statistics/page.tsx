@@ -56,6 +56,11 @@ const xThemeComponents = {
   ...datePickersCustomizations,
   ...treeViewCustomizations,
 };
+const shortenCategoryName = (name: string): string => {
+  if (!name) return "(brak)";
+  const firstWord = name.split(" ")[0]; // tylko pierwsze słowo
+  return firstWord.length > 12 ? firstWord.slice(0, 12) + "…" : firstWord;
+};
 
 
 // --- KOMPONENT HEATMAPY ---
@@ -112,7 +117,8 @@ export default function StatisticsPage(props: { disableCustomTheme?: boolean }) 
   const { data: expenses, loading: expensesLoading } = useExpanses(currentYearForMonth, currentMonth);
   const { budget: budgetData, loading: budgetLoading } = useBudgets(currentYearForMonth, currentMonth);
   const { kpi } = useDashboard(currentYearForMonth, currentMonth);
-
+  const { categorySummary } = useDashboard(currentYearForMonth, currentMonth);
+  
   const isLoading = yearlyLoading || expensesLoading || budgetLoading;
 
   // --- NAWIGACJA DATA ---
@@ -149,7 +155,7 @@ export default function StatisticsPage(props: { disableCustomTheme?: boolean }) 
   const daysInCurrentMonth = new Date(currentYearForMonth, currentMonth, 0).getDate();
 
   // --- PRZETWARZANIE DANYCH DO WYKRESÓW MIESIĘCZNYCH ---
-  const processedData = React.useMemo(() => {
+  /*const processedData = React.useMemo(() => {
     if (!expenses || expenses.length === 0) return null;
 
     const heatmap: Record<number, number> = {};
@@ -190,6 +196,79 @@ export default function StatisticsPage(props: { disableCustomTheme?: boolean }) 
     return { heatmap, dailyTrendArr, pieData, comparisonData };
 
   }, [expenses, budgetData, daysInCurrentMonth]);
+    */
+const processedData = React.useMemo(() => {
+    if (!categorySummary || !expenses) return null;
+
+    // =========================
+    // 1. BUDŻET vs WYDATKI (per kategoria)
+    // =========================
+    const budgetCategories = budgetData?.categoryBudgets || [];
+
+    const spentByCategory: Record<string, number> = {};
+    categorySummary.forEach((c: any) => {
+        spentByCategory[c.categoryName] = c.totalSpendingMonth;
+    });
+
+    const allCategoryNames = Array.from(
+        new Set([
+        ...Object.keys(spentByCategory),
+        ...budgetCategories.map((b: any) => b.categoryName),
+        ])
+    );
+
+    const MIN_CATEGORIES = 5;
+
+    const realComparisonData = allCategoryNames
+    .map((name) => ({
+        category: shortenCategoryName(name),
+        spent: spentByCategory[name] || 0,
+        planned:
+        budgetCategories.find((b: any) => b.categoryName === name)?.budget || 0,
+    }))
+    // usuwamy puste
+    .filter(item => item.spent > 0 || item.planned > 0);
+
+    // ➕ DOPEŁNIANIE DO 5
+    const placeholdersNeeded = Math.max(
+    0,
+    MIN_CATEGORIES - realComparisonData.length
+    );
+
+    const placeholders = Array.from({ length: placeholdersNeeded }, (_, i) => ({
+    category: ``, // pusta etykieta
+    spent: 0,
+    planned: 0,
+    }));
+
+    const comparisonData = [...realComparisonData, ...placeholders];
+
+    // =========================
+    // 2. HEATMAPA DZIENNA
+    // =========================
+    const heatmap: Record<number, number> = {};
+
+    expenses.forEach((e: any) => {
+        const day = new Date(e.transactionDate).getDate();
+        heatmap[day] = (heatmap[day] || 0) + (e.totalAmount || 0);
+    });
+
+    // =========================
+    // 3. TREND DZIENNY
+    // =========================
+    const daysInMonth = new Date(currentYearForMonth, currentMonth, 0).getDate();
+
+    const dailyTrendArr = Array.from({ length: daysInMonth }, (_, i) => {
+        const day = i + 1;
+        return heatmap[day] || 0;
+    });
+
+    return {
+        comparisonData,
+        heatmap,
+        dailyTrendArr,
+    };
+    }, [categorySummary, budgetData, expenses, currentYearForMonth, currentMonth]);
 
 
   // --- RENDEROWANIE ---
@@ -352,30 +431,7 @@ export default function StatisticsPage(props: { disableCustomTheme?: boolean }) 
                     </Paper>
 
                     <Grid container spacing={3}>
-                        {/* Struktura Wydatków (Kołowy) */}
-                        <Grid item xs={12} md={5}>
-                            <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Typography variant="h6" gutterBottom>Struktura Wydatków</Typography>
-                                <PieChart
-                                    series={[{
-                                        data: processedData.pieData,
-                                        innerRadius: 40,
-                                        paddingAngle: 2,
-                                        cornerRadius: 4,
-                                        highlightScope: { faded: 'global', highlighted: 'item' },
-                                    }]}
-                                    height={250}
-                                    slotProps={{ legend: { hidden: true } }}
-                                />
-                                <Box sx={{ mt: 3, display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
-                                    {processedData.pieData.slice(0, 5).map(item => (
-                                        <Typography key={item.id} variant="caption" sx={{ border: '1px solid #ddd', px: 1, borderRadius: 1 }}>
-                                            {item.label}: {item.value.toFixed(0)}
-                                        </Typography>
-                                    ))}
-                                </Box>
-                            </Paper>
-                        </Grid>
+                        
 
                         {/* Kalendarz Intensywności i Trend Dzienny */}
                         <Grid item xs={12} md={7}>
