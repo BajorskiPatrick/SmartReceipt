@@ -11,7 +11,7 @@ description = 'Spring Boot and React Billing Application'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
