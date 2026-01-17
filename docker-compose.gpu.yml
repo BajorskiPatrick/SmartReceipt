@@ -1,0 +1,8 @@
+services:
+  ai-module:
+    build:
+      context: ./ai-module
+      dockerfile: Dockerfile
+    environment:
+      - SR_GPU_LAYERS=${SR_GPU_LAYERS:-33}
+    gpus: all

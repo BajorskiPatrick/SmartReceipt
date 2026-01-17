@@ -1,0 +1,79 @@
+# CPU-only image (works without NVIDIA drivers)
+# Uses CPU wheels for llama-cpp-python so libcuda is not required.
+
+FROM python:3.10-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    SR_GPU_LAYERS=0
+
+WORKDIR /app
+
+# System libs needed by OCR/ML stack
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    libopenblas0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# uv + venv
+RUN pip install --no-cache-dir uv && uv venv $VIRTUAL_ENV
+
+COPY pyproject.toml uv.lock ./
+
+# Install deps (CPU wheels)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -r pyproject.toml "numpy<2.0.0" \
+    && uv pip install "huggingface-hub>=0.34.0" hf_transfer
+
+# Download models at build time
+RUN mkdir -p /app/app/ocr/models
+RUN --mount=type=cache,target=/root/.cache/huggingface \
+    hf download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF \
+    Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf \
+    --local-dir /app/app/ocr/models
+
+RUN mkdir -p /app/app/nlp/models/my-receipt-categorizer
+RUN --mount=type=cache,target=/root/.cache/huggingface \
+    hf download Johnyyy123/smart-receipt-categorizer-v1 \
+    --local-dir /app/app/nlp/models/my-receipt-categorizer
+
+# Quick import sanity check (CPU)
+RUN python -c "from paddleocr import PaddleOCR; PaddleOCR(use_angle_cls=True, lang='pl', use_gpu=False, show_log=False)"
+
+COPY app ./app
+
+
+FROM python:3.10-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    FORCE_COLOR=1 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    SR_GPU_LAYERS=0
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    libopenblas0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/app ./app
+COPY --from=builder /root/.paddleocr /root/.paddleocr
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
