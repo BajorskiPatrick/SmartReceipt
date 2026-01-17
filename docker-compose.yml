@@ -12,20 +12,30 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d smart_receipt"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   backend:
     build: ./backend
     container_name: smart-receipt-backend
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/smart_receipt
-      - AI_MODULE_URL=http://ai-module:8000
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - AI_SERVICE_URL=http://ai-module:8000/api/v1.0
 
   ai-module:
-    build: ./ai-module
+    build:
+      context: ./ai-module
+      dockerfile: Dockerfile.cpu
     container_name: smart-receipt-ai
     ports:
       - "8000:8000"
@@ -37,6 +47,8 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1.0
 
 volumes:
   postgres_data:
