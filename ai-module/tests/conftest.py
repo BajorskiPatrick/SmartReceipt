@@ -3,40 +3,35 @@ import pytest
 import asyncio
 import os
 from pathlib import Path
-
-# --- 1. KONFIGURACJA ŚCIEŻEK ---
-root_dir = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(root_dir))
-
-# Wymuszamy CPU dla testów (chyba że ktoś bardzo chce GPU)
-if "SR_GPU_LAYERS" not in os.environ:
-    os.environ["SR_GPU_LAYERS"] = "0"
-
-# --- 2. IMPORTY ---
-
 from app.nlp.categorizer import ProductCategorizer
 from app.services.inference_service import InferenceService
 from app.ocr.llm_parser import LLMReceiptParser
 from app.utils.visualizer import Visualizer
 
-# --- 3. FIXTURES ---
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(root_dir))
+
+if "SR_GPU_LAYERS" not in os.environ:
+    os.environ["SR_GPU_LAYERS"] = "0"
+
 
 
 @pytest.fixture(scope="module")
 def categorizer():
-    """Inicjalizuje sam model kategoryzacji (lekki)."""
-    print("\n⏳ [Fixture] Ładowanie ProductCategorizer...")
+    """Initializes the categorization model only (lightweight)."""
+    print("\n⏳ [Fixture] Loading ProductCategorizer...")
     return ProductCategorizer()
 
 
 @pytest.fixture(scope="module")
 def inference_service():
     """
-    Inicjalizuje CAŁY serwis (OCR + NLP + Visualizer).
-    To jest ciężka operacja, więc robimy to raz na moduł (scope="module").
+    Initializes the ENTIRE service (OCR + NLP + Visualizer).
+    This is a heavy operation, so we do it once per module (scope="module").
     """
     print(
-        "\n⏳ [Fixture] Ładowanie InferenceService (OCR + NLP)... to może chwilę potrwać."
+        "\n⏳ [Fixture] Loading InferenceService (OCR + NLP)... this may take a while."
     )
     try:
         parser = LLMReceiptParser()
@@ -48,14 +43,14 @@ def inference_service():
         )
         return service
     except Exception as e:
-        pytest.fail(f"Nie udało się zainicjalizować serwisu: {e}")
+        pytest.fail(f"Failed to initialize service: {e}")
 
 
 @pytest.fixture(scope="session")
 def event_loop():
     """
-    Wymagane dla testów asynchronicznych w pytest,
-    aby fixture'y o zasięgu 'module' działały poprawnie z async.
+    Required for asynchronous tests in pytest,
+    so that 'module' scoped fixtures work correctly with async.
     """
     loop = asyncio.new_event_loop()
     yield loop
