@@ -71,9 +71,8 @@ public class DashboardService {
 
     @Transactional
     public DashboardData getDashboardData(Integer year, Integer month) {
-        if (LocalDate.now().getYear() < year || (LocalDate.now().getYear() == year && LocalDate.now().getMonthValue() < month)) {
-            throw new DataValidationException("Requested month cannot be in the future");
-        }
+        // Validation for future date removed to allow viewing budgets for next months
+
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();

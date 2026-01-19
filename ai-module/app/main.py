@@ -18,7 +18,7 @@ warnings.filterwarnings(
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     # Load ML models
     configure_logging()
     logger.info("Initializing AI models...")

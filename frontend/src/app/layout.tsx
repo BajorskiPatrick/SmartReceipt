@@ -14,7 +14,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Miasto X",
+    title: "SmartReceipt",
     description: "Dashboard built with MUI & Next.js",
 };
 
