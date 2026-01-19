@@ -38,6 +38,7 @@ import { useExpanses } from '@/hooks/useExpanses';
 import { api } from '@/api-client/client';
 import { mapOcrToExpenseForm } from "@/hooks/useOcrMapping";
 import { Category, NewExpense, NewExpenseItem } from '@/api-client/models';
+import { useCategories } from "@/hooks/useCategories";
 
 export default function ExpensesGrid() {
   const now = new Date();
@@ -53,6 +54,7 @@ export default function ExpensesGrid() {
   const year = current.getFullYear();
   const month = current.getMonth() + 1;
   const { data: expenses, loading } = useExpanses(year, month, undefined, refreshTrigger);
+  const { categories } = useCategories();
 
 
   // --- STANY UI ---
@@ -216,6 +218,7 @@ export default function ExpensesGrid() {
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleFormSubmit}
         initialData={editingExpense}
+        categories={categories.map(c => ({ id: c.categoryId, name: c.name }))}
       />
       <ReceiptUploadDialog
         open={isReceiptDialogOpen}

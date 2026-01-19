@@ -36,7 +36,7 @@ interface ExpenseDialogProps {
   categories: { id: string; name: string }[];
 }
 
-export default function ExpenseDialog({ open, onClose, onSubmit, initialData, categories }: ExpenseDialogProps) {
+export default function ExpenseDialog({ open, onClose, onSubmit, initialData, categories = [] }: ExpenseDialogProps) {
   // Stan formularza
   const [formData, setFormData] = React.useState<ExpenseFormData>({
     description: '',
