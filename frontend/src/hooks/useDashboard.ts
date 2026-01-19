@@ -22,6 +22,11 @@ export function useDashboard(year?: number, month?: number, refreshTrigger: numb
     async function load() {
       setLoading(true);
       setError(null);
+      // Clear previous data while loading new one
+      setData(null);
+      setKpi(null);
+      setCategorySummary(null);
+      setTrendSummary(null);
       try {
         const res = await api.getDashboardData(y, m);
         // generator może zwracać dane bez "data", więc próbujemy różne kształty

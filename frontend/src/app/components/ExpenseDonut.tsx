@@ -107,7 +107,7 @@ export default function ExpenseDonut({ data, totalLabel = 'Total' }: ExpenseDonu
             width={220}
             hideLegend
           >
-            <PieCenterLabel primaryText={`${total}`} secondaryText={totalLabel} />
+            <PieCenterLabel primaryText={`${total.toFixed(2)}`} secondaryText={totalLabel} />
           </PieChart>
         </Box>
       </CardContent>

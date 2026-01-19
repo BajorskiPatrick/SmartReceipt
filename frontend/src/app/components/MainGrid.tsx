@@ -384,7 +384,7 @@ export default function MainGrid() {
             {/* Charts & Tables */}
             <Grid container spacing={2} columns={12}>
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <ExpenseDonut data={donutData} totalLabel="This month" />
+                    <ExpenseDonut key={selectedMonth.getTime()} data={donutData} totalLabel="This month" />
                 </Grid>
                 <Grid size={{ xs: 12, md: 8 }}>
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>Recent expenses</Typography>
