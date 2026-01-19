@@ -5,12 +5,8 @@ COMPOSE ?= docker compose
 BASE_COMPOSE := docker-compose.yml
 GPU_COMPOSE  := docker-compose.gpu.yml
 
-# Extra flags you can pass, e.g.:
-#   make gpu FLAGS="--build --remove-orphans"
 FLAGS ?= --build
 
-# GPU tuning (can be overridden per-invocation):
-#   make gpu SR_GPU_LAYERS=20
 SR_GPU_LAYERS ?= 33
 
 # Helper to pick compose files
